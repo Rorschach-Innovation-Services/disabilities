@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{this.name}} Report</title>
+        <style>
+            @import url("https://cdn.jsdelivr.net/npm/@xz/fonts@1/serve/hk-grotesk.min.css");
+            * {
+                font-family: 'HK Grotesk', sans-serif;
+            }
+            /* Banner */
+            .banner {
+                background-color: black;
+                color: #fff;
+                display: flex;
+                display: -webkit-flex;
+                justify-content: space-between;
+                width: 100%;
+                height: 150px;
+            }
+            .banner .logo {
+                width: 100%;
+            }
+            .banner .contact_info {
+                position: relative;
+                left: 40px;
+            }
+            .banner .contact_info a {
+                text-decoration: none;
+                color: #fff;
+                display: inline-block;
+                font-size: 10px;
+                position: relative;
+                bottom: 10px;
+            }
+            .banner .contact_info img {
+                margin-bottom: 5px; 
+            }
+            .welcome_message {
+                font-size: 16px;
+                text-align: center;
+            }
+            .score {
+                display: -webkit-flex;
+            }
+            .score_message {
+                font-size: 18px;
+                margin: 0 30px;
+                width: 33.3%;
+                text-align: center;
+                font-weight: bold;
+            }
+            .score .emoji {
+                background-color: #8cb8e2;
+                border-radius: 50%;
+                position: relative;
+                left: 40px;
+                top: 10px;
+            }
+            .score .score_percentage {
+                font-size: 18px;
+                margin: 0 0 50px 0;
+                position: relative;
+                left: 50px;
+                top: 10px;
+                font-weight: bold;
+            }
+            .score .right_arrow {
+                position: relative;
+                left: 100px;
+                top: 10px;
+                font-weight: bold;
+            }
+            .score .score_category {
+                font-size: 18px;
+                margin: 0 50px;
+                width: 33.3%;
+                position: relative;
+                left: 70px;
+                top: 10px;
+                font-weight: bold;
+            }
+            /*Feedback and Scale*/
+            .feedback_scale {
+                display: -webkit-flex;
+            }
+            .feedback {
+                background-color: #8cb8e2;
+                margin: 0 10px;
+                width: 70%;
+                border-radius: 20px;
+                text-align: center;
+                height: 100%;
+                padding: 5px;
+                position: relative;
+                bottom: 10px;
+            }
+            .feedback p {
+                font-size: 14px;
+                color: #fff;
+            }
+            .scale {
+                position: relative;
+                bottom: 10px;
+                /* width: 100%; */
+            }
+            .scale_blocks {
+                display: -webkit-flex;
+                margin: 0 10px;
+            }
+            .scale .scale_blocks div{
+                width: 80px;
+                text-align: center;
+                font-size: 8px;
+                position: relative;
+            }
+            .scale .scale_blocks .poor {
+                background-color: #8cb8e2;
+            }
+            .scale .scale_blocks .fair {
+                background-color: #b0c4f4;
+            }
+            .scale .scale_blocks .excellent {
+                background-color: #c8d4f4;
+            }
+            .scale .scale_values {
+                display: -webkit-flex;
+                position: relative;
+                left: 10px;
+                top: -5px;
+                font-size: 8px;
+            }
+            .scale .scale_values p {
+                margin-right: 75px;
+            }
+
+            /* Ratings */
+            .duration_efficiency_quality {
+                background-color: #8cb8e2;
+                margin: 0 5px;
+                padding: 5px;
+                width: 100%;
+                border-radius: 20px;
+                position: relative;
+                top: 10px;
+            }
+            .duration_efficiency_quality .heading {
+                font-weight: bold;
+            }
+            .ratings {
+                display: -webkit-flex;
+                font-size: 12px;
+            }
+            .duration, .efficiency, .quality {
+                display: -webkit-flex;
+                width: 100%;
+            }
+            .duration_value, .efficiency_value, .quality_value {
+                font-weight: bold;
+                width: 80px;
+                font-size: 20px;
+                text-align: center;
+                align-items: center;
+            }
+            .message_section {
+                width: 200px;
+                position: inherit;
+                right: 20px;
+            }
+            .message_section .message {
+                font-size: 10px;
+                font-weight: bold;
+                color: #fff;
+            }
+
+            /* Daytime & Medication*/
+            .daytime_medication {
+                background-color: #8cb8e2;
+                border-radius: 20px;
+                margin: 0 5px;
+                padding: 5px;
+                width: 100%;
+                position: relative;
+                top: 10px;
+            }
+            .medication, .daytime {
+                display: -webkit-flex;
+            }
+            .daytime_medication .heading {
+                font-weight: bold;
+            }
+            .daytime_value {
+                width: 80px;
+                font-size: 20px;
+                text-align: center;
+                align-items: center;
+                font-weight: bold;
+            }
+            .medication_icon_container {
+                width: 80px;
+                text-align: center;
+                align-items: center;
+                position: relative;
+            }
+            .medication_icon_container img {
+                position: absolute;
+                top: 30%;
+                left: 30%;
+            }
+
+            /* Tips */
+            .tips {
+                background-color: #8cb8e2;
+                position: relative;
+                top: 20px;
+                padding: 5px;
+            }
+            .tips .tips_heading {
+                padding: 0 5px;
+                color: #fff;
+                font-weight: bold;
+            }
+            .tips ul, .tips ul + p {
+                font-size: 9px;
+            }
+            .tips ul + p {
+                font-style: italic;
+                padding: 0 5px;
+                text-align: center;
+            }
+            .tips ul li {
+                margin: 5px 0;
+            }
+            .footer {
+                font-size: 7px;
+                position: relative;
+                top: 20px;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body style="margin: 0; padding: 0;">
+        <div class='container'>
+            <div class='banner'>
+                <div class='logo'>
+                    <img width="100%" src="data:image/png;base64,{{logoPath}}" alt='logo image'/>
+                </div>
+                <div style="width: 100%;" class='contact_info'>
+                    <p style="font-size: 10px;">Brought to you by Sleep Science</p>
+                    <img class='email_icon' width="20px" height="20px" src=data:image/png;base64,{{emailPath}} alt="email"/>
+                    <a target="_blank" href="mailto:info@sleepscience.co.za">info@sleepscience.co.za</a><br/>
+                    <img class='website_icon' width="20px" height="20px" src=data:image/png;base64,{{websitePath}} alt="email"/>
+                    <a target="_blank" href="https://www.sleepscience.co.za">www.sleepscience.co.za</a><br/>
+                    <img class='instagram_icon' width="20px" height="20px" src=data:image/png;base64,{{instagramPath}} alt="email"/>
+                    <a target="_blank" href="https://www.instagram.com/sleepscience_/">@sleepscience_</a><br/>
+                    <img class='facebook_icon' width="20px" height="20px" src=data:image/png;base64,{{facebookPath}} alt="email"/>
+                    <a target="_blank" href="https://www.facebook.com/www.sleepscience.co.za/">Sleep Science</a>
+                </div>
+            </div>
+            <div class='body'>
+                <p class='welcome_message'>Hi {{name}}. Thanks for completing your sleep health screen!</p>
+                <div class='score'>
+                    <p class='score_message'>Your sleep health score:</p>
+                    <img class='emoji' width="30px" height="30px" src=data:image/png;base64,{{facePath}} alt="emoji">
+                    <p class='score_percentage' id='score_percentage'>{{SleepHealthScorePercentage}}%</p>
+                    <img class='right_arrow' width="30px" height="30px" src=data:image/png;base64,{{rightArrowPath}} alt='right arrow'/>
+                    <p class='score_category'>{{categoryValue}}</p>
+                </div>
+                <div class="feedback_scale">
+                    <div class="feedback">
+                        <p>{{sleepFeedbackMessageValue}}</p>
+                    </div>
+                    <div class="scale">
+                        <img style="
+                            position: relative;
+
+                        " class='down_arrow' width="20px" height="20px" src=data:image/png;base64,{{downArrowPath}} alt='down arrow'/>
+                        <div class="scale_blocks">
+                            <div class='poor'>
+                                <p>poor</p>
+                            </div>
+                            <div class='fair'>
+                                <p>fair</p>
+                            </div>
+                            <div class='excellent'>
+                                <p>excellent</p>
+                            </div>
+                        </div>
+                        <div class="scale_values">
+                            <p>0%</p>
+                            <p>65%</p>
+                            <p>85%</p>
+                            <p>100%</p>
+                        </div>
+                    </div>
+                </div>
+                <div class='ratings'>
+                    <div class='duration_efficiency_quality'>
+                        <div class='duration'>
+                            <div class="duration_value">
+                                <p class="value">{{sleepDuration}}h</p>
+                            </div>
+                            <div class='message_section'>
+                                <p class="heading">Sleep Duration:</p>
+                                <p class="message">The recommended range is 7-9 hours.</p>
+                            </div>
+                        </div>
+                        <div class='efficiency'>
+                            <div class="efficiency_value">
+                                <p class="value">{{SE}}%</p>
+                            </div>
+                            <div class='message_section'>
+                                <p class="heading">Sleep efficiency:</p>
+                                <p class="message">We aim to be asleep for at least 85% of the time we spend in bed at night.</p>
+                            </div>
+                        </div>
+                        <div class='quality'>
+                            <div class="quality_value">
+                                <p class="value">{{Quality}}/10</p>
+                            </div>
+                            <div class='message_section'>
+                                <p class="heading">Perceived sleep quality:</p>
+                                <p class="message">This is your perception of your sleep quality. Higher is better.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='daytime_medication'>
+                        <div class='daytime'>
+                            <div class="daytime_value">
+                                <p class="value">{{DayTimeFunctionValue}}/10</p>
+                            </div>
+                            <div class='message_section'>
+                                <p class="heading">Daytime function:</p>
+                                <p class="message">Optimal sleep enables you to be on your A-game. Poor sleep may impair productivity, creativity, decision making and mood. Higher daytime function is better.</p>
+                            </div>
+                        </div>
+                        <div class='medication'>
+                            <div class="medication_icon_container">
+                                <img class='medicine_icon' width="30px" height="30px" src=data:image/png;base64,{{medicinePath}} alt='medicine icon'/>
+                            </div>
+                            <div class='message_section'>
+                                <p class="heading">Sleep Medication:</p>
+                                <p class="message">{{medicationMessageValue}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tips">
+                    <p class="tips_heading">Tips to improve your sleep:</p>
+                    <ul>
+                        <li>Have a consistent bedtime and wake-up time.</li>
+                        <li>Minimise electronic device use after sunset. If you have to use electronics, make use of bluelight blocking filters.</li>
+                        <li>Budget 60 minutes for winding down before bed.</li>
+                        <li>Be wary of too much caffeine (coffee, ceylon tea, energy drinks & some soft drinks) 6 hours before bedtime.</li>
+                        <li>Excessive alcohol intake and other sedative use can impair sleep.</li>
+                        <li>If you are concerned about your sleep, please contact your healthcare provider or Sleep Science.</li>
+                    </ul>
+                    <p>If you are concerned about your sleep, please contact your healthcare provider or Sleep Science.</p>
+                </div>
+            </div>
+            <div class='footer'>
+                <p>
+                    Data provided here are for informative purposes only, and do not substitute for professional medical advice. Please always consult a medical or healthcare professional for advice, diagnosis or treatment.
+                </p>
+            </div>
+        </div>
+
+        <!-- Jacvascript code for scale pointer -->
+        <script>
+            const downArrow = document.querySelector('.down_arrow');
+            const percentage = document.querySelector('.score_percentage').innerHTML;
+            const percentageNumber = parseInt(percentage.slice(0, percentage.length - 1));
+            const poorScale = document.querySelector('.poor').offsetWidth;
+            const fairScale = document.querySelector('.fair').offsetWidth;
+            const excellentScale = document.querySelector('.excellent').offsetWidth;
+            const scale = document.querySelector('.scale').offsetWidth;
+
+            if(percentageNumber >= 0 && percentageNumber <= 65){
+                /* position of the arrow in the scale*/
+                const position =  Math.round((percentageNumber/65) * 140);
+
+                /* Move to the percentage position */
+                document.querySelector('.down_arrow').style.position = 'relative';
+                document.querySelector('.down_arrow').style.left = position + "px";
+            }
+            else if(percentageNumber > 65 && percentageNumber <= 85){
+                /* position of the arrow in the scale*/
+                const position =  Math.round((percentageNumber/85) * 140) + 140;
+
+                /* Move to the percentage position */
+                document.querySelector('.down_arrow').style.position = 'relative';
+                document.querySelector('.down_arrow').style.left = position + "px"
+            }
+            else{
+                /* position of the arrow in the scale*/
+                const position =  Math.round((percentageNumber/100) * 140) + 140*2;
+
+                /* Move to the percentage position */
+                document.querySelector('.down_arrow').style.position = 'relative';
+                document.querySelector('.down_arrow').style.left = position + "px";
+            }
+        </script>
+    </body>
+</html>

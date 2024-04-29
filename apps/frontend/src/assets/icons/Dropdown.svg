@@ -1,0 +1,22 @@
+<svg id="SvgjsSvg1001" width="288" height="288" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.com/svgjs">
+    <defs id="SvgjsDefs1002"></defs>
+    <g id="SvgjsG1008">
+        <svg xmlns="http://www.w3.org/2000/svg" width="288" height="288" viewBox="0 0 9 5.001">
+            <defs>
+                <clipPath id="a">
+                    <rect width="9" height="5" fill="#000000" data-name="Rectangle 2161" class="color1f6521 svgShape"></rect>
+                </clipPath>
+            </defs>
+            <g data-name="Vector Smart Object" transform="translate(-677 -231)" fill="#000000" class="color000 svgShape">
+                <g data-name="Vector Smart Object" fill="#000000" class="color000 svgShape">
+                    <g data-name="Group 3876" transform="translate(677 231)" fill="#000000" class="color000 svgShape">
+                        <g clip-path="url(#a)" data-name="Group 3875" fill="#000000" class="color000 svgShape">
+                            <path fill="#000000" d="M8.834.949,4.9,4.837a.568.568,0,0,1-.8,0L.166.949A.555.555,0,0,1,.564,0H8.436a.555.555,0,0,1,.4.949" data-name="Path 3269" class="color1f6521 svgShape"></path>
+                        </g>
+                    </g>
+                </g>
+                <path fill="#000000" d="M681.1,235.838l-3.937-3.888a.541.541,0,0,1-.166-.371v-.037a.559.559,0,0,1,.564-.542h7.871a.555.555,0,0,1,.4.949l-3.936,3.888a.567.567,0,0,1-.8,0Z" data-name="Color Overlay" opacity=".98" class="color1f6521 svgShape"></path>
+            </g>
+        </svg>
+    </g>
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="146" height="146" viewBox="0 0 146 146">
+  <g id="Group_5885" data-name="Group 5885" transform="translate(-527 -53)">
+    <path id="Path_5075" data-name="Path 5075" d="M73,0A73,73,0,1,1,0,73,73,73,0,0,1,73,0Z" transform="translate(527 53)" fill="#f0f3ff"/>
+    <g id="Frame" transform="translate(539 122)">
+      <path id="Vector" d="M97,6.1c0,3.369-21.714,6.1-48.5,6.1S0,9.469,0,6.1,21.714,0,48.5,0,97,2.731,97,6.1Z" transform="translate(0 64.8)" fill="#f2f2f2" opacity="0.5"/>
+      <path id="Vector-2" data-name="Vector" d="M68.66,9.153,62,15.194,42.333,31.437,29,31.272,0,9.892,34.833,0Z" transform="translate(25.647 16.243)" fill="#80a8ce"/>
+      <path id="Vector-3" data-name="Vector" d="M53.28,41.5a1.968,1.968,0,0,1-.586,1.4,2.011,2.011,0,0,1-1.414.579H2A2.011,2.011,0,0,1,.586,42.9,1.968,1.968,0,0,1,0,41.5V1.978A1.968,1.968,0,0,1,.586.579,2.011,2.011,0,0,1,2,0H51.28a2.011,2.011,0,0,1,1.414.579,1.968,1.968,0,0,1,.586,1.4Z" transform="translate(33.667 6.153)" fill="#fff"/>
+      <path id="Vector-4" data-name="Vector" d="M19.56,9.668a9.6,9.6,0,0,1-1.643,5.374,9.758,9.758,0,0,1-4.383,3.566A9.858,9.858,0,0,1,2.876,16.527,9.617,9.617,0,0,1,4.326,1.644,9.852,9.852,0,0,1,16.684,2.822,9.622,9.622,0,0,1,19.56,9.668Z" transform="translate(51.193 18.221)" fill="none" stroke="#8cc63f" stroke-width="2.27"/>
+      <path id="Vector-5" data-name="Vector" d="M0,2.1,3.627,5.691,9.38,0" transform="translate(56.4 25.047)" fill="none" stroke="#8cc63f" stroke-width="2.27"/>
+      <path id="Vector-6" data-name="Vector" d="M68.64,0V21.941a3.546,3.546,0,0,1-.233,1.279,3.757,3.757,0,0,1-1.391,1.815,3.822,3.822,0,0,1-2.2.685h-61a3.831,3.831,0,0,1-2.042-.585,3.772,3.772,0,0,1-1.4-1.578A3.627,3.627,0,0,1,0,21.941V0Z" transform="translate(25.64 47.673)" fill="#80a8ce"/>
+      <path id="Vector-7" data-name="Vector" d="M26.973,0V44.244a3.546,3.546,0,0,1-.233,1.279L0,22.3Z" transform="translate(67.307 25.37)" fill="#85afd7"/>
+      <path id="Vector-8" data-name="Vector" d="M28.893,21.545l-9.907,8.046L.373,45.1A3.627,3.627,0,0,1,0,43.486V0Z" transform="translate(25.64 26.128)" fill="#c0e1f9"/>
+      <path id="Vector-9" data-name="Vector" d="M0,0,3.067,2.124" transform="translate(27.947 3.35)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.27"/>
+      <path id="Vector-10" data-name="Vector" d="M0,0,1.133,2.856" transform="translate(31.987 0.745)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.27"/>
+      <path id="Vector-11" data-name="Vector" d="M3.12.02,0,0" transform="translate(27.12 7.947)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.27"/>
+      <path id="Vector-12" data-name="Vector" d="M3.133,0,0,2.183" transform="translate(90.347 3.95)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.27"/>
+      <path id="Vector-13" data-name="Vector" d="M1.14,0,0,2.856" transform="translate(87.567 1.405)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.27"/>
+      <path id="Vector-14" data-name="Vector" d="M0,0,3.087.455" transform="translate(91.133 9.048)" fill="none" stroke="#fff" stroke-linecap="round" stroke-width="2.27"/>
+    </g>
+  </g>
+</svg>

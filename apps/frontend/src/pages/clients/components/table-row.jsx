@@ -1,0 +1,226 @@
+import React, { useEffect, useState } from "react";
+import {
+    Avatar,
+    Box,
+    TableCell,
+    Typography,
+    TableRow,
+    IconButton,
+    useMediaQuery,
+    Popover,
+} from "@mui/material";
+import { SelectedBlackIcon } from "../../../assets/icons/selected-black";
+import { UnselectedIcon } from "../../../assets/icons/unselected";
+import { DownloadBlueIcon } from "../../../assets/icons/download-blue";
+import DownloadSelected from "../../../assets/icons/download-selected.svg";
+import { CSVLink } from "react-csv";
+import { useHistory } from "react-router-dom";
+import { format } from "date-fns";
+import DeleteIcon from "../../../assets/icons/delete-icon.svg";
+import SpreadsheetIcon from "../../../assets/icons/download_xlsx.svg";
+import { useAxios } from "../../../hooks/axios.js";
+
+const styles = {
+    tableRowText: {
+        fontSize: "9px",
+        fontWeight: "500",
+        lineHeight: "10px",
+    },
+    tableHeader: {
+        fontWeight: "500",
+        fontSize: "8px",
+        color: "rgba(137, 137, 137, 1)",
+        lineHeight: "10px",
+    },
+};
+
+export const CustomTableRow = ({
+    row,
+    toggleSelection,
+    links,
+    index,
+    selected,
+    setSelected,
+    setOpenMessage,
+}) => {
+    const { push } = useHistory();
+    const [anchorEl, setAnchorEl] = useState(null);
+    const changePadding = useMediaQuery("(max-width:560px)");
+    const { response, executeWithData, error, loading } = useAxios({
+        url: "/companies",
+        method: "delete",
+    });
+
+    useEffect(() => {
+        if (response && !error) {
+            window.location.reload();
+        }
+    }, [response, error]);
+
+    const handleSelectEvent = (event, row) => {
+        event.stopPropagation();
+        toggleSelection(row);
+    };
+
+    return (
+        <TableRow
+            onClick={() => push(`/clients/${row._id}`)}
+            sx={{
+                backgroundColor: `${selected ? "primary.main" : "white"}`,
+                color: `${selected ? "white" : "black"}`,
+                marginBottom: "7%",
+                cursor: "pointer",
+            }}
+        >
+            <TableCell
+                component="th"
+                scope="row"
+                sx={{
+                    "td:first-of-type,": {
+                        borderRadius: "15px 0 0 15px",
+                    },
+                    padding: changePadding ? "8px" : "16px",
+                }}
+            >
+                <IconButton onClick={(e) => handleSelectEvent(e, row)}>
+                    {selected ? <SelectedBlackIcon /> : <UnselectedIcon />}
+                </IconButton>
+            </TableCell>
+            <TableCell sx={{ padding: changePadding ? "8px" : "16px" }}>
+                <Avatar
+                    alt="Icon"
+                    src={links && links.length > index ? links[index] : ""}
+                    sx={{
+                        width: changePadding ? "35px" : "45px",
+                        height: changePadding ? "35px" : "45px",
+                    }}
+                ></Avatar>
+            </TableCell>
+            <TableCell sx={{ padding: changePadding ? "8px" : "16px" }}>
+                <Typography
+                    sx={{
+                        ...styles.tableRowText,
+                        fontWeight: "bold",
+                        fontSize: changePadding ? "9px" : "12px",
+                    }}
+                >
+                    {row.name}
+                </Typography>
+            </TableCell>
+            <TableCell sx={{ padding: changePadding ? "8px" : "16px" }}>
+                <Typography
+                    sx={{
+                        ...styles.tableRowText,
+                        fontSize: changePadding ? "9px" : "12px",
+                    }}
+                >
+                    {row.lastAssessmentDate !== "none"
+                        ? format(new Date(row.lastAssessmentDate), "dd/MM/yyyy")
+                        : row.lastAssessmentDate}
+                </Typography>
+            </TableCell>
+            <TableCell sx={{ padding: changePadding ? "8px" : "16px" }}>
+                <Typography
+                    sx={{
+                        ...styles.tableRowText,
+                        fontSize: changePadding ? "9px" : "12px",
+                    }}
+                >
+                    {row.status}
+                </Typography>
+            </TableCell>
+            <TableCell
+                sx={{
+                    padding: changePadding ? "8px" : "16px",
+                }}
+            >
+                <IconButton
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        setAnchorEl(event.currentTarget);
+                    }}
+                >
+                    {selected ? (
+                        <Box component="img" src={DownloadSelected} />
+                    ) : (
+                        <DownloadBlueIcon />
+                    )}
+                </IconButton>
+                <Popover
+                    open={Boolean(anchorEl)}
+                    anchorEl={anchorEl}
+                    onClose={(event) => {
+                        event.stopPropagation();
+                        setAnchorEl(null);
+                    }}
+                    elevation={2}
+                    anchorOrigin={{
+                        vertical: "bottom",
+                        horizontal: "left",
+                    }}
+                    sx={{
+                        ".MuiPaper-root": {
+                            width: "110px",
+                            height: "86px",
+                            maxWidth: "100%",
+                            maxHeight: "100%",
+                            borderRadius: "15px",
+                            textAlign: "center",
+                        },
+                    }}
+                >
+                    <IconButton
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            setAnchorEl(null);
+                        }}
+                        sx={{
+                            marginBottom: "-6px",
+                            marginTop: "7px",
+                        }}
+                    >
+                        <CSVLink
+                            data={row.csvFile}
+                            filename={`${row.name}.csv`}
+                        >
+                            <Box component="img" src={SpreadsheetIcon} />
+                        </CSVLink>
+                    </IconButton>
+                    <Typography
+                        sx={{
+                            fontSize: "9px",
+                            fontWeight: 500,
+                            textAlign: "center",
+                        }}
+                    >
+                        Group Download
+                    </Typography>
+                </Popover>
+            </TableCell>
+            <TableCell
+                sx={{
+                    "td:last-of-type,": {
+                        borderRadius: "0 15px 15px 0 ",
+                    },
+                    padding: changePadding ? "8px" : "16px",
+                }}
+            >
+                {loading ? (
+                    <Typography sx={{ fontSize: "12px", fontWeight: 500 }}>
+                        Deleting...
+                    </Typography>
+                ) : (
+                    <IconButton
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            setOpenMessage(true);
+                            setSelected((prev) => [...prev, row._id]);
+                        }}
+                    >
+                        <Box component="img" src={DeleteIcon} />
+                    </IconButton>
+                )}
+            </TableCell>
+        </TableRow>
+    );
+};
