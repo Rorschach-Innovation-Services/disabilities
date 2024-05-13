@@ -1,84 +1,31 @@
-import { Schema, Document, model, Types } from "mongoose";
-import { AdminDocument } from "./admin.model";
-import { DepartmentDb, DepartmentDocument } from "./department.model";
+import { Entity } from 'dynamodb-toolbox';
+import { DatabaseTable } from '../utilities/table';
+import { v4 } from 'uuid';
 
-/**
- * Interface representing a Company Document in MongoDB
- */
-export interface CompanyDocument extends Document {
-  name: string;
-  employees: [Schema.Types.ObjectId];
-  employeeSize: number;
-  sector: string;
-  hrConsultantName: string;
-  hrConsultantEmail: string;
-  phone: string;
-  logo?: string;
-  created: Date;
-  admin: Types.ObjectId;
-  deleted: boolean;
-  status?: string;
-  departments: Schema.Types.ObjectId[] | DepartmentDocument[] | DepartmentDb[];
-}
-
-
-/**
- * Company Schema corresponding to an Assessment Document
- */
-const CompanySchema = new Schema<CompanyDocument>({
-  name: {
-    type: String,
-    required: [true, "Company name required"],
-  },
-  employees: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Employee",
+export const Company = new Entity({
+  name: 'Company',
+  table: DatabaseTable,
+  timestamps: true,
+  attributes: {
+    all: {
+      partitionKey: true,
+      type: 'string',
+      default: 'companies',
+      hidden: true,
     },
-  ],
-  employeeSize: {
-    type: Number,
+    id: { sortKey: true, type: 'string', default: v4() },
+    name: { type: 'string', required: true },
+    employees: { type: 'list', itemType: 'string' },
+    employeeSize: { type: 'number' },
+    sector: { type: 'string', required: true },
+    hrConsultantName: { type: 'string', required: true },
+    hrConsultantEmail: { type: 'string', required: true },
+    phone: { type: 'string' },
+    logo: { type: 'string' },
+    adminId: { type: 'string', required: true },
+    adminEmail: { type: 'string', required: true },
+    deleted: { type: 'boolean', default: false },
+    status: { type: 'string' },
+    departments: { type: 'list', itemType: 'string' },
   },
-  sector: {
-    type: String,
-    required: [true, "Company sector name required"],
-  },
-  departments: [{
-    type: Schema.Types.ObjectId,
-    ref: "Department"
-  }],
-  hrConsultantName: {
-    type: String,
-    required: [true, "HR consultant name required"],
-  },
-  hrConsultantEmail: {
-    type: String,
-    required: [true, "Consultant email address required"],
-  },
-  phone: {
-    type: String,
-  },
-  logo: {
-    type: String,
-  },
-  created: {
-    type: Date,
-    default: new Date(),
-  },
-  admin: {
-    type: Schema.Types.ObjectId,
-    required: true
-  },
-  deleted: {
-    type: Boolean,
-    default: false,
-  },
-  status: String
 });
-
-/**
- * Company Model
- */
-const Company = model<CompanyDocument>("Company", CompanySchema);
-
-export default Company;

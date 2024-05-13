@@ -1,38 +1,19 @@
-/**
- * Creating a Model for an Question
- */
-import { Schema, Document, model } from "mongoose";
+import { Entity } from 'dynamodb-toolbox';
+import { DatabaseTable } from '../utilities/table';
+import { v4 } from 'uuid';
 
-/**
- * Interface representing a Question Document in MongoDB
- */
-export interface QuestionDocument extends Document {
-  id: string,
-  content: string,
-  response?: string,
-  created: string
-}
-
-/**
- * Question Schema corresponding to an Employee Document
- */
-const QuestionSchema = new Schema<QuestionDocument>({
-  id: {
-    type: String,
-    required: [true, "Question id Required"],
+export const Question = new Entity({
+  name: 'Question',
+  table: DatabaseTable,
+  timestamps: true,
+  attributes: {
+    id: { partitionKey: true, type: 'string', default: v4() },
+    // sk: {
+    //   hidden: true,
+    //   sortKey: true,
+    //   default: (data: { id: string }) => data.id,
+    // },
+    content: { type: 'string', required: true },
+    response: { type: 'string' },
   },
-  content: {
-    type: String,
-    required: [true, "Question Content Required!"],
-  },
-  response: {
-    type: String,
-  }
 });
-
-/**
- * Question Model
- */
-const Question = model<QuestionDocument>("Question", QuestionSchema);
-
-export default Question;

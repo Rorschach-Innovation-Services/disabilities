@@ -1,52 +1,31 @@
-/**
- * Creating a Model for an Question
- */
-import { Schema, Document, model } from "mongoose";
+import { Entity } from 'dynamodb-toolbox';
+import { DatabaseTable } from '../utilities/table';
+import { v4 } from 'uuid';
 
-/**
- * Interface representing a Question Document in MongoDB
- */
-export interface QuestionnaireDocument extends Document {
-    name: string,
-    creator: string,
-    date: Date,
+export const Questionnaire = new Entity({
+  name: 'Questionnaire',
+  table: DatabaseTable,
+  timestamps: true,
+  attributes: {
+    id: { partitionKey: true, type: 'string', default: v4() },
+    // sk: {
+    //   hidden: true,
+    //   sortKey: true,
+    //   default: (data: { id: string }) => data.id,
+    // },
+    name: { type: 'string', required: true },
+    creator: { type: 'string', required: true },
+    date: { type: 'string' },
     questionnaire: {
-        id: string,
-        content: string,
-        response?: string
-    }[]
-}
-
-/**
- * Question Schema corresponding to an Employee Document
- */
-const QuestionnaireSchema = new Schema<QuestionnaireDocument>({
-    name: {
-        type: String,
-        required: [true, "Questionnaire Name Required"],
+      type: 'list',
+      required: true,
+      itemType: 'map',
+      mapAttributes: {
+        id: { type: 'string', required: true },
+        content: { type: 'string', required: true },
+        response: { type: 'string' },
+      },
     },
-    creator: {
-        type: String,
-        required: [true, "Questionnaire Creator Name Required!"],
-    },
-    date: {
-        type: Date,
-        default: new Date()
-    },
-    questionnaire: [{
-        type: {
-            id: String,
-            content: String,
-            response: String
-        },
-        required: [true, "Questionnaire required!"]
-    }]
+  },
 });
 
-/**
- * Question Model
- */
-const Questionnaire = model<QuestionnaireDocument>("Questionnaire", QuestionnaireSchema);
-
-export default Questionnaire;
- 
