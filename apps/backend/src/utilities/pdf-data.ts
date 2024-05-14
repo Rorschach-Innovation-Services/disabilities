@@ -1,8 +1,6 @@
-import { AssessmentDocument, Score } from "../models/assessment.model";
-import { CompanyDocument } from "../models/company.model";
-import Employee, { EmployeeDocument } from "../models/employee.model";
+import { Score } from "../models/assessment.model";
+import { Employee } from "../models/employee.model";
 import { format, isAfter, isBefore } from "date-fns";
-import { DepartmentDocument } from "../models/department.model";
 
 export type PDFData = {
   date: string;
@@ -140,7 +138,7 @@ export type PDFData = {
 };
 
 export const fetchPDFData = async (
-  department: DepartmentDocument
+  department: any
 ): Promise<PDFData> => {
   const data = {
     date: "",
@@ -277,8 +275,8 @@ export const fetchPDFData = async (
     },
   };
 
-  const assessments = department.assessments as AssessmentDocument[];
-  const company = department.company as CompanyDocument;
+  const assessments = department.assessments as any[];
+  const company = department.company as any;
 
   const sleepHealthScores: number[] = [];
   const sleepDurations: number[] = [];
@@ -292,9 +290,8 @@ export const fetchPDFData = async (
   let endDate = assessments[0].created;
 
   for (const assessment of assessments) {
-    const employee = (await Employee.findById(
-      assessment.employee
-    )) as EmployeeDocument;
+    const employeeResponse = await Employee.get({ id: assessment.employeeId });
+    const employee = employeeResponse.Item as any;
     const score = assessment.score as Score;
     data.date = format(new Date(), "dd MMMM yyyy");
     data.companyName = company.name;

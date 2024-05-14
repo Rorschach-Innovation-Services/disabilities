@@ -1,26 +1,16 @@
 /**
  * Getting the assessments completed by the employees of a specific company grouped together based on date of completion
  */
-import { Department, Company, Employee } from "../../models/";
-import {
-  DepartmentDb,
-  DepartmentDocument,
-} from "../../models/department.model";
-import { Request, Response } from "express";
-import { parseAsync } from "json2csv";
-import { format, isAfter } from "date-fns";
+import { Department, Company, Employee } from '../../models/';
+import { Request, Response } from 'express';
+import { parseAsync } from 'json2csv';
 import {
   csvOptions,
   transformData,
   TransformedResult,
-} from "../../utilities/transform";
-import { AssessmentDocument } from "../../models/assessment.model";
-import assert from "assert";
-
-interface ResponseAssessmentsType extends DepartmentDb {
-  // lastAssessmentDate: string;
-  csvFile: string;
-}
+} from '../../utilities/transform';
+import { Assessment } from '../../models/assessment.model';
+import assert from 'assert';
 
 export const getClientAssessments = async (
   request: Request,
@@ -29,53 +19,62 @@ export const getClientAssessments = async (
   try {
     const { companyID } = request.params;
     // Ensure company exists
-    const company = await Company.findById(companyID).where("deleted").equals(false);
+    const companyResponse = await Company.get({ id: companyID });
+    const company = companyResponse.Item;
     if (!company) {
-      return response.status(400).json({ message: "No such company exists" });
+      return response.status(400).json({ message: 'No such company exists' });
     }
 
     //Find assessments associated to department
-    const departments = await Department.find({
-      company: company._id,
-      deleted: false,
-    })
-      .populate("assessments")
-      .exec();
-    console.log("Departments: -", departments[0].assessments)
+    const departmentResponse = await Department.query(
+      { gspk: company.id },
+      { index: 'GSI1', limit: 1 }
+    );
+    const departments = departmentResponse.Items || [];
     if (!departments.length) {
       return response
         .status(200)
-        .json({ clientName: company.name, departments: [], masterFile: "" });
+        .json({ clientName: company.name, departments: [], masterFile: '' });
     }
-    const dates: string[] = [];
-    departments.forEach((department) => {
-      const assDates: Date[] = [];
 
-      (department.assessments as AssessmentDocument[]).forEach((assessment) => {
+    const dates: string[] = [];
+    departments.forEach(async (department) => {
+      const assDates: Date[] = [];
+      const assessmentResponse = await Assessment.query(
+        {
+          companyId: company.id,
+        },
+        { beginsWith: `${department.id}` }
+      );
+      const assessments = assessmentResponse.Items || [];
+      (department as any).assessments = assessments;
+
+      assessments.forEach((assessment) => {
         // if (isAfter(new Date(assessment.created), new Date(date)))
-          assDates.push(new Date(assessment.created));
+        assDates.push(new Date(assessment.created));
       });
-      const latestDate = new Date(Math.max(...assDates.map((date: Date) => date.getTime())))
-      dates.push(assDates.length === 0 ? "none" : latestDate.toDateString());
+      const latestDate = new Date(
+        Math.max(...assDates.map((date: Date) => date.getTime()))
+      );
+      dates.push(assDates.length === 0 ? 'none' : latestDate.toDateString());
     });
 
-    const responseAssessments: DepartmentDocument[] = [];
+    const responseAssessments: any[] = [];
     const departmentCSVs: string[] = [];
     const masterFileData: TransformedResult[] = [];
 
     for (const department of departments) {
       const csvData: TransformedResult[] = [];
-      console.log("department", department);
-      console.log("assessments", department.assessments);
 
-      for (const assessment of department.assessments) {
-        const employee = await Employee.findById(
-          (assessment as AssessmentDocument).employee
-        );
+      for (const assessment of (department as any).assessments) {
+        const employeeResponse = await Employee.get({
+          id: assessment.employeeId,
+        });
+        const employee = employeeResponse.Item;
         assert(employee !== null);
         const transformedDate = transformData({
           employee,
-          assessment: assessment as AssessmentDocument,
+          assessment: assessment,
           company,
         });
         csvData.push(transformedDate);
@@ -99,7 +98,7 @@ export const getClientAssessments = async (
       masterFile: `SEP=,\n${masterCSVFile}`,
     });
   } catch (error) {
-    console.log("error", error);
-    return response.status(500).json({ message: "Internal Server Error" });
+    console.log('error', error);
+    return response.status(500).json({ message: 'Internal Server Error' });
   }
 };

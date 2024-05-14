@@ -7,13 +7,27 @@ export const Task = new Entity({
   table: DatabaseTable,
   timestamps: true,
   attributes: {
-    id: { sortKey: true, type: 'string', default: v4() },
+    id: { partitionKey: true, type: 'string', default: v4() },
     title: { type: 'string', required: true },
     adminId: { type: 'string', required: true },
-    adminEmail: { partitionKey: true, type: 'string' },
+    adminEmail: { type: 'string' },
     content: { type: 'string', required: true },
     photo: { type: 'string' },
     complete: { type: 'boolean', default: false },
+    deleted: { type: 'boolean', default: false },
+    gspk: {
+      hidden: true,
+      type: 'string',
+      partitionKey: true,
+      default: 'tasks',
+    },
+    gssk: {
+      hidden: true,
+      type: 'string',
+      sortKey: true,
+      default: ({ id, adminId }: { id: string; adminId: string }) =>
+        `${adminId}:${id}`,
+    },
   },
 });
 

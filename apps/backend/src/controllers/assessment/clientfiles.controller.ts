@@ -1,23 +1,15 @@
 /**
  * Getting client csv files Handlers
  */
-import { Assessment, Company, Employee } from "../../models/";
-import { Request, Response } from "express";
-import { parseAsync } from "json2csv";
-import { CompanyDocument } from "../../models/company.model";
-import { isAfter } from "date-fns";
+import { Assessment, Company, Employee } from '../../models/';
+import { Request, Response } from 'express';
+import { parseAsync } from 'json2csv';
+import { isAfter } from 'date-fns';
 import {
   transformData,
   TransformedResult,
   csvOptions,
-} from "../../utilities/transform";
-import { x } from "pdfkit";
-
-type ModifiedCompanyType = CompanyDocument & {
-  csvFile?: string;
-  lastAssessmentDate?: string;
-  status?: string;
-};
+} from '../../utilities/transform';
 
 /**
  * Retrieve all client csv files and create master file
@@ -27,33 +19,40 @@ type ModifiedCompanyType = CompanyDocument & {
  */
 export const getClientFiles = async (_: Request, response: Response) => {
   try {
-    const companies = await Company.find({ deleted: false });
+    const companyResponse = await Company.query(
+      { gspk: 'companies' },
+      { index: 'GSI1' }
+    );
+    const companies = companyResponse.Items || [];
     if (!companies) {
-      return response.status(404).json({ message: "Companies not found" });
+      return response.status(404).json({ message: 'Companies not found' });
     }
 
     // Holding data to be stored in the master csv file
     const masterFileData: TransformedResult[] = [];
     // Companies that have been modified with attributes
-    const modifiedCompanies: ModifiedCompanyType[] = [];
+    const modifiedCompanies: any[] = [];
 
     for (const company of companies) {
       if (company.deleted) continue;
       // Create copy of company to have attributes added to it
-      const modifiedCompany: ModifiedCompanyType = {
-        ...company.toObject(),
-      } as ModifiedCompanyType;
+      const modifiedCompany: Record<string, any> = {
+        ...company,
+      };
 
-      const assessments = await Assessment.find({
-        company: company._id,
-        deleted: false,
-      });
+      const assessmentResponse = await Assessment.query(
+        {
+          companyId: company.id,
+        },
+        {}
+      );
+      const assessments = assessmentResponse.Items || [];
 
       if (!assessments.length) {
         // Add attributes to the modified company
         modifiedCompany.csvFile = await parseAsync([], csvOptions);
-        modifiedCompany.lastAssessmentDate = "none";
-        modifiedCompany.status = "In Process";
+        modifiedCompany.lastAssessmentDate = 'none';
+        modifiedCompany.status = 'In Process';
         modifiedCompanies.push(modifiedCompany);
         continue;
       }
@@ -65,7 +64,10 @@ export const getClientFiles = async (_: Request, response: Response) => {
 
       for (const assessment of assessments) {
         if (assessment.deleted) continue;
-        const employee = await Employee.findById(assessment.employee).where("deleted").equals(false);
+        const employeeResponse = await Employee.get({
+          id: assessment.employeeId,
+        });
+        const employee = employeeResponse.Item;
 
         if (employee) {
           const resultData = transformData({
@@ -83,13 +85,16 @@ export const getClientFiles = async (_: Request, response: Response) => {
         }
       }
 
+      const employeesResponse = await Employee.query(
+        { gspk: 'employees' },
+        { index: 'GSI1', beginsWith: company.id }
+      );
+      const employees = employeesResponse.Items || [];
       const clientCSVFile = await parseAsync(singleClientData, csvOptions);
       modifiedCompany.csvFile = `SEP=,\n${clientCSVFile}`;
       modifiedCompany.lastAssessmentDate = assessmentDate;
       modifiedCompany.status =
-        company.employees.length === company.employeeSize
-          ? "Complete"
-          : "In Process";
+        employees.length === company.employeeSize ? 'Complete' : 'In Process';
 
       modifiedCompanies.push(modifiedCompany);
     }
@@ -98,13 +103,13 @@ export const getClientFiles = async (_: Request, response: Response) => {
     const masterCSVFile = await parseAsync(masterFileData, csvOptions);
 
     const sortedCompanyList = modifiedCompanies.sort((x, y) => {
-      return Number(y.created) - Number(x.created)
+      return Number(y.created) - Number(x.created);
     });
     return response.status(200).json({
       companies: sortedCompanyList,
       masterFile: `SEP=,\n${masterCSVFile}`,
     });
   } catch (error) {
-    return response.status(500).json({ message: "Internal Server Error" });
+    return response.status(500).json({ message: 'Internal Server Error' });
   }
 };

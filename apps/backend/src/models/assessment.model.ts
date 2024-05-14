@@ -8,15 +8,28 @@ export const Assessment = new Entity({
   timestamps: true,
   attributes: {
     sk: { hidden: true, sortKey: true },
-    questionnaire: { type: 'list', required: 'always' },
+    questionnaire: { type: 'list' },
     score: { type: 'map' },
     companyId: { partitionKey: true, type: 'string' },
     departmentId: ['sk', 0, { type: 'string', required: 'always' }],
     employeeId: ['sk', 1, { type: 'string', required: 'always' }],
     id: ['sk', 2, { type: 'string', required: 'always', default: v4() }],
+    gspk: {
+      hidden: true,
+      type: 'string',
+      partitionKey: true,
+      default: 'assessments',
+    },
+    gssk: {
+      hidden: true,
+      type: 'string',
+      sortKey: true,
+      default: ({ id, employeeId }: { id: string; employeeId: string }) =>
+        `${employeeId}#${id}`,
+    },
     deleted: { type: 'boolean', default: false },
   },
-});
+} as const);
 
 export interface Score {
   TIB: number;

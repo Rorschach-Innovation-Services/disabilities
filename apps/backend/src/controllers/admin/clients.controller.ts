@@ -1,21 +1,23 @@
 /**
  * Admin Reset Password Controller
  */
-import { Entity } from 'dynamodb-toolbox';
 import { Request, Response } from 'express';
-import { Admin, Company } from '../../models';
+import { Administrator, Company } from '../../models';
 
 export default async (request: Request, response: Response) => {
   try {
     const { id } = request.params;
-    const admin = await Admin.findOne({ _id: id });
+
+    const admin = await Administrator.get({ id });
     if (!admin) {
       return response.status(400).json({ message: 'Admin Not Found!' });
     }
-    const clients = await Company.find({});
+    const clients = await Company.query({ all: 'companies' });
     // console.log(clients)
-    const adminClients = clients.filter((client) => {
-      return client.admin && !client.deleted ? client.admin.equals(id) : false;
+    const adminClients = clients.Items?.filter((client) => {
+      return client.adminEmail && !client.deleted
+        ? client.adminEmail === id
+        : false;
     });
     // console.log("Admin Cl ", adminClients)
     return response.status(200).json({ clients: adminClients });

@@ -7,12 +7,22 @@ export const Department = new Entity({
   table: DatabaseTable,
   timestamps: true,
   attributes: {
-    id: { sortKey: true, type: 'string', default: v4() },
+    id: { partitionKey: true, type: 'string', default: v4() },
     name: { type: 'string', required: true },
-    employees: { type: 'list', itemType: 'string' },
     employeeSize: { type: 'number' },
-    companyId: { partitionKey: true, type: 'string' },
-    assessments: { type: 'list', itemType: 'string' },
+    companyId: { type: 'string' },
     deleted: { type: 'boolean', default: false },
+    gspk: {
+      hidden: true,
+      type: 'string',
+      partitionKey: true,
+      default: ({ companyId }: { companyId: string }) => companyId,
+    },
+    gssk: {
+      hidden: true,
+      type: 'string',
+      sortKey: true,
+      default: ({ id }: { id: string }) => id,
+    },
   },
 });

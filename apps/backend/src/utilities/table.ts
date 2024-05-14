@@ -21,6 +21,9 @@ export const DatabaseTable = new Table({
   // Define partition and sort keys
   partitionKey: 'pk',
   sortKey: 'sk',
+  indexes: {
+    GSI1: { partitionKey: 'gspk', sortKey: 'gssk' },
+  },
 
   // Add the DocumentClient
   DocumentClient,

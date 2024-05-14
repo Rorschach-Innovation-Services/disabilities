@@ -7,13 +7,19 @@ export const Company = new Entity({
   table: DatabaseTable,
   timestamps: true,
   attributes: {
-    all: {
-      partitionKey: true,
-      type: 'string',
-      default: 'companies',
+    gspk: {
       hidden: true,
+      type: 'string',
+      partitionKey: true,
+      default: 'companies',
     },
-    id: { sortKey: true, type: 'string', default: v4() },
+    gssk: {
+      hidden: true,
+      type: 'string',
+      sortKey: true,
+      default: ({ id }: { id: string }) => id,
+    },
+    id: { partitionKey: true, type: 'string', default: v4() },
     name: { type: 'string', required: true },
     employees: { type: 'list', itemType: 'string' },
     employeeSize: { type: 'number' },

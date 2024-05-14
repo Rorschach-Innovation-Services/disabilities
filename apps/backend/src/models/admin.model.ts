@@ -7,17 +7,30 @@ export const Administrator = new Entity({
   table: DatabaseTable,
   timestamps: true,
   attributes: {
-    id: { sortKey: true, type: 'string', default: v4() },
+    id: { partitionKey: true, type: 'string', default: v4() },
     name: { type: 'string' },
-    email: { partitionKey: true, type: 'string' },
-    password: { type: 'string', required: 'always', minLength: 8 },
+    email: { type: 'string' },
+    gspk: {
+      hidden: true,
+      type: 'string',
+      partitionKey: true,
+      default: 'administrators',
+    },
+    gssk: {
+      hidden: true,
+      type: 'string',
+      sortKey: true,
+      default: ({ id, email }: { id: string; email: string }) =>
+        `${email}#${id}`,
+    },
+    password: { type: 'string', minLength: 8 },
     photo: 'string',
     location: 'string',
     bio: 'string',
     company: 'string',
     secondaryEmail: 'string',
     role: 'string',
-    deleted: { type: 'boolean' },
+    deleted: { type: 'boolean', default: false },
   },
 });
 

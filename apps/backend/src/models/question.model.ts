@@ -8,6 +8,18 @@ export const Question = new Entity({
   timestamps: true,
   attributes: {
     id: { partitionKey: true, type: 'string', default: v4() },
+    gspk: {
+      hidden: true,
+      type: 'string',
+      partitionKey: true,
+      default: 'questions',
+    },
+    gssk: {
+      hidden: true,
+      type: 'string',
+      sortKey: true,
+      default: ({ id }: { id: string }) => id,
+    },
     // sk: {
     //   hidden: true,
     //   sortKey: true,
