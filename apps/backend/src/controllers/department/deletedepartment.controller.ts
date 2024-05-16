@@ -12,7 +12,7 @@ export const deleteDepartments = async (
   try {
     const { departments } = request.body;
     for (const id of departments) {
-      await Department.update({ id, deleted: true });
+      await Department.update({ id }, { deleted: true });
     }
     return response
       .status(200)

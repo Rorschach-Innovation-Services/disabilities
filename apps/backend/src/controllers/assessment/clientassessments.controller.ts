@@ -19,18 +19,17 @@ export const getClientAssessments = async (
   try {
     const { companyID } = request.params;
     // Ensure company exists
-    const companyResponse = await Company.get({ id: companyID });
-    const company = companyResponse.Item;
+    const company = await Company.get({ id: companyID });
     if (!company) {
       return response.status(400).json({ message: 'No such company exists' });
     }
 
     //Find assessments associated to department
     const departmentResponse = await Department.query(
-      { gspk: company.id },
-      { index: 'GSI1', limit: 1 }
+      { companyId: company.id },
+      { index: 'gsIndex', limit: 1 }
     );
-    const departments = departmentResponse.Items || [];
+    const departments = departmentResponse.items || [];
     if (!departments.length) {
       return response
         .status(200)
@@ -46,7 +45,7 @@ export const getClientAssessments = async (
         },
         { beginsWith: `${department.id}` }
       );
-      const assessments = assessmentResponse.Items || [];
+      const assessments = assessmentResponse.items || [];
       (department as any).assessments = assessments;
 
       assessments.forEach((assessment) => {
@@ -67,10 +66,9 @@ export const getClientAssessments = async (
       const csvData: TransformedResult[] = [];
 
       for (const assessment of (department as any).assessments) {
-        const employeeResponse = await Employee.get({
+        const employee = await Employee.get({
           id: assessment.employeeId,
         });
-        const employee = employeeResponse.Item;
         assert(employee !== null);
         const transformedDate = transformData({
           employee,

@@ -1,6 +1,6 @@
-import { Score } from "../models/assessment.model";
-import { Employee } from "../models/employee.model";
-import { format, isAfter, isBefore } from "date-fns";
+import { Score } from '../models/assessment.model';
+import { Employee } from '../models/employee.model';
+import { format, isAfter, isBefore } from 'date-fns';
 
 export type PDFData = {
   date: string;
@@ -18,11 +18,11 @@ export type PDFData = {
   };
   ageDistribution: {
     average: number;
-    "20-29": number;
-    "30-39": number;
-    "40-49": number;
-    "50-59": number;
-    "60-69": number;
+    '20-29': number;
+    '30-39': number;
+    '40-49': number;
+    '50-59': number;
+    '60-69': number;
   };
   sleepHealthScore: {
     score: number;
@@ -46,13 +46,13 @@ export type PDFData = {
   sleepDuration: {
     average: number;
     data: {
-      "5h": number;
-      "6h": number;
-      "7h": number;
-      "8h": number;
-      "9h": number;
-      "10h": number;
-      "11h": number;
+      '5h': number;
+      '6h': number;
+      '7h': number;
+      '8h': number;
+      '9h': number;
+      '10h': number;
+      '11h': number;
     };
     women: { lessThan7: number; between7and9: number; moreThan9: number };
     men: { lessThan7: number; between7and9: number; moreThan9: number };
@@ -137,12 +137,10 @@ export type PDFData = {
   };
 };
 
-export const fetchPDFData = async (
-  department: any
-): Promise<PDFData> => {
+export const fetchPDFData = async (department: any): Promise<PDFData> => {
   const data = {
-    date: "",
-    companyName: "",
+    date: '',
+    companyName: '',
     participationUptake: 0,
     genderDistribution: {
       men: 0,
@@ -167,22 +165,22 @@ export const fetchPDFData = async (
         men: 0,
         women: 0,
       },
-      textValue: "",
+      textValue: '',
     },
     screeningPeriod: {
-      start: "",
-      end: "",
+      start: '',
+      end: '',
     },
     sleepDuration: {
       average: 0,
       data: {
-        "5h": 0,
-        "6h": 0,
-        "7h": 0,
-        "8h": 0,
-        "9h": 0,
-        "10h": 0,
-        "11h": 0,
+        '5h': 0,
+        '6h': 0,
+        '7h': 0,
+        '8h': 0,
+        '9h': 0,
+        '10h': 0,
+        '11h': 0,
       },
       women: { lessThan7: 0, between7and9: 0, moreThan9: 0 },
       men: { lessThan7: 0, between7and9: 0, moreThan9: 0 },
@@ -205,17 +203,17 @@ export const fetchPDFData = async (
     },
     ageDistribution: {
       average: 0,
-      "20-29": 0,
-      "30-39": 0,
-      "40-49": 0,
-      "50-59": 0,
-      "60-69": 0,
+      '20-29': 0,
+      '30-39': 0,
+      '40-49': 0,
+      '50-59': 0,
+      '60-69': 0,
     },
     sleepDisorder: {
       yes: 0,
       no: 0,
-      mostCommon: "",
-      others: [""],
+      mostCommon: '',
+      others: [''],
     },
     sleepManagement: {
       allEmployees: { wellManaged: 0, notManaged: 0 },
@@ -290,10 +288,9 @@ export const fetchPDFData = async (
   let endDate = assessments[0].created;
 
   for (const assessment of assessments) {
-    const employeeResponse = await Employee.get({ id: assessment.employeeId });
-    const employee = employeeResponse.Item as any;
+    const employee = await Employee.get({ id: assessment.employeeId });
     const score = assessment.score as Score;
-    data.date = format(new Date(), "dd MMMM yyyy");
+    data.date = format(new Date(), 'dd MMMM yyyy');
     data.companyName = company.name;
     ages.push(employee.age);
 
@@ -304,17 +301,17 @@ export const fetchPDFData = async (
 
     // Categories employee ages
     if (employee.age >= 20 && employee.age <= 29)
-      data.ageDistribution["20-29"]++;
+      data.ageDistribution['20-29']++;
     else if (employee.age >= 30 && employee.age <= 39)
-      data.ageDistribution["30-39"]++;
+      data.ageDistribution['30-39']++;
     else if (employee.age >= 40 && employee.age <= 49)
-      data.ageDistribution["40-49"]++;
+      data.ageDistribution['40-49']++;
     else if (employee.age >= 50 && employee.age <= 59)
-      data.ageDistribution["50-59"]++;
+      data.ageDistribution['50-59']++;
     else if (employee.age >= 60 && employee.age <= 69)
-      data.ageDistribution["60-69"]++;
+      data.ageDistribution['60-69']++;
 
-    if (employee.gender.toLowerCase() === "male") {
+    if (employee.gender.toLowerCase() === 'male') {
       data.genderDistribution.men++;
 
       sleepHealthScores.push(score.SleepHealthScorePercentage);
@@ -330,13 +327,13 @@ export const fetchPDFData = async (
       }
 
       sleepDurations.push(score.TST);
-      if (score.TST < 6) data.sleepDuration.data["5h"]++;
-      else if (score.TST < 7) data.sleepDuration.data["6h"]++;
-      else if (score.TST < 8) data.sleepDuration.data["7h"]++;
-      else if (score.TST < 9) data.sleepDuration.data["8h"]++;
-      else if (score.TST < 10) data.sleepDuration.data["9h"]++;
-      else if (score.TST < 11) data.sleepDuration.data["10h"]++;
-      else data.sleepDuration.data["11h"]++;
+      if (score.TST < 6) data.sleepDuration.data['5h']++;
+      else if (score.TST < 7) data.sleepDuration.data['6h']++;
+      else if (score.TST < 8) data.sleepDuration.data['7h']++;
+      else if (score.TST < 9) data.sleepDuration.data['8h']++;
+      else if (score.TST < 10) data.sleepDuration.data['9h']++;
+      else if (score.TST < 11) data.sleepDuration.data['10h']++;
+      else data.sleepDuration.data['11h']++;
 
       if (score.TST < 8) data.sleepDuration.men.lessThan7++;
       else if (score.TST < 10) data.sleepDuration.men.between7and9++;
@@ -349,24 +346,24 @@ export const fetchPDFData = async (
       sleepQualityMen.push(score.Quality);
 
       daytimeFunctionMen.push(score.DayTimeFunction);
-      if (score.Disorder.toLowerCase() === "yes") {
+      if (score.Disorder.toLowerCase() === 'yes') {
         data.sleepDisorder.yes++;
         data.sleepMedication.men.withSleepDisorder++;
         data.sleepMedication.allEmployess.withSleepDisorder++;
-        let response = "";
+        let response = '';
 
         for (const question of assessment.questionnaire as {
           id: string;
           response: string;
         }[]) {
-          if (question.id === "6b") response = question.response;
+          if (question.id === '6b') response = question.response;
         }
 
         if (!(response.toLowerCase() in disorders))
           disorders[response.toLowerCase()] = 0;
         else disorders[response.toLowerCase()]++;
 
-        if (score.DisorderManagement.toLowerCase() === "yes") {
+        if (score.DisorderManagement.toLowerCase() === 'yes') {
           data.sleepManagement.men.wellManaged++;
           data.sleepManagement.allEmployees.wellManaged++;
         } else {
@@ -379,7 +376,7 @@ export const fetchPDFData = async (
         data.sleepMedication.allEmployess.withoutSleepDisorder++;
       }
 
-      if (score.MedToSleep.toLowerCase() !== "0") {
+      if (score.MedToSleep.toLowerCase() !== '0') {
         data.sleepMedication.men.usingMedication++;
         data.sleepMedication.yes++;
         data.sleepMedication.allEmployess.usingMedication++;
@@ -406,17 +403,17 @@ export const fetchPDFData = async (
         data.summary.men.lowPerceivedSleepQuality++;
       }
       if (
-        score.Disorder.toLowerCase() === "yes" &&
-        score.DisorderManagement.toLowerCase() === "no"
+        score.Disorder.toLowerCase() === 'yes' &&
+        score.DisorderManagement.toLowerCase() === 'no'
       ) {
         data.summary.all.notManagedSleepDisorders++;
         data.summary.men.notManagedSleepDisorders;
       }
-      if (score.MedToSleep.toLowerCase() === "yes") {
+      if (score.MedToSleep.toLowerCase() === 'yes') {
         data.summary.all.useOfSleepMedication++;
         data.summary.men.useOfSleepMedication++;
       }
-    } else if (employee.gender.toLowerCase() === "female") {
+    } else if (employee.gender.toLowerCase() === 'female') {
       data.genderDistribution.women++;
 
       sleepHealthScores.push(score.SleepHealthScorePercentage);
@@ -432,13 +429,13 @@ export const fetchPDFData = async (
       }
 
       sleepDurations.push(score.TST);
-      if (score.TST < 6) data.sleepDuration.data["5h"]++;
-      else if (score.TST < 7) data.sleepDuration.data["6h"]++;
-      else if (score.TST < 8) data.sleepDuration.data["7h"]++;
-      else if (score.TST < 9) data.sleepDuration.data["8h"]++;
-      else if (score.TST < 10) data.sleepDuration.data["9h"]++;
-      else if (score.TST < 11) data.sleepDuration.data["10h"]++;
-      else data.sleepDuration.data["11h"]++;
+      if (score.TST < 6) data.sleepDuration.data['5h']++;
+      else if (score.TST < 7) data.sleepDuration.data['6h']++;
+      else if (score.TST < 8) data.sleepDuration.data['7h']++;
+      else if (score.TST < 9) data.sleepDuration.data['8h']++;
+      else if (score.TST < 10) data.sleepDuration.data['9h']++;
+      else if (score.TST < 11) data.sleepDuration.data['10h']++;
+      else data.sleepDuration.data['11h']++;
 
       if (score.TST < 8) data.sleepDuration.women.lessThan7++;
       else if (score.TST < 10) data.sleepDuration.women.between7and9++;
@@ -451,24 +448,24 @@ export const fetchPDFData = async (
       sleepQualityWomen.push(score.Quality);
 
       daytimeFunctionWomen.push(score.DayTimeFunction);
-      if (score.Disorder.toLowerCase() === "yes") {
+      if (score.Disorder.toLowerCase() === 'yes') {
         data.sleepDisorder.yes++;
         data.sleepMedication.women.withSleepDisorder++;
         data.sleepMedication.allEmployess.withSleepDisorder++;
-        let response = "";
+        let response = '';
 
         for (const question of assessment.questionnaire as {
           id: string;
           response: string;
         }[]) {
-          if (question.id === "6b") response = question.response;
+          if (question.id === '6b') response = question.response;
         }
 
         if (!(response.toLowerCase() in disorders))
           disorders[response.toLowerCase()] = 1;
         else disorders[response.toLowerCase()]++;
 
-        if (score.DisorderManagement.toLowerCase() === "yes") {
+        if (score.DisorderManagement.toLowerCase() === 'yes') {
           data.sleepManagement.women.wellManaged++;
           data.sleepManagement.allEmployees.wellManaged++;
         } else {
@@ -481,7 +478,7 @@ export const fetchPDFData = async (
         data.sleepMedication.allEmployess.withoutSleepDisorder++;
       }
 
-      if (score.MedToSleep.toLowerCase() !== "0") {
+      if (score.MedToSleep.toLowerCase() !== '0') {
         data.sleepMedication.women.usingMedication++;
         data.sleepMedication.yes++;
         data.sleepMedication.allEmployess.usingMedication++;
@@ -508,19 +505,19 @@ export const fetchPDFData = async (
         data.summary.women.lowPerceivedSleepQuality++;
       }
       if (
-        score.Disorder.toLowerCase() === "yes" &&
-        score.DisorderManagement.toLowerCase() === "no"
+        score.Disorder.toLowerCase() === 'yes' &&
+        score.DisorderManagement.toLowerCase() === 'no'
       ) {
         data.summary.all.notManagedSleepDisorders++;
         data.summary.women.notManagedSleepDisorders;
       }
-      if (score.MedToSleep.toLowerCase() === "yes") {
+      if (score.MedToSleep.toLowerCase() === 'yes') {
         data.summary.all.useOfSleepMedication++;
         data.summary.women.useOfSleepMedication++;
       }
-    } else if (employee.gender.toLowerCase() === "non-binary") {
+    } else if (employee.gender.toLowerCase() === 'non-binary') {
       data.genderDistribution.nonBinary++;
-    } else if (employee.gender.toLowerCase() === "prefer not to say") {
+    } else if (employee.gender.toLowerCase() === 'prefer not to say') {
       data.genderDistribution.notSaid++;
     }
   }
@@ -532,17 +529,17 @@ export const fetchPDFData = async (
   const averageDaytimeFunctionMen = reduceList(daytimeFunctionMen);
   const averageDaytimeFunctionWomen = reduceList(daytimeFunctionWomen);
   const averageAges = reduceList(ages);
-  let mostCommonDisorder = "";
+  let mostCommonDisorder = '';
   let disorderCount = 0;
   const others: string[] = [];
   for (const [disorder, count] of Object.entries(disorders)) {
     if (
       !others.includes(disorder) &&
       ![
-        "insomnia",
-        "sleep apnoea",
-        "restless legs syndrome",
-        "narcolepsy",
+        'insomnia',
+        'sleep apnoea',
+        'restless legs syndrome',
+        'narcolepsy',
       ].includes(disorder.toLowerCase())
     )
       others.push(disorder);
@@ -575,17 +572,17 @@ export const fetchPDFData = async (
   data.screeningPeriod.end = endDate;
 
   if (data.sleepHealthScore.score <= 65)
-    data.sleepHealthScore.textValue = "poor";
+    data.sleepHealthScore.textValue = 'poor';
   else if (data.sleepHealthScore.score <= 85)
-    data.sleepHealthScore.textValue = "fair";
-  else data.sleepHealthScore.textValue = "excellent";
+    data.sleepHealthScore.textValue = 'fair';
+  else data.sleepHealthScore.textValue = 'excellent';
 
   return data;
 };
 
 const reduceList = (list: number[]) => {
   const length = list.length;
-  if (length === 0) return "0";
+  if (length === 0) return '0';
   return (
     list.reduce(
       (previousValue, currentValue) => previousValue + currentValue,

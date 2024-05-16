@@ -5,7 +5,7 @@ export const deleteEmployees = async (request: Request, response: Response) => {
   try {
     const { employees } = request.body;
     for (const id of employees) {
-      await Employee.update({ id, deleted: true });
+      await Employee.update({ id }, { deleted: true });
     }
     return response
       .status(200)

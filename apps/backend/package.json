@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "@repo/backend",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/sleepscience/Server#readme",
   "dependencies": {
+    "@repo/db-wrapper": "*",
     "@aws-sdk/client-dynamodb": "^3.572.0",
     "@aws-sdk/lib-dynamodb": "^3.572.0",
     "@aws-sdk/util-dynamodb": "^3.572.0",

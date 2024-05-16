@@ -1,28 +1,27 @@
-import { Entity } from 'dynamodb-toolbox';
-import { DatabaseTable } from '../utilities/table';
-import { v4 } from 'uuid';
+import { Entity, EntityNames, MasterTable } from '@repo/db-wrapper';
 
-export const Department = new Entity({
-  name: 'Department',
-  table: DatabaseTable,
-  timestamps: true,
-  attributes: {
-    id: { partitionKey: true, type: 'string', default: v4() },
-    name: { type: 'string', required: true },
-    employeeSize: { type: 'number' },
-    companyId: { type: 'string' },
-    deleted: { type: 'boolean', default: false },
-    gspk: {
-      hidden: true,
-      type: 'string',
-      partitionKey: true,
-      default: ({ companyId }: { companyId: string }) => companyId,
-    },
-    gssk: {
-      hidden: true,
-      type: 'string',
-      sortKey: true,
-      default: ({ id }: { id: string }) => id,
-    },
-  },
+export type DepartmentAttributes = {
+  id: string;
+  name: string;
+  employeeSize: number;
+  companyId: string;
+  deleted: boolean;
+  created: number;
+  modified: number;
+  _en?: EntityNames;
+};
+
+export const Department = new Entity<
+  DepartmentAttributes,
+  { id: string },
+  { id: string },
+  { companyId: string },
+  { id: string }
+>({
+  name: 'department',
+  partitionKey: { order: ['id'] },
+  sortKey: { order: ['id'] },
+  gsPartitionKey: { order: ['companyId'] },
+  gsSortKey: { order: ['id'] },
+  table: MasterTable,
 });

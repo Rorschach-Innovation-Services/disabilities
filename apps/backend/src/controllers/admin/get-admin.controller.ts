@@ -8,11 +8,11 @@ export default async (request: Request, response: Response) => {
   try {
     const { id } = request.params;
     const admin = await Administrator.get({ id });
-    if (!admin.Item) {
+    if (!admin) {
       return response.status(400).json({ message: 'Admin Not Found!' });
     }
-    admin.Item.password = '';
-    return response.status(200).json({ admin: admin.Item });
+    admin.password = '';
+    return response.status(200).json({ admin });
   } catch (error) {
     return response.status(500).json({ message: 'Internal Server Error' });
   }

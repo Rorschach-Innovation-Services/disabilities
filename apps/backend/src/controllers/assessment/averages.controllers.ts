@@ -8,15 +8,15 @@ import { Score } from '../../models/assessment.model';
 export default async (request: Request, response: Response) => {
     try {
         const employeesResponse = await Employee.query(
-            { gspk: 'employees' },
-            { index: 'GSI1' }
+            { _en: 'employee' },
+            { index: 'gsIndex' }
         );
-        const employees = employeesResponse.Items || [];
+        const employees = employeesResponse.items || [];
         const assessmentResponse = await Assessment.query(
-            { gspk: 'assessments' },
-            { index: 'GSI1' }
+            { _en: 'assessment' },
+            { index: 'gsIndex' }
         );
-        const assessments = assessmentResponse.Items || [];
+        const assessments = assessmentResponse.items || [];
         if (!assessments) {
             return response.status(404).json({ message: 'Assessments Not Found!' });
         }
@@ -31,12 +31,10 @@ export default async (request: Request, response: Response) => {
         averageSleepHours = parseInt(
             (averageSleepHours / completedAssessments).toFixed(1)
         );
-        return response
-            .status(200)
-            .json({
-                message: 'Successful!',
-                data: { averageSleepHours, numberOfAssessments, completedAssessments },
-            });
+        return response.status(200).json({
+            message: 'Successful!',
+            data: { averageSleepHours, numberOfAssessments, completedAssessments },
+        });
     } catch (error) {
         return response.status(500).json({ message: 'Internal Server Error' });
     }

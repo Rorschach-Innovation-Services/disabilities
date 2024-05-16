@@ -42,10 +42,9 @@ const sleepFeedbackMessage: Array<string> = [
 
 const generateReport = async (assessment: any) => {
   try {
-    const employeeResponse = await Employee.get({
+    const employee = await Employee.get({
       id: assessment.employee,
     });
-    const employee = employeeResponse.Item;
     if (!employee) {
       return { error: 'Employee Not Found!' };
     }

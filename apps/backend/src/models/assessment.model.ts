@@ -1,35 +1,32 @@
-import { Entity } from 'dynamodb-toolbox';
-import { DatabaseTable } from '../utilities/table';
-import { v4 } from 'uuid';
+import { Entity, MasterTable, EntityNames } from '@repo/db-wrapper';
 
-export const Assessment = new Entity({
-  name: 'Assessment',
-  table: DatabaseTable,
-  timestamps: true,
-  attributes: {
-    sk: { hidden: true, sortKey: true },
-    questionnaire: { type: 'list' },
-    score: { type: 'map' },
-    companyId: { partitionKey: true, type: 'string' },
-    departmentId: ['sk', 0, { type: 'string', required: 'always' }],
-    employeeId: ['sk', 1, { type: 'string', required: 'always' }],
-    id: ['sk', 2, { type: 'string', required: 'always', default: v4() }],
-    gspk: {
-      hidden: true,
-      type: 'string',
-      partitionKey: true,
-      default: 'assessments',
-    },
-    gssk: {
-      hidden: true,
-      type: 'string',
-      sortKey: true,
-      default: ({ id, employeeId }: { id: string; employeeId: string }) =>
-        `${employeeId}#${id}`,
-    },
-    deleted: { type: 'boolean', default: false },
-  },
-} as const);
+export type AssessmentAttributes = {
+  id: string;
+  questionnaire: any[];
+  score: Record<string, any>;
+  companyId: string;
+  departmentId: string;
+  employeeId: string;
+  created: number;
+  modified: number;
+  deleted: boolean;
+  _en?: EntityNames;
+};
+
+export const Assessment = new Entity<
+  AssessmentAttributes,
+  { companyId: string },
+  { id: string; departmentId: string; employeeId: string },
+  { _en?: EntityNames },
+  { employeeId: string; id: string }
+>({
+  name: 'assessment',
+  partitionKey: { order: ['companyId'] },
+  sortKey: { order: ['departmentId', 'employeeId', 'id'] },
+  gsPartitionKey: { order: ['_en'] },
+  gsSortKey: { order: ['employeeId', 'id'] },
+  table: MasterTable,
+});
 
 export interface Score {
   TIB: number;

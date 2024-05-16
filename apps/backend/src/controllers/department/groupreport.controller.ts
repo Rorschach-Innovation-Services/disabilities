@@ -16,16 +16,14 @@ export const createGroupReport = async (
 ) => {
   try {
     const { departmentId } = request.params;
-    const departmentResponse = await Department.get({ id: departmentId });
-    const department = departmentResponse.Item;
+    const department = await Department.get({ id: departmentId });
 
     if (!department)
       return response
         .status(400)
         .json({ message: 'Department does not exist.' });
 
-    const companyResponse = await Company.get({ id: department.id });
-    const company = companyResponse.Item;
+    const company = await Company.get({ id: department.companyId });
     if (!company)
       return response.status(400).json({ message: 'Company does not exist.' });
 
@@ -35,7 +33,7 @@ export const createGroupReport = async (
       },
       { beginsWith: `${department.id}` }
     );
-    const assessments = assessmentResponse.Items || [];
+    const assessments = assessmentResponse.items || [];
     (department as any).company = company;
     (department as any).assessments = assessments;
 

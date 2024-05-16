@@ -7,10 +7,10 @@ import { Administrator } from '../../models';
 export default async (request: Request, response: Response) => {
   try {
     const adminsResponse = await Administrator.query(
-      { gspk: 'administrators' },
-      {}
+      { _en: 'administrator' },
+      { index: 'gsIndex' }
     );
-    const admins = adminsResponse.Items;
+    const admins = adminsResponse.items;
     if (!admins) {
       return response.status(400).json({ message: 'Admins Not Found!' });
     }
@@ -20,4 +20,3 @@ export default async (request: Request, response: Response) => {
     return response.status(500).json({ message: 'Internal Server Error' });
   }
 };
-

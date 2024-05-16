@@ -10,7 +10,7 @@ import { Request, Response } from 'express';
 export const createQuestion = async (request: Request, response: Response) => {
   try {
     const { id, content } = request.body;
-    await Question.put({ id, content });
+    await Question.create({ givenId: id, content, response: '' });
     return response.status(200).json({ message: 'Question Created' });
   } catch (error) {
     return response.status(500).json({ message: 'Internal Server Error' });
@@ -23,10 +23,10 @@ export const createQuestion = async (request: Request, response: Response) => {
 export const sendQuestions = async (request: Request, response: Response) => {
   try {
     const questionsResponse = await Question.query(
-      { gspk: 'questions' },
-      { index: 'GSI1' }
+      { _en: 'question' },
+      { index: 'gsIndex' }
     );
-    const questions = questionsResponse.Items || [];
+    const questions = questionsResponse.items || [];
     if (questions) {
       return response.status(200).json({ questions });
     }

@@ -9,7 +9,7 @@ export const deleteCompanies = async (request: Request, response: Response) => {
   try {
     const { companyIDs } = request.body;
     for (const id of companyIDs) {
-      await Company.update({ id, deleted: true });
+      await Company.update({ id }, { deleted: true });
     }
     response.status(200).json({ message: 'Companies successfully deleted' });
   } catch (error) {

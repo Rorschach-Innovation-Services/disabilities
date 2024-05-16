@@ -20,10 +20,10 @@ import {
 export const getClientFiles = async (_: Request, response: Response) => {
   try {
     const companyResponse = await Company.query(
-      { gspk: 'companies' },
-      { index: 'GSI1' }
+      { _en: 'company' },
+      { index: 'gsIndex' }
     );
-    const companies = companyResponse.Items || [];
+    const companies = companyResponse.items || [];
     if (!companies) {
       return response.status(404).json({ message: 'Companies not found' });
     }
@@ -46,7 +46,7 @@ export const getClientFiles = async (_: Request, response: Response) => {
         },
         {}
       );
-      const assessments = assessmentResponse.Items || [];
+      const assessments = assessmentResponse.items || [];
 
       if (!assessments.length) {
         // Add attributes to the modified company
@@ -64,10 +64,9 @@ export const getClientFiles = async (_: Request, response: Response) => {
 
       for (const assessment of assessments) {
         if (assessment.deleted) continue;
-        const employeeResponse = await Employee.get({
+        const employee = await Employee.get({
           id: assessment.employeeId,
         });
-        const employee = employeeResponse.Item;
 
         if (employee) {
           const resultData = transformData({
@@ -86,10 +85,10 @@ export const getClientFiles = async (_: Request, response: Response) => {
       }
 
       const employeesResponse = await Employee.query(
-        { gspk: 'employees' },
-        { index: 'GSI1', beginsWith: company.id }
+        { _en: 'employee' },
+        { index: 'gsIndex', beginsWith: company.id }
       );
-      const employees = employeesResponse.Items || [];
+      const employees = employeesResponse.items || [];
       const clientCSVFile = await parseAsync(singleClientData, csvOptions);
       modifiedCompany.csvFile = `SEP=,\n${clientCSVFile}`;
       modifiedCompany.lastAssessmentDate = assessmentDate;

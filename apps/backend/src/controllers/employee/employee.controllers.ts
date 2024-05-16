@@ -22,38 +22,36 @@ export const saveEmployee = async (request: Request, response: Response) => {
       department,
     } = request.body;
     console.log('company', company);
-    const CompanyDocResponse = await Company.get({ id: company });
-    const companyDoc = CompanyDocResponse.Item;
+    const companyDoc = await Company.get({ id: company });
     if (!companyDoc) {
       return response.status(404).json({ message: 'Company Not Found!' });
     }
 
     /**Check if the department exists in the database */
-    const departmentDocumentResponse = await Department.get({ id: department });
-    const departmentDocument = departmentDocumentResponse.Item;
+    const departmentDocument = await Department.get({ id: department });
     if (!departmentDocument) {
       return response.status(404).json({ message: 'Department not found' });
     }
 
-    const employeeDocResponse = await Employee.get({ id: employeeId });
-    const employeeDoc = employeeDocResponse.Item;
+    const employeeDoc = await Employee.get({ id: employeeId });
     if (employeeDoc) {
-      await Employee.update({
-        id: employeeId,
-        companyId: company,
-        departmentId: department,
-        age,
-        gender,
-        phone,
-        id_number,
-      });
+      await Employee.update(
+        { id: employeeId },
+        {
+          companyId: company,
+          departmentId: department,
+          age,
+          gender,
+          phone,
+          id_number,
+        }
+      );
 
       return response
         .status(200)
         .json({ message: 'Employee Saved Successfully' });
     }
-    const employeeData = {
-      id: v4(),
+    const employeeData = await Employee.create({
       companyId: company,
       departmentId: department,
       name,
@@ -62,14 +60,13 @@ export const saveEmployee = async (request: Request, response: Response) => {
       gender,
       phone,
       id_number,
-    };
-    await Employee.put(employeeData);
-    return response
-      .status(200)
-      .json({
-        message: 'Employee Saved Successfully',
-        employee: employeeData.id,
-      });
+      deleted: false,
+      bio: '',
+    });
+    return response.status(200).json({
+      message: 'Employee Saved Successfully',
+      employee: employeeData?.id,
+    });
   } catch (error) {
     if ((error as any).code === 11000) {
       return response.status(409).send({ message: 'Employee Already Exists.' });

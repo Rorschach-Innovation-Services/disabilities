@@ -9,8 +9,7 @@ export const createIndividualReport = async (
 ) => {
   try {
     const { employeeId } = request.params;
-    const employeeResponse = await Employee.get({ id: employeeId });
-    const employee = employeeResponse.Item;
+    const employee = await Employee.get({ id: employeeId });
 
     if (!employee || employee.deleted)
       return response.status(400).json({ message: "Employee doesn't exist." });
@@ -19,10 +18,10 @@ export const createIndividualReport = async (
       {
         companyId: employee.companyId,
       },
-      { beginsWith: `${employee.departmentId}#${employee.id}` }
+      { beginsWith: `${employee.departmentId}:${employee.id}` }
     );
 
-    const assessments = (assessmentResponse.Items || []).sort(
+    const assessments = (assessmentResponse.items || []).sort(
       (a, b) => Number(b.created) - Number(a.created)
     );
     let assessment: any = undefined;

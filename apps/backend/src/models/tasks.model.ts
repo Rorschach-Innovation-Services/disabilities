@@ -1,33 +1,30 @@
-import { Entity } from 'dynamodb-toolbox';
-import { DatabaseTable } from '../utilities/table';
-import { v4 } from 'uuid';
+import { Entity, EntityNames, MasterTable } from '@repo/db-wrapper';
 
-export const Task = new Entity({
-  name: 'Task',
-  table: DatabaseTable,
-  timestamps: true,
-  attributes: {
-    id: { partitionKey: true, type: 'string', default: v4() },
-    title: { type: 'string', required: true },
-    adminId: { type: 'string', required: true },
-    adminEmail: { type: 'string' },
-    content: { type: 'string', required: true },
-    photo: { type: 'string' },
-    complete: { type: 'boolean', default: false },
-    deleted: { type: 'boolean', default: false },
-    gspk: {
-      hidden: true,
-      type: 'string',
-      partitionKey: true,
-      default: 'tasks',
-    },
-    gssk: {
-      hidden: true,
-      type: 'string',
-      sortKey: true,
-      default: ({ id, adminId }: { id: string; adminId: string }) =>
-        `${adminId}:${id}`,
-    },
-  },
+export type TaskAttributes = {
+  id: string;
+  title: string;
+  adminId: string;
+  adminEmail: string;
+  content: string;
+  photo: string;
+  complete: boolean;
+  deleted: boolean;
+  created: number;
+  modified: number;
+  _en?: EntityNames;
+};
+
+export const Task = new Entity<
+  TaskAttributes,
+  { id: string },
+  { id: string },
+  { _en: EntityNames },
+  { id: string; adminId: string }
+>({
+  name: 'department',
+  partitionKey: { order: ['id'] },
+  sortKey: { order: ['id'] },
+  gsPartitionKey: { order: ['_en'] },
+  gsSortKey: { order: ['adminId', 'id'] },
+  table: MasterTable,
 });
-

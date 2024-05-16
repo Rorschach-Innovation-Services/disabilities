@@ -12,14 +12,17 @@ export const deleteAssessments = async (
   try {
     const { assessmentDates } = request.body;
     for (const data of assessmentDates) {
-      await Assessment.update({
-        companyId: data.companyId,
-        departmentId: data.departmentId,
-        employeeId: data.employeeId,
-        id: data.id,
-        deleted: true,
-        sk: `${data.departmentId}#${data.employeeId}#${data.id}`,
-      });
+      await Assessment.update(
+        {
+          companyId: data.companyId,
+          departmentId: data.departmentId,
+          employeeId: data.employeeId,
+          id: data.id,
+        },
+        {
+          deleted: true,
+        }
+      );
     }
     response.status(200).json({ message: 'Assessments successfully deleted' });
   } catch (error) {

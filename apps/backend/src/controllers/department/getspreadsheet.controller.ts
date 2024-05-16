@@ -15,15 +15,13 @@ export const getSpreadsheet = async (request: Request, response: Response) => {
     const { departmentId } = request.params;
 
     //Find assessments associated to department
-    const departmentResponse = await Department.get({ id: departmentId });
-    const department = departmentResponse.Item;
+    const department = await Department.get({ id: departmentId });
     if (!department) {
       return response.status(400).json({ message: 'Department not found.' });
     }
 
     let lastAssessmentDate = new Date('December 17, 1995').toString();
-    const companyResponse = await Company.get({ id: department.companyId });
-    const company = companyResponse.Item;
+    const company = await Company.get({ id: department.companyId });
     if (!company)
       return response.status(400).json({ message: 'Company not found.' });
 
@@ -33,20 +31,19 @@ export const getSpreadsheet = async (request: Request, response: Response) => {
       },
       { beginsWith: `${department.id}` }
     );
-    const assessments = assessmentResponse.Items || [];
+    const assessments = assessmentResponse.items || [];
     assessments.forEach((assessment) => {
       if (isAfter(new Date(assessment.created), new Date(lastAssessmentDate)))
-        lastAssessmentDate = assessment.created;
+        lastAssessmentDate = new Date(assessment.created).toString();
     });
 
     const masterFileData: TransformedResult[] = [];
     const csvData: TransformedResult[] = [];
 
     for (const assessment of assessments) {
-      const employeeResponse = await Employee.get({
+      const employee = await Employee.get({
         id: assessment.employeeId,
       });
-      const employee = employeeResponse.Item;
       const transformedData = transformData({
         employee,
         assessment: assessment,

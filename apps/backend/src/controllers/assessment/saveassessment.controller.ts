@@ -20,7 +20,7 @@ const saveAssessment = async (req: Request, res: Response) => {
 
     /**Check if the company exists in the database */
     const companyDocument = await Company.get({ id: company });
-    if (!companyDocument.Item) {
+    if (!companyDocument) {
       return res.status(404).json({ message: 'Company not found' });
     }
 
@@ -28,7 +28,7 @@ const saveAssessment = async (req: Request, res: Response) => {
     const departmentDocument = await Department.get({
       id: department,
     });
-    if (!departmentDocument.Item) {
+    if (!departmentDocument) {
       return res.status(404).json({ message: 'Department not found' });
     }
 
@@ -36,36 +36,34 @@ const saveAssessment = async (req: Request, res: Response) => {
     const employeeDoc = await Employee.get({
       id: employee,
     });
-    if (!employeeDoc.Item) {
+    if (!employeeDoc) {
       return res.status(404).json({ message: 'Employee Not Found!' });
     }
 
     const assessmentResponse = await Assessment.query(
-      { compantId: company },
+      { companyId: companyDocument.id },
       { beginsWith: department }
     );
-    const assessments = assessmentResponse.Items || [];
+    const assessments = assessmentResponse.items || [];
 
     /**Limit the number of employee assessments a company needs to complete to not exceed the . */
-    if (assessments.length === departmentDocument.Item.employeeSize) {
+    if (assessments.length === departmentDocument.employeeSize) {
       return res.status(403).json({
         message: 'Cannot Submit Assessment. Limit Exceeded!',
-        employee: employeeDoc.Item.id,
+        employee: employeeDoc.id,
       });
     }
 
     /**Create and save the assessment */
-    const id = v4();
-    const assessmetnData = {
-      id,
+    const assessment = await Assessment.create({
       employeeId: employee,
       questionnaire,
       score: assessmentScore,
       companyId: company,
       departmentId: department,
-      sk: `${department}#${employee}#${id}`,
-    };
-    const reportRes = await generateReport(assessmetnData);
+      deleted: false,
+    });
+    const reportRes = await generateReport(assessment);
     if (typeof reportRes !== 'undefined' && 'error' in reportRes) {
       return res.status(500).json({
         message: 'Something Went Wrong While generating report!',

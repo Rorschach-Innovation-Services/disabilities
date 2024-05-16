@@ -7,15 +7,13 @@ import { Request, Response } from 'express';
 export default async (request: Request, response: Response) => {
   try {
     const { id } = request.params;
-    const companyResponse = await Company.get({ id });
-    const company = companyResponse.Item;
+    const company = await Company.get({ id });
     if (!company || company.deleted) {
       return response.status(400).json({ message: 'Company Not Found' });
     }
-    const adminResponse = await Administrator.get({
+    const admin = await Administrator.get({
       id: company.adminId,
     });
-    const admin = adminResponse.Item;
     if (!admin) {
       return response.status(400).json({ company, message: 'Admin not found' });
     }

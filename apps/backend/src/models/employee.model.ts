@@ -1,42 +1,33 @@
-import { Entity } from 'dynamodb-toolbox';
-import { DatabaseTable } from '../utilities/table';
-import { v4 } from 'uuid';
+import { Entity, MasterTable, EntityNames } from '@repo/db-wrapper';
 
-export const Employee = new Entity({
-  name: 'Employee',
-  table: DatabaseTable,
-  timestamps: true,
-  attributes: {
-    id: { partitionKey: true, type: 'string', default: v4() },
-    name: { type: 'string', required: true },
-    gspk: {
-      hidden: true,
-      type: 'string',
-      partitionKey: true,
-      default: 'employees',
-    },
-    gssk: {
-      hidden: true,
-      type: 'string',
-      sortKey: true,
-      default: ({
-        id,
-        companyId,
-        departmentId,
-      }: {
-        id: string;
-        companyId: string;
-        departmentId: string;
-      }) => `${companyId}#${departmentId}#${id}`,
-    },
-    age: { type: 'number' },
-    gender: { type: 'string' },
-    email: { type: 'string', required: true },
-    phone: { type: 'string' },
-    companyId: { type: 'string' },
-    id_number: { type: 'string' },
-    assessment: { type: 'string' },
-    departmentId: { type: 'string', required: true },
-    deleted: { type: 'boolean', default: false },
-  },
+export type EmployeeAttributes = {
+  id: string;
+  name: string;
+  email: string;
+  age: number;
+  phone: string;
+  gender: string;
+  bio: string;
+  companyId: string;
+  id_number: string;
+  departmentId: string;
+  deleted: boolean;
+  created: number;
+  modified: number;
+  _en?: EntityNames;
+};
+
+export const Employee = new Entity<
+  EmployeeAttributes,
+  { id: string },
+  { id: string },
+  { _en?: EntityNames },
+  { companyId: string; id: string; departmentId: string }
+>({
+  name: 'administrator',
+  partitionKey: { order: ['id'] },
+  sortKey: { order: ['id'] },
+  gsPartitionKey: { order: ['_en'] },
+  gsSortKey: { order: ['companyId', 'departmentId', 'id'] },
+  table: MasterTable,
 });

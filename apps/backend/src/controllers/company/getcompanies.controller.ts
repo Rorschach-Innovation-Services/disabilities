@@ -6,18 +6,27 @@ import { Request, Response } from 'express';
 
 export default async (_: Request, response: Response) => {
   try {
-    const companiesResponse = await Company.query({ gspk: "companies" }, { index: "GSI1" });
-    const companies = companiesResponse.Items;
+    const companiesResponse = await Company.query(
+      { _en: 'company' },
+      { index: 'gsIndex' }
+    );
+    const companies = companiesResponse.items;
     if (!companies) {
       return response.status(404).json({ message: 'Companies Not Found' });
     }
     const existingCompanies = companies.filter((company) => !company.deleted);
     const returnCompanies = Promise.all(
       existingCompanies.map(async (company) => {
-        const assessmentsResonse = await Assessment.query({ company: company.id });
-        const assessments = assessmentsResonse.Items || [];
-        const employeesResponse = await Employee.query({ gspk: "employees" }, { index: "GSI1", beginsWith: company.id });
-        const employees = employeesResponse.Items || [];
+        const assessmentsResonse = await Assessment.query(
+          { companyId: company.id },
+          {}
+        );
+        const assessments = assessmentsResonse.items || [];
+        const employeesResponse = await Employee.query(
+          { _en: 'employee' },
+          { index: 'gsIndex', beginsWith: company.id }
+        );
+        const employees = employeesResponse.items || [];
         const employeesLength = employees.length;
         company.status =
           parseInt(`${assessments.length / employeesLength}`) === 1
@@ -27,12 +36,10 @@ export default async (_: Request, response: Response) => {
       })
     );
     returnCompanies.then((res) => {
-      const sortedCompanyList = res.sort(
-        (x, y) => {
-          // x.created = new Date(x.created)
-          return Number(y.created) - Number(x.created);
-        }
-      );
+      const sortedCompanyList = res.sort((x, y) => {
+        // x.created = new Date(x.created)
+        return Number(y.created) - Number(x.created);
+      });
       return response.status(200).json({ companies: sortedCompanyList });
     });
   } catch (error) {

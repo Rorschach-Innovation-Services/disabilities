@@ -11,9 +11,8 @@ export default async (request: Request, response: Response) => {
   try {
     const { complete } = request.body;
     const { id } = request.params;
-    const taskResponse = await Task.get({ id });
-    const task = taskResponse.Item;
-    await Task.update({ id, complete });
+    const task = await Task.get({ id });
+    await Task.update({ id }, { complete });
     return response
       .status(200)
       .send({ message: 'Task Complete', task: { ...task, complete } });
@@ -21,4 +20,3 @@ export default async (request: Request, response: Response) => {
     return response.status(500).send({ message: 'Internal Server Error' });
   }
 };
-

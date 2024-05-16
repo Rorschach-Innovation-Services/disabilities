@@ -10,14 +10,13 @@ import { Request, Response } from 'express';
 export default async (request: Request, response: Response) => {
   try {
     const tasksResponse = await Task.query(
-      { gspk: 'tasks' },
-      { index: 'GSI1' }
+      { _en: 'task' },
+      { index: 'gsIndex' }
     );
-    const tasks = tasksResponse.Items;
+    const tasks = tasksResponse.items;
     if (!tasks) return response.status(400).send({ message: 'No Tasks' });
     return response.status(200).send({ message: 'Successful', tasks });
   } catch (error) {
     return response.status(500).send({ message: 'Internal Server Error' });
   }
 };
-

@@ -14,10 +14,10 @@ export default async (request: Request, response: Response) => {
     const { email, password } = request.body;
 
     const adminResponse = await Administrator.query(
-      { gspk: 'administrators' },
-      { index: 'GSI1', limit: 1 }
+      { _en: 'administrator' },
+      { index: 'gsIndex', limit: 1 }
     );
-    const admins = adminResponse.Items;
+    const admins = adminResponse.items;
     if (!admins || admins.length === 0)
       return response
         .status(400)
