@@ -2,17 +2,12 @@
  * Delete Task Controller
  */
 import { Task } from '../../models';
-import { Request, Response } from 'express';
 
-/**
- * Signin Admin to platform
- */
-export default async (request: Request, response: Response) => {
+export const handler = async (id: string) => {
   try {
-    const { id } = request.params;
     await Task.update({ id }, { deleted: true });
-    return response.status(200).send({ message: 'Deleted Task' });
+    return { message: 'Deleted Task' };
   } catch (error) {
-    return response.status(500).send({ message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' };
   }
 };

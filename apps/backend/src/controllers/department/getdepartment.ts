@@ -1,16 +1,12 @@
-import { Request, Response } from 'express';
 import { Department, Assessment, Company } from '../../models';
 import { Employee } from '../../models/employee.model';
 
-export const getDepartment = async (request: Request, response: Response) => {
+export const getDepartment = async (departmentId: string) => {
   try {
-    const { departmentId } = request.params;
     const department = await Department.get({ id: departmentId });
-    if (!department)
-      return response.status(400).json({ message: 'Department not found.' });
+    if (!department) return { message: 'Department not found.' };
     const company = await Company.get({ id: department.companyId });
-    if (!company)
-      return response.status(400).json({ message: 'Company not found.' });
+    if (!company) return { message: 'Company not found.' };
 
     const employeesResponse = await Employee.query(
       { _en: 'employee' },
@@ -36,13 +32,13 @@ export const getDepartment = async (request: Request, response: Response) => {
       } as any;
     }
 
-    return response.status(200).json({
+    return {
       department: {
         ...department,
         employees: employees.filter((employee) => !employee.deleted),
       },
-    });
+    };
   } catch (error) {
-    return response.status(500).json({ message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' };
   }
 };

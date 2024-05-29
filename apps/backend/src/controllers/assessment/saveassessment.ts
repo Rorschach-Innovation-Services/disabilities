@@ -1,11 +1,26 @@
 /**
  * Save Assessment Controller
  */
-import { Request, Response } from 'express';
-import { Assessment, Employee, Company, Department } from '../../models';
+import {
+  Assessment,
+  Employee,
+  Company,
+  Department,
+  Question,
+} from '../../models';
 import scoreSleepHealth from '../../utilities/score';
 import generateReport from '../../utilities/genReport';
-import { v4 } from 'uuid';
+
+type Parameters = {
+  employee: string;
+  questionnaire: {
+    id: string;
+    content: string;
+    response: string;
+  }[];
+  company: string;
+  department: string;
+};
 
 /**
  * Save Assessment Controller: Score assessment, save then send report to employee
@@ -13,15 +28,19 @@ import { v4 } from 'uuid';
  * @param res
  * @returns
  */
-const saveAssessment = async (req: Request, res: Response) => {
+const saveAssessment = async ({
+  company,
+  employee,
+  department,
+  questionnaire,
+}: Parameters) => {
   try {
-    const { employee, questionnaire, company, department } = req.body;
     const assessmentScore = scoreSleepHealth(questionnaire);
 
     /**Check if the company exists in the database */
     const companyDocument = await Company.get({ id: company });
     if (!companyDocument) {
-      return res.status(404).json({ message: 'Company not found' });
+      return { message: 'Company not found' };
     }
 
     /**Check if the department exists in the database */
@@ -29,7 +48,7 @@ const saveAssessment = async (req: Request, res: Response) => {
       id: department,
     });
     if (!departmentDocument) {
-      return res.status(404).json({ message: 'Department not found' });
+      return { message: 'Department not found' };
     }
 
     /**Check if the employee exists in the database */
@@ -37,7 +56,7 @@ const saveAssessment = async (req: Request, res: Response) => {
       id: employee,
     });
     if (!employeeDoc) {
-      return res.status(404).json({ message: 'Employee Not Found!' });
+      return { message: 'Employee Not Found!' };
     }
 
     const assessmentResponse = await Assessment.query(
@@ -48,10 +67,10 @@ const saveAssessment = async (req: Request, res: Response) => {
 
     /**Limit the number of employee assessments a company needs to complete to not exceed the . */
     if (assessments.length === departmentDocument.employeeSize) {
-      return res.status(403).json({
+      return {
         message: 'Cannot Submit Assessment. Limit Exceeded!',
         employee: employeeDoc.id,
-      });
+      };
     }
 
     /**Create and save the assessment */
@@ -65,15 +84,15 @@ const saveAssessment = async (req: Request, res: Response) => {
     });
     const reportRes = await generateReport(assessment);
     if (typeof reportRes !== 'undefined' && 'error' in reportRes) {
-      return res.status(500).json({
+      return {
         message: 'Something Went Wrong While generating report!',
         error: reportRes.error,
-      });
+      };
     }
-    return res.status(200).json({ message: 'Successful', data: reportRes });
+    return { message: 'Successful', data: reportRes };
   } catch (error) {
     console.log('error', error);
-    return res.status(500).json({ message: 'Internal Server Error', error });
+    return { message: 'Internal Server Error', error };
   }
 };
 

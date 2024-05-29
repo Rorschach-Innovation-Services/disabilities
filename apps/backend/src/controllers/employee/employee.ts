@@ -2,35 +2,44 @@
  * Employee Controllers
  */
 import { Employee, Company, Department } from '../../models';
-import { Request, Response } from 'express';
-import { v4 } from 'uuid';
+
+type Parameters = {
+  employeeId: string;
+  company: string;
+  name: string;
+  email: string;
+  age: number;
+  phone: string;
+  id_number: string;
+  department: string;
+  gender: string;
+};
 
 /**
  * Save an Employee To The Platform
  */
-export const saveEmployee = async (request: Request, response: Response) => {
+export const saveEmployee = async ({
+  gender,
+  phone,
+  name,
+  department,
+  company,
+  email,
+  age,
+  id_number,
+  employeeId,
+}: Parameters) => {
   try {
-    const {
-      employeeId,
-      company,
-      name,
-      email,
-      age,
-      gender,
-      phone,
-      id_number,
-      department,
-    } = request.body;
     console.log('company', company);
     const companyDoc = await Company.get({ id: company });
     if (!companyDoc) {
-      return response.status(404).json({ message: 'Company Not Found!' });
+      return { message: 'Company Not Found!' };
     }
 
     /**Check if the department exists in the database */
     const departmentDocument = await Department.get({ id: department });
     if (!departmentDocument) {
-      return response.status(404).json({ message: 'Department not found' });
+      return { message: 'Department not found' };
     }
 
     const employeeDoc = await Employee.get({ id: employeeId });
@@ -47,9 +56,7 @@ export const saveEmployee = async (request: Request, response: Response) => {
         }
       );
 
-      return response
-        .status(200)
-        .json({ message: 'Employee Saved Successfully' });
+      return { message: 'Employee Saved Successfully' };
     }
     const employeeData = await Employee.create({
       companyId: company,
@@ -63,15 +70,15 @@ export const saveEmployee = async (request: Request, response: Response) => {
       deleted: false,
       bio: '',
     });
-    return response.status(200).json({
+    return {
       message: 'Employee Saved Successfully',
       employee: employeeData?.id,
-    });
+    };
   } catch (error) {
     if ((error as any).code === 11000) {
-      return response.status(409).send({ message: 'Employee Already Exists.' });
+      return { message: 'Employee Already Exists.' };
     }
 
-    return response.status(500).json({ message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' };
   }
 };

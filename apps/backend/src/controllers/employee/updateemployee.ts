@@ -1,18 +1,32 @@
-import { Request, Response } from 'express';
 import { Assessment, Department, Employee } from '../../models';
 
-export const updateEmployee = async (request: Request, response: Response) => {
+type Parameters = {
+  id: string;
+  name: string;
+  email: string;
+  idNumber: string;
+  age: number;
+  questionnaire: any[];
+  gender: string;
+  departmentId: string;
+};
+
+export const updateEmployee = async ({
+  id,
+  departmentId,
+  age,
+  email,
+  name,
+  questionnaire,
+  gender,
+  idNumber,
+}: Parameters) => {
   try {
-    const { id } = request.params;
-    const { name, email, idNumber, age, gender, questionnaire, departmentId } =
-      request.body;
     const employee = await Employee.get({ id });
     const department = await Department.get({ id: departmentId });
 
-    if (!employee)
-      return response.status(400).json({ message: 'Employee not found.' });
-    if (!department)
-      return response.status(400).json({ message: 'Department not found.' });
+    if (!employee) return { message: 'Employee not found.' };
+    if (!department) return { message: 'Department not found.' };
 
     const assessmentResponse = await Assessment.query(
       { companyId: department.companyId },
@@ -49,8 +63,8 @@ export const updateEmployee = async (request: Request, response: Response) => {
       );
     }
 
-    return response.status(200).json({ message: 'Successfully updated.' });
+    return { message: 'Successfully updated.' };
   } catch (error) {
-    return response.status(500).json({ message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' };
   }
 };

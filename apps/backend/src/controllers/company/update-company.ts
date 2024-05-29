@@ -2,21 +2,16 @@
  * Get a companies consulted by an admin
  */
 import { Company } from '../../models';
-import { Request, Response } from 'express';
 
-export default async (request: Request, response: Response) => {
+export const handler = async (id: string, body: Record<string, any>) => {
   try {
-    const { id } = request.params;
-    const body = request.body;
     const company = await Company.get({ id });
     await Company.update({ id }, { ...body });
     if (!company || company.deleted) {
-      return response.status(400).json({ message: 'Company Not Found' });
+      return { message: 'Company Not Found' };
     }
-    return response
-      .status(200)
-      .json({ message: 'Updated successfully.', company });
+    return { message: 'Updated successfully.', company };
   } catch (error) {
-    return response.status(500).json({ message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' };
   }
 };

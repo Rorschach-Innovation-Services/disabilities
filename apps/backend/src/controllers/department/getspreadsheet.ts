@@ -1,4 +1,3 @@
-import { Response, Request } from 'express';
 import { parseAsync } from 'json2csv';
 import { Department, Employee } from '../../models';
 import { Assessment } from '../../models/assessment.model';
@@ -10,20 +9,17 @@ import {
 } from '../../utilities/transform';
 import { isAfter } from 'date-fns';
 
-export const getSpreadsheet = async (request: Request, response: Response) => {
+export const getSpreadsheet = async (departmentId: string) => {
   try {
-    const { departmentId } = request.params;
-
     //Find assessments associated to department
     const department = await Department.get({ id: departmentId });
     if (!department) {
-      return response.status(400).json({ message: 'Department not found.' });
+      return { message: 'Department not found.' };
     }
 
     let lastAssessmentDate = new Date('December 17, 1995').toString();
     const company = await Company.get({ id: department.companyId });
-    if (!company)
-      return response.status(400).json({ message: 'Company not found.' });
+    if (!company) return { message: 'Company not found.' };
 
     const assessmentResponse = await Assessment.query(
       {
@@ -58,11 +54,11 @@ export const getSpreadsheet = async (request: Request, response: Response) => {
 
     const masterCSVFile = await parseAsync(masterFileData, csvOptions);
 
-    return response.status(200).json({
+    return {
       departmentFile: `SEP=,\n${file}`,
       masterFile: `SEP=,\n${masterCSVFile}`,
-    });
+    };
   } catch (err) {
-    return response.status(500).json({ message: 'Internal server error.' });
+    return { message: 'Internal server error.' };
   }
 };

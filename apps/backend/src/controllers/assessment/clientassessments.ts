@@ -2,7 +2,6 @@
  * Getting the assessments completed by the employees of a specific company grouped together based on date of completion
  */
 import { Department, Company, Employee } from '../../models/';
-import { Request, Response } from 'express';
 import { parseAsync } from 'json2csv';
 import {
   csvOptions,
@@ -12,16 +11,16 @@ import {
 import { Assessment } from '../../models/assessment.model';
 import assert from 'assert';
 
-export const getClientAssessments = async (
-  request: Request,
-  response: Response
-) => {
+type Parameters = {
+  companyID: string;
+};
+
+export const handler = async ({ companyID }: Parameters) => {
   try {
-    const { companyID } = request.params;
     // Ensure company exists
     const company = await Company.get({ id: companyID });
     if (!company) {
-      return response.status(400).json({ message: 'No such company exists' });
+      return { message: 'No such company exists' };
     }
 
     //Find assessments associated to department
@@ -31,9 +30,7 @@ export const getClientAssessments = async (
     );
     const departments = departmentResponse.items || [];
     if (!departments.length) {
-      return response
-        .status(200)
-        .json({ clientName: company.name, departments: [], masterFile: '' });
+      return { clientName: company.name, departments: [], masterFile: '' };
     }
 
     const dates: string[] = [];
@@ -49,7 +46,6 @@ export const getClientAssessments = async (
       (department as any).assessments = assessments;
 
       assessments.forEach((assessment) => {
-        // if (isAfter(new Date(assessment.created), new Date(date)))
         assDates.push(new Date(assessment.created));
       });
       const latestDate = new Date(
@@ -86,7 +82,7 @@ export const getClientAssessments = async (
 
     const masterCSVFile = await parseAsync(masterFileData, csvOptions);
 
-    return response.status(200).json({
+    return {
       clientName: company.name,
       departments: responseAssessments.map((department, index) => ({
         ...department.toJSON(),
@@ -94,9 +90,9 @@ export const getClientAssessments = async (
         departmentFile: departmentCSVs[index],
       })),
       masterFile: `SEP=,\n${masterCSVFile}`,
-    });
+    };
   } catch (error) {
     console.log('error', error);
-    return response.status(500).json({ message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' };
   }
 };

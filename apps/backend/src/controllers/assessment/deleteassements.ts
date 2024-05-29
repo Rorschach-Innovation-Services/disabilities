@@ -1,16 +1,16 @@
-/**
- * Responsible for marking a list of assessments as deleted but not deleting from db
- *
- * */
-import { Request, Response } from 'express';
 import { Assessment } from '../../models/assessment.model';
 
-export const deleteAssessments = async (
-  request: Request,
-  response: Response
-) => {
+type Parameters = {
+  assessmentDates: {
+    companyId: string;
+    departmentId: string;
+    employeeId: string;
+    id: string;
+  }[];
+};
+
+export const deleteAssessments = async ({ assessmentDates }: Parameters) => {
   try {
-    const { assessmentDates } = request.body;
     for (const data of assessmentDates) {
       await Assessment.update(
         {
@@ -24,8 +24,8 @@ export const deleteAssessments = async (
         }
       );
     }
-    response.status(200).json({ message: 'Assessments successfully deleted' });
+    return { message: 'Assessments successfully deleted' };
   } catch (error) {
-    return response.status(500).json({ message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' };
   }
 };

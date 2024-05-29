@@ -1,24 +1,24 @@
-/**
- * Admin Reset Password Controller
- */
-import { Request, Response } from 'express';
 import { Administrator } from '../../models';
 
-export default async (request: Request, response: Response) => {
+type Parameters = {
+  id: string;
+  email: string;
+  secondaryEmail: string;
+};
+
+export const handler = async ({ id, email, secondaryEmail }: Parameters) => {
   try {
-    const { id } = request.params;
-    const { email, secondaryEmail } = request.body;
     const admin = await Administrator.get({ id });
     if (!admin) {
-      return response.status(400).json({ message: 'Admin Not Found!' });
+      return { message: 'Admin Not Found!' };
     }
     const updatedAdmin = await Administrator.update(
       { id },
       { email, secondaryEmail }
     );
     updatedAdmin.password = '';
-    return response.status(200).json({ admin: updatedAdmin });
+    return { admin: updatedAdmin };
   } catch (error) {
-    return response.status(500).json({ message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' };
   }
 };

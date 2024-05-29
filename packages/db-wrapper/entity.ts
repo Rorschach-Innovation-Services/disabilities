@@ -73,7 +73,6 @@ export class Table {
     gsSortKeyName = "gssk",
     documentClient,
   }: TableConstructorParameters) {
-    console.log("Table constructor called: ",process.env.TABLE_NAME)
     this.name = name;
     this.partitionKeyName = partitionKeyName;
     this.sortKeyName = sortKeyName;

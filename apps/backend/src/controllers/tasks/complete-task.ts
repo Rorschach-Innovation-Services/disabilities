@@ -2,21 +2,13 @@
  * Complete Task Controller
  */
 import { Task } from '../../models';
-import { Request, Response } from 'express';
 
-/**
- * Signin Admin to platform
- */
-export default async (request: Request, response: Response) => {
+export const handler = async (id: string, complete: boolean) => {
   try {
-    const { complete } = request.body;
-    const { id } = request.params;
     const task = await Task.get({ id });
     await Task.update({ id }, { complete });
-    return response
-      .status(200)
-      .send({ message: 'Task Complete', task: { ...task, complete } });
+    return { message: 'Task Complete', task: { ...task, complete } };
   } catch (error) {
-    return response.status(500).send({ message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' };
   }
 };

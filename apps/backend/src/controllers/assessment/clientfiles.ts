@@ -104,11 +104,11 @@ export const getClientFiles = async (_: Request, response: Response) => {
     const sortedCompanyList = modifiedCompanies.sort((x, y) => {
       return Number(y.created) - Number(x.created);
     });
-    return response.status(200).json({
+    return {
       companies: sortedCompanyList,
       masterFile: `SEP=,\n${masterCSVFile}`,
     });
   } catch (error) {
-    return response.status(500).json({ message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' });
   }
 };
