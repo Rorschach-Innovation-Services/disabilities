@@ -1,10 +1,10 @@
 import express, { Request, Response, json } from 'express';
 import cors from 'cors';
 import router from './routes';
-import contactUs from './controllers/other/contact-us.controllers';
-import defaultConfig from './configuration/default.config';
-import testingConfig from './configuration/testing.config';
-import productionConfig from './configuration/production.config';
+import contactUs from './controllers/other/contact-us';
+import defaultConfig from './configuration/default';
+import testingConfig from './configuration/testing';
+import productionConfig from './configuration/production';
 import path from 'path';
 import dotenv from 'dotenv';
 

@@ -1,22 +1,26 @@
 /**
  * Admin Reset Password Controller
  */
-import { Request, Response } from 'express';
 import { Administrator } from '../../models';
 
-export default async (request: Request, response: Response) => {
+export const handler = async (parameters) => {
   try {
+    console.log('parameters', parameters);
     const adminsResponse = await Administrator.query(
       { _en: 'administrator' },
       { index: 'gsIndex' }
     );
+    console.log('admins', adminsResponse.items);
     const admins = adminsResponse.items;
     if (!admins) {
-      return response.status(400).json({ message: 'Admins Not Found!' });
+      return { message: 'Admins Not Found!' };
     }
     const adminsRes = admins.filter((admin) => !admin.deleted);
-    return response.status(200).json({ admins: adminsRes });
+    return { admins: adminsRes };
   } catch (error) {
-    return response.status(500).json({ message: 'Internal Server Error' });
+    console.error(error);
+    return { message: 'Internal Server Error' };
   }
 };
+
+export default handler;

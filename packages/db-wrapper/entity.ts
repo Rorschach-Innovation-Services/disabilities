@@ -37,13 +37,13 @@ export const DocumentClient = DynamoDBDocumentClient.from(
   new DynamoDBClient({ region: process.env.REGION }),
   translateConfig
 );
-export const DocumentTestClient = DynamoDBDocumentClient.from(
-  new DynamoDBClient({
-    region: 'localhost',
-    endpoint: 'http://localhost:8000',
-  }),
-  translateConfig
-);
+// export const DocumentTestClient = DynamoDBDocumentClient.from(
+//   new DynamoDBClient({
+//     region: 'localhost',
+//     endpoint: 'http://localhost:8000',
+//   }),
+//   translateConfig
+// );
 
 export class Table {
   /**
@@ -73,6 +73,7 @@ export class Table {
     gsSortKeyName = "gssk",
     documentClient,
   }: TableConstructorParameters) {
+    console.log("Table constructor called: ",process.env.TABLE_NAME)
     this.name = name;
     this.partitionKeyName = partitionKeyName;
     this.sortKeyName = sortKeyName;
@@ -114,10 +115,10 @@ export class Table {
   async batchWrite(items, options) { }
 }
 
-createTable(DocumentTestClient);
+// createTable(DocumentTestClient);
 export const MasterTable = new Table({
-  name: process.env.TABLE_NAME as string,
-  documentClient: DocumentTestClient,
+  name: process.env.TABLE_NAME,
+  documentClient: DocumentClient,
 });
 
 export type CustomEntityAttributes = Record<string, any> & {
@@ -168,8 +169,8 @@ export type MainPrimaryKey = {
 };
 
 export type GlobalSecondaryIndexPrimaryKey = {
-  gsPk: string;
-  gsSk: string;
+  gspk: string;
+  gssk: string;
 };
 
 export type PrimaryKeyInfo<
@@ -219,7 +220,7 @@ export type TransactWriteParameterItemsDeleteOptions = {
 export type SavedEntityData<A extends CustomEntityAttributes> =
   EntityWithoutMetadata<A> & { _en: string } & EntityMetadataAttributes;
 export type SavedEntityDataWithPrimaryKeys<A extends CustomEntityAttributes> =
-  EntityWithoutMetadata<A> & { _en: string } & EntityMetadataAttributes &
+  SavedEntityData<A> &
   AllPrimaryKeyInfo;
 
 export type TransactWriteParameterItemsUpdate<
@@ -342,7 +343,7 @@ export class Entity<
    * @param list - The list of attributes to omit.
    */
   private setAttributesToOmit(list: string[]) {
-    this.entityAttributesToOmit = ["sk", "pk", "gsPk", "gsSk"];
+    this.entityAttributesToOmit = ["sk", "pk", "gspk", "gssk"];
     for (const item of list) {
       if (!(item in this.entityAttributesToOmit))
         this.entityAttributesToOmit.push(item);
@@ -808,15 +809,16 @@ export class Entity<
         this.getSortKeyAttributes(entity),
         this.sortKey.order as string[]
       ),
-      gsPk: this.getPartitionKey(
+      gspk: this.getPartitionKey(
         this.getGlobalSecondaryPartitionKeyAttributes(entity),
         this.globalSecondaryPartitionKey.order as string[]
       ),
-      gsSk: this.getSortKey(
+      gssk: this.getSortKey(
         this.getGlobalSecondarySortKeyAttributes(entity),
         this.globalSecondarySortKey.order as string[]
       ),
     } as SavedEntityDataWithPrimaryKeys<A>;
+
     if (
       entityWithPrimaryKey.pk === "undefined" ||
       typeof entityWithPrimaryKey.pk === "undefined"

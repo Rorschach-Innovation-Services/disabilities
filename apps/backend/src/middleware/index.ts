@@ -1,4 +1,4 @@
-import { verifyToken } from './JWT.middleware';
+import { verifyToken } from './JWT';
 
 // Import as middlewares
-export default { verifyToken }
+export default { verifyToken };

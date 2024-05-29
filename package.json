@@ -6,17 +6,21 @@
   ],
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --no-cache --parallel --continue",
-    "lint": "turbo run lint",
-    "clean": "turbo run clean && rm -rf node_modules",
-    "format": "prettier --ignore-path .gitignore --write \"**/*.{js,jsx,ts,tsx,md}\"",
-    "changeset-create": "changeset",
     "changeset-apply": "changeset version",
-    "release": "turbo run build && changeset publish"
+    "changeset-create": "changeset",
+    "clean": "turbo run clean \u0026\u0026 rm -rf node_modules",
+    "dev": "turbo run dev --no-cache --parallel --continue",
+    "format": "prettier --ignore-path .gitignore --write \"**/*.{js,jsx,ts,tsx,md}\"",
+    "lint": "turbo run lint",
+    "release": "turbo run build \u0026\u0026 changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "2.22.0",
+    "@types/aws-lambda": "8.10.138",
     "prettier": "2.5.1",
     "turbo": "1.2.12"
+  },
+  "dependencies": {
+    "sst": "ion"
   }
 }

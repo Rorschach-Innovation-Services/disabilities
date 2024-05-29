@@ -1,12 +1,12 @@
 /**
  * Unit & Integration Tests for Sign-Up Controller/End-Point
  */
-import { use, request, should } from "chai";
-import chaiHttp from "chai-http";
-import { app } from "../../server";
-import { connect } from "mongoose";
+import { use, request, should } from 'chai';
+import chaiHttp from 'chai-http';
+import { app } from '../../server';
+import { connect } from 'mongoose';
 // import database from '../../models/index';
-import testingConfig from "../../configuration/testing.config";
+import testingConfig from '../../configuration/testing';
 
 /** Configure Chai for testing */
 should();
@@ -18,12 +18,12 @@ const dbURL = testingConfig.database as string;
 /**
  * Integration Test for signing up
  */
-describe("Sign-Up Integration Tests", () => {
+describe('Sign-Up Integration Tests', () => {
   /**Connect to database */
   connect(dbURL, (err) =>
     !err
-      ? console.log("Connected to the database!")
-      : console.log("Cannot Connect to the database")
+      ? console.log('Connected to the database!')
+      : console.log('Cannot Connect to the database')
   );
 
   /**Before the tests clear the database */
@@ -34,19 +34,19 @@ describe("Sign-Up Integration Tests", () => {
   });
 
   /**Sign-Up User Tests*/
-  describe("Sign-Up User", () => {
+  describe('Sign-Up User', () => {
     /** User Signed-Up Successfully Case */
-    it("User Registered Successfully", (done) => {
+    it('User Registered Successfully', (done) => {
       /**Test register data */
-      const body = { email: "sabelo@xero.com", password: "sabeloxxs" };
+      const body = { email: 'sabelo@xero.com', password: 'sabeloxxs' };
 
       /**Test a post request */
       request(app)
-        .post("/api/users/signup")
+        .post('/api/users/signup')
         .send(body)
         .then((res) => {
           res.status.should.equal(201);
-          res.body.message.should.equal(" Successful");
+          res.body.message.should.equal(' Successful');
           done();
         })
         .catch((err) => {
@@ -55,16 +55,16 @@ describe("Sign-Up Integration Tests", () => {
     });
 
     /**Duplicate Found */
-    it("User already exists", (done) => {
+    it('User already exists', (done) => {
       /**Test register data - already in use */
-      const body = { email: "sabelo@xero.com", password: "sabeloxxs" };
+      const body = { email: 'sabelo@xero.com', password: 'sabeloxxs' };
 
       /**Test a post request */
       request(app)
         .post(`/api/users/signup`)
         .send(body)
         .then((res) => {
-          res.body.message.should.equal("Account Exists. Sign In Instead.");
+          res.body.message.should.equal('Account Exists. Sign In Instead.');
           res.status.should.equal(409);
           done();
         })
@@ -74,8 +74,8 @@ describe("Sign-Up Integration Tests", () => {
     });
 
     /**Bad Format - Short Password */
-    it("Short Password", (done) => {
-      const body = { email: "xero@sabelo.com", password: "sabs" };
+    it('Short Password', (done) => {
+      const body = { email: 'xero@sabelo.com', password: 'sabs' };
 
       /**Test a post request */
       request(app)
@@ -91,8 +91,8 @@ describe("Sign-Up Integration Tests", () => {
     });
 
     /** Short/BAD Email - BAD FORMAT */
-    it("Short/BAD Email", (done) => {
-      const body = { email: "xero", password: "sabswwwww" };
+    it('Short/BAD Email', (done) => {
+      const body = { email: 'xero', password: 'sabswwwww' };
 
       /**Test a post request */
       request(app)
@@ -108,4 +108,3 @@ describe("Sign-Up Integration Tests", () => {
     });
   });
 });
-

@@ -3,7 +3,7 @@
  */
 import { Administrator } from '../../models';
 import bcrypt from 'bcrypt';
-import { generateToken } from '../../middleware/JWT.middleware';
+import { generateToken } from '../../middleware/JWT';
 import { Request, Response } from 'express';
 
 /**

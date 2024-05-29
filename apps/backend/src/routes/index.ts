@@ -1,12 +1,20 @@
 /**
  * Export route instances
  */
-import admin from './admin.routes';
-import employee from './employee.routes';
-import company from './company.routes';
-import question from './questions.routes';
-import assessment from './assessment.routes';
-import tasks from "./tasks.routes";
-import department from "./department.routes";
+import admin from './admin';
+import employee from './employee';
+import company from './company';
+import question from './questions';
+import assessment from './assessment';
+import tasks from './tasks';
+import department from './department';
 
-export default { admin, employee, company, question, assessment, department, tasks  };
+export default {
+  admin,
+  employee,
+  company,
+  question,
+  assessment,
+  department,
+  tasks,
+};

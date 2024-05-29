@@ -1,8 +1,8 @@
 /**
  * Admin Controllers
  */
-import register from './register.controller';
-import signin from './signin.controllers';
-import resetpassword from './resetpassword.controller';
+import register from './register';
+import signin from './signin';
+import resetpassword from './resetpassword';
 
 export { register, signin, resetpassword };
