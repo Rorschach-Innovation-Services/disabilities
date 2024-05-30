@@ -1,5 +1,13 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
+import { adminRoutes } from './stacks/routes/admin';
+import { assessmentRoutes } from './stacks/routes/assessment';
+import { companyRoutes } from './stacks/routes/company';
+import { departmentRoutes } from './stacks/routes/department';
+import { employeeRoutes } from './stacks/routes/employee';
+import { questionRoutes } from './stacks/routes/questions';
+import { taskRoutes } from './stacks/routes/tasks';
+
 export default $config({
   app(input) {
     return {
@@ -19,15 +27,15 @@ export default $config({
     //   sender: 'info@footballnurse.com',
     // });
 
-    const bucket = new sst.aws.Bucket('FootballnurseBucket');
-    const site = new sst.aws.StaticSite('FootballnurseSite', {
+    const bucket = new sst.aws.Bucket('InclusivityBucket');
+    const site = new sst.aws.StaticSite('InclusivitySite', {
       path: 'apps/frontend',
       build: {
         command: 'yarn run build',
         output: 'dist',
       },
     });
-    const table = new sst.aws.Dynamo('MyTable', {
+    const table = new sst.aws.Dynamo('InclusivityTable', {
       fields: {
         pk: 'string',
         sk: 'string',
@@ -40,18 +48,17 @@ export default $config({
       },
     });
 
-    const api = new sst.aws.ApiGatewayV2('FootballnurseAPI');
+    const api = new sst.aws.ApiGatewayV2('InclusivityAPI');
 
-    api.route('GET /api/admin/all', {
-      handler: 'apps/backend/src/controllers/admin/get-admins.getAdmins',
-      link: [table, bucket],
-      environment: {
-        TABLE_NAME: table.name,
-        BUCKET_NAME: bucket.name,
-      },
-    });
+    adminRoutes({ api, table, bucket });
+    assessmentRoutes({ api, table, bucket });
+    companyRoutes({ api, table, bucket });
+    departmentRoutes({ api, table, bucket });
+    employeeRoutes({ api, table, bucket });
+    questionRoutes({ api, table, bucket });
+    taskRoutes({ api, table, bucket });
 
-    const router = new sst.aws.Router('MyRouter', {
+    const router = new sst.aws.Router('InclusivityRouter', {
       routes: {
         '/*': site.url,
         '/api/*': api.url,

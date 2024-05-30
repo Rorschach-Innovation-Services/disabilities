@@ -3,7 +3,7 @@
  */
 import { Task } from '../../models';
 
-export const getTask = async () => {
+export const getTasks = async () => {
   try {
     const tasksResponse = await Task.query(
       { _en: 'task' },

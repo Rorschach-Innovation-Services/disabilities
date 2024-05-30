@@ -56,7 +56,7 @@ export function getQueryStringParameters(
 ): { [name: string]: string } | null {
   const queryStringParams:
     | APIGatewayProxyEventQueryStringParameters
-    | undefined = event.queryStringParameters;
+    | undefined = event.pathParameters;
 
   if (!queryStringParams) {
     return null;
