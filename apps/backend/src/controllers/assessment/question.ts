@@ -1,21 +1,15 @@
-/**
- * Controllers for Creating and Sending Platform Questions
- */
 import { Question } from '../../models/index';
-
-type CreateQuestionParameters = {
-  id: string;
-  content: string;
-};
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
 /**
  * Create platform questions controller
  */
-export const createQuestion = async ({
-  id,
-  content,
-}: CreateQuestionParameters) => {
+export const createQuestion = async (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    const { id, content } = requestBody;
     await Question.create({ givenId: id, content, response: '' });
     return { message: 'Question Created' };
   } catch (error) {

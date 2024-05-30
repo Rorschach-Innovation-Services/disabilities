@@ -1,4 +1,5 @@
 import { Assessment } from '../../models/';
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
 /**
  * Retrieve all assessments
@@ -22,11 +23,14 @@ export const getAssessments = async () => {
   }
 };
 
-export const getAssessment = async (employee: string) => {
+export const getAssessment = async (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
     const assessmentResponse = await Assessment.query(
       { _en: 'assessment' },
-      { index: 'gsIndex', beginsWith: employee, limit: 1 }
+      { index: 'gsIndex', beginsWith: requestBody.employee, limit: 1 }
     );
     const assessment =
       assessmentResponse.items.length > 0 ? assessmentResponse.items[0] : null;

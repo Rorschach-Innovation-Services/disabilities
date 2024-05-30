@@ -1,6 +1,7 @@
 import { generateGroupReport } from '../../utilities/group-report';
 import { fetchPDFData } from '../../utilities/pdf-data';
 import { Assessment, Company, Department } from '../../models';
+import { getQueryStringParameters, APIGatewayEvent } from 'src/utilities/api';
 
 /**
  * Retrieve all assessments
@@ -8,8 +9,12 @@ import { Assessment, Company, Department } from '../../models';
  * @param response object
  * @returns response
  */
-export const createGroupReport = async (departmentId: string) => {
+export const createGroupReport = async (event: APIGatewayEvent) => {
   try {
+    const parameters = getQueryStringParameters(event);
+    if (!parameters?.departmentId)
+      return { statusCode: 400, message: 'Admin ID is required!' };
+    const { departmentId } = parameters;
     const department = await Department.get({ id: departmentId });
 
     if (!department) return { message: 'Department does not exist.' };

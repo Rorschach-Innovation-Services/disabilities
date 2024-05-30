@@ -1,18 +1,21 @@
 import { genSaltSync, hashSync, compareSync } from 'bcrypt';
 import { Administrator } from '../../models';
+import {
+  getQueryStringParameters,
+  getRequestBody,
+  APIGatewayEvent,
+} from 'src/utilities/api';
 
-type Parameters = {
-  id: string;
-  password: string;
-  newPassword: string;
-};
-
-export const updatePassword = async ({
-  id,
-  password,
-  newPassword,
-}: Parameters) => {
+export const updatePassword = async (event: APIGatewayEvent) => {
   try {
+    const parameters = getQueryStringParameters(event);
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    if (!parameters?.id)
+      return { statusCode: 400, message: 'Admin ID is required!' };
+    const { id } = parameters;
+    const { password, newPassword } = requestBody;
     const saltRounds = 10;
     const admin = await Administrator.get({ id });
     if (!admin) {

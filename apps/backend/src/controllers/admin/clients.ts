@@ -1,8 +1,12 @@
 import { Administrator, Company } from '../../models';
+import { getQueryStringParameters, APIGatewayEvent } from 'src/utilities/api';
 
-export const getClients = async (id: string) => {
+export const getClients = async (event: APIGatewayEvent) => {
   try {
-    const admin = await Administrator.get({ id });
+    const parameters = getQueryStringParameters(event);
+    if (!parameters?.id)
+      return { statusCode: 400, message: 'Admin ID is required!' };
+    const admin = await Administrator.get({ id: parameters.id });
     if (!admin) {
       return { message: 'Admin Not Found!' };
     }
@@ -12,7 +16,7 @@ export const getClients = async (id: string) => {
     );
     const adminClients = clients.items.filter((client) => {
       return client.adminEmail && !client.deleted
-        ? client.adminEmail === id
+        ? client.adminEmail === parameters.id
         : false;
     });
     return { clients: adminClients };

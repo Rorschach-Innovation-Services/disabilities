@@ -1,14 +1,14 @@
 import { Administrator } from '../../models';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../../middleware/JWT';
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
-type Parameters = {
-  email: string;
-  password: string;
-};
-
-export const signIn = async ({ email, password }: Parameters) => {
+export const signIn = async (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    const { email, password } = requestBody;
     const adminResponse = await Administrator.query(
       { _en: 'administrator' },
       { index: 'gsIndex', limit: 1 }

@@ -8,9 +8,14 @@ import {
   TransformedResult,
 } from '../../utilities/transform';
 import { isAfter } from 'date-fns';
+import { getQueryStringParameters, APIGatewayEvent } from 'src/utilities/api';
 
-export const getSpreadsheet = async (departmentId: string) => {
+export const getSpreadsheet = async (event: APIGatewayEvent) => {
   try {
+    const parameters = getQueryStringParameters(event);
+    if (!parameters?.departmentId)
+      return { statusCode: 400, message: 'Admin ID is required!' };
+    const { departmentId } = parameters;
     //Find assessments associated to department
     const department = await Department.get({ id: departmentId });
     if (!department) {

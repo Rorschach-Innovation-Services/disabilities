@@ -1,10 +1,14 @@
 import { Assessment, Employee } from '../../models/';
 import { generateStreamReport } from '../../utilities/genReport';
 import scoreSleepHealth from '../../utilities/score';
+import { getQueryStringParameters, APIGatewayEvent } from 'src/utilities/api';
 
-export const createIndividualReport = async (employeeId: string) => {
+export const createIndividualReport = async (event: APIGatewayEvent) => {
   try {
-    const employee = await Employee.get({ id: employeeId });
+    const parameters = getQueryStringParameters(event);
+    if (!parameters?.employeeId)
+      return { statusCode: 400, message: 'Admin ID is required!' };
+    const employee = await Employee.get({ id: parameters.employeeId });
 
     if (!employee || employee.deleted)
       return { message: "Employee doesn't exist." };

@@ -42,8 +42,8 @@ export default $config({
 
     const api = new sst.aws.ApiGatewayV2('FootballnurseAPI');
 
-    api.route('GET /admin/all', {
-      handler: 'apps/backend/src/controllers/admin/get-admins.handler',
+    api.route('GET /api/admin/all', {
+      handler: 'apps/backend/src/controllers/admin/get-admins.getAdmins',
       link: [table, bucket],
       environment: {
         TABLE_NAME: table.name,

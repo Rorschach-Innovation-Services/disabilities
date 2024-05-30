@@ -4,38 +4,29 @@
 import { Company, Employee } from '../../models';
 import emailSend from '../../utilities/sendEmail';
 import { Department } from '../../models/department.model';
-
-type Parameters = {
-  id: string;
-  name: string;
-  sector: string;
-  hrConsultantName: string;
-  hrConsultantEmail: string;
-  logo: string;
-  employees: any[];
-  employeeSize: number;
-  phone: string;
-  department: string;
-  admin: string;
-};
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
 /**
  * Save the company and if employees found, send them emails
  */
-export const saveCompany = async ({
-  department,
-  name,
-  id,
-  employees,
-  admin,
-  sector,
-  hrConsultantName,
-  phone,
-  hrConsultantEmail,
-  logo,
-  employeeSize,
-}: Parameters) => {
+export const saveCompany = async (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    const {
+      id,
+      department,
+      name,
+      employees,
+      admin,
+      sector,
+      hrConsultantName,
+      hrConsultantEmail,
+      logo,
+      phone,
+      employeeSize,
+    } = requestBody;
     if (id === null) {
       const company = await Company.create({
         name,

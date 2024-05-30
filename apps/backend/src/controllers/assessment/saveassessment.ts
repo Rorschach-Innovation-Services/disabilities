@@ -4,6 +4,7 @@
 import { Assessment, Employee, Company, Department } from '../../models';
 import scoreSleepHealth from '../../utilities/score';
 import generateReport from '../../utilities/genReport';
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
 type Parameters = {
   employee: string;
@@ -22,13 +23,12 @@ type Parameters = {
  * @param res
  * @returns
  */
-export const saveAssessment = async ({
-  company,
-  employee,
-  department,
-  questionnaire,
-}: Parameters) => {
+export const saveAssessment = async (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    const { employee, questionnaire, company, department } = requestBody;
     const assessmentScore = scoreSleepHealth(questionnaire);
 
     /**Check if the company exists in the database */

@@ -2,34 +2,27 @@
  * Employee Controllers
  */
 import { Employee, Company, Department } from '../../models';
-
-type Parameters = {
-  employeeId: string;
-  company: string;
-  name: string;
-  email: string;
-  age: number;
-  phone: string;
-  id_number: string;
-  department: string;
-  gender: string;
-};
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
 /**
  * Save an Employee To The Platform
  */
-export const saveEmployee = async ({
-  gender,
-  phone,
-  name,
-  department,
-  company,
-  email,
-  age,
-  id_number,
-  employeeId,
-}: Parameters) => {
+export const saveEmployee = async (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    const {
+      gender,
+      phone,
+      name,
+      department,
+      company,
+      email,
+      age,
+      id_number,
+      employeeId,
+    } = requestBody;
     console.log('company', company);
     const companyDoc = await Company.get({ id: company });
     if (!companyDoc) {

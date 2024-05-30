@@ -1,12 +1,12 @@
 import sendEmail from '../../utilities/sendEmail';
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
-type Parameters = {
-  email: string;
-  link: string;
-};
-
-export const sendLink = async ({ email, link }: Parameters) => {
+export const sendLink = async (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    const { email, link } = requestBody;
     const emailPromise = sendEmail(
       email,
       'There',

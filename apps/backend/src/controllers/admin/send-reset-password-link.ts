@@ -1,8 +1,12 @@
 import { Administrator } from '../../models';
 import sendEmail from '../../utilities/sendEmail';
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
-export const sendResetLink = async (email: string) => {
+export const sendResetLink = async (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
     const adminResponse = await Administrator.query(
       { _en: 'administrator' },
       { index: 'gsIndex', limit: 1 }
@@ -13,7 +17,7 @@ export const sendResetLink = async (email: string) => {
     }
     const admin = admins[0];
     const emailPromise = await sendEmail(
-      email,
+      requestBody.email,
       admin.name || '',
       'Reset Password',
       `Please click on the link to reset your password: http://localhost:5173/create-password/${admin.id}`

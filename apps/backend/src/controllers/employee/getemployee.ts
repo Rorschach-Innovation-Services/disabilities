@@ -1,7 +1,12 @@
 import { Employee, Assessment } from '../../models';
+import { getQueryStringParameters, APIGatewayEvent } from 'src/utilities/api';
 
-export const getEmployee = async (id: string) => {
+export const getEmployee = async (event: APIGatewayEvent) => {
   try {
+    const parameters = getQueryStringParameters(event);
+    if (!parameters?.id)
+      return { statusCode: 400, message: 'Admin ID is required!' };
+    const { id } = parameters;
     const employee = await Employee.get({ id });
 
     if (!employee || employee.deleted)

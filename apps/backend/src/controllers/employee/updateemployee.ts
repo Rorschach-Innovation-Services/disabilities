@@ -1,27 +1,21 @@
 import { Assessment, Department, Employee } from '../../models';
+import {
+  getQueryStringParameters,
+  getRequestBody,
+  APIGatewayEvent,
+} from 'src/utilities/api';
 
-type Parameters = {
-  id: string;
-  name: string;
-  email: string;
-  idNumber: string;
-  age: number;
-  questionnaire: any[];
-  gender: string;
-  departmentId: string;
-};
-
-export const updateEmployee = async ({
-  id,
-  departmentId,
-  age,
-  email,
-  name,
-  questionnaire,
-  gender,
-  idNumber,
-}: Parameters) => {
+export const updateEmployee = async (event: APIGatewayEvent) => {
   try {
+    const parameters = getQueryStringParameters(event);
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    if (!parameters?.id)
+      return { statusCode: 400, message: 'Admin ID is required!' };
+    const { id } = parameters;
+    const { departmentId, age, email, name, questionnaire, gender, idNumber } =
+      requestBody;
     const employee = await Employee.get({ id });
     const department = await Department.get({ id: departmentId });
 

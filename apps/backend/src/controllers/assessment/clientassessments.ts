@@ -10,15 +10,15 @@ import {
 } from '../../utilities/transform';
 import { Assessment } from '../../models/assessment.model';
 import assert from 'assert';
+import { getQueryStringParameters, APIGatewayEvent } from 'src/utilities/api';
 
-type Parameters = {
-  companyID: string;
-};
-
-export const getClientAssessments = async ({ companyID }: Parameters) => {
+export const getClientAssessments = async (event: APIGatewayEvent) => {
   try {
+    const parameters = getQueryStringParameters(event);
+    if (!parameters?.companyID)
+      return { statusCode: 400, message: 'Admin ID is required!' };
     // Ensure company exists
-    const company = await Company.get({ id: companyID });
+    const company = await Company.get({ id: parameters.companyID });
     if (!company) {
       return { message: 'No such company exists' };
     }

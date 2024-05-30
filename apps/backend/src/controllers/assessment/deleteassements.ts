@@ -1,4 +1,5 @@
 import { Assessment } from '../../models/assessment.model';
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
 type Parameters = {
   assessmentDates: {
@@ -9,9 +10,12 @@ type Parameters = {
   }[];
 };
 
-export const deleteAssessments = async ({ assessmentDates }: Parameters) => {
+export const deleteAssessments = async (event: APIGatewayEvent) => {
   try {
-    for (const data of assessmentDates) {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    for (const data of requestBody.assessmentDates) {
       await Assessment.update(
         {
           companyId: data.companyId,

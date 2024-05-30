@@ -1,7 +1,24 @@
 import { Administrator } from '../../models';
+import {
+  getQueryStringParameters,
+  getRequestBody,
+  getRequestHeaders,
+  getRequestPath,
+  APIGatewayEvent,
+} from 'src/utilities/api';
 
-export const getAdmins = async () => {
+export const getAdmins = async (event: APIGatewayEvent) => {
   try {
+    console.log('Event', event);
+    const requestBody = getRequestBody(event);
+    const requestPath = getRequestPath(event);
+    const requestHeaders = getRequestHeaders(event);
+    const queryStringParams = getQueryStringParameters(event);
+
+    console.log('Request Body:', requestBody);
+    console.log('Request Path:', requestPath);
+    console.log('Request Headers:', requestHeaders);
+    console.log('Query String Parameters:', queryStringParams);
     const adminsResponse = await Administrator.query(
       { _en: 'administrator' },
       { index: 'gsIndex' }

@@ -2,11 +2,7 @@
  * Contact Us Controller
  */
 import emailSend from '../../utilities/sendEmail';
-
-type Parameters = {
-  subject: string;
-  message: string;
-};
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
 /**
  * Send a contact us email to admin
@@ -14,8 +10,12 @@ type Parameters = {
  * @param response
  * @returns
  */
-export const contactUs = ({ subject, message }: Parameters) => {
+export const contactUs = (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    const { subject, message } = requestBody;
     return emailSend('info@sleepscience.co.za', 'Admin', subject, message)
       .then((res) => {
         return { message: 'Sent email successfully!' };

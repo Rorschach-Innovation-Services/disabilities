@@ -2,10 +2,14 @@
  * Get a companies consulted by an admin
  */
 import { Company, Administrator } from '../../models';
+import { getQueryStringParameters, APIGatewayEvent } from 'src/utilities/api';
 
-export const getCompany = async (id: string) => {
+export const getCompany = async (event: APIGatewayEvent) => {
   try {
-    const company = await Company.get({ id });
+    const parameters = getQueryStringParameters(event);
+    if (!parameters?.id)
+      return { statusCode: 400, message: 'Admin ID is required!' };
+    const company = await Company.get({ id: parameters.id });
     if (!company || company.deleted) {
       return { message: 'Company Not Found' };
     }

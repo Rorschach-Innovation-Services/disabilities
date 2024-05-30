@@ -1,13 +1,13 @@
 import { Administrator } from '../../models';
 import sendEmail from '../../utilities/sendEmail';
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
-type Parameters = {
-  name: string;
-  email: string;
-};
-
-export const register = async ({ name, email }: Parameters) => {
+export const register = async (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    const { email, name } = requestBody;
     const admin = await Administrator.create({
       email,
       name,

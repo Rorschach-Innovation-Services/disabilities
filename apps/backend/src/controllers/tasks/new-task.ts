@@ -2,15 +2,14 @@
  * New Task Controller
  */
 import { Administrator, Task } from '../../models';
+import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
-type Parameters = {
-  admin: string;
-  content: string;
-  title: string;
-};
-
-export const saveTask = async ({ admin, content, title }: Parameters) => {
+export const saveTask = async (event: APIGatewayEvent) => {
   try {
+    const requestBody = getRequestBody(event);
+    if (!requestBody)
+      return { statusCode: 400, message: 'Request Body is required!' };
+    const { admin, content, title } = requestBody;
     const adminDoc = await Administrator.get({ id: admin });
     if (!adminDoc) return { message: 'Admin not found' };
     const task = await Task.create({
