@@ -1,6 +1,6 @@
 import { Administrator } from '../../models';
 
-export const handler = async (id: string) => {
+export const getAdmin = async (id: string) => {
   try {
     const admin = await Administrator.get({ id });
     if (!admin) {

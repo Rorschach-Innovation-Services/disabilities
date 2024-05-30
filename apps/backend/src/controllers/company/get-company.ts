@@ -3,7 +3,7 @@
  */
 import { Company, Administrator } from '../../models';
 
-export const handler = async (id: string) => {
+export const getCompany = async (id: string) => {
   try {
     const company = await Company.get({ id });
     if (!company || company.deleted) {

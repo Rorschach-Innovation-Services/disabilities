@@ -3,7 +3,7 @@
  */
 import { Task } from '../../models';
 
-export const handler = async (id: string) => {
+export const deleteTask = async (id: string) => {
   try {
     await Task.update({ id }, { deleted: true });
     return { message: 'Deleted Task' };

@@ -6,7 +6,7 @@ type Parameters = {
   password: string;
 };
 
-export const handler = async ({ id, password }: Parameters) => {
+export const resetPassword = async ({ id, password }: Parameters) => {
   try {
     const saltRounds = 10;
     const adminResponse = await Administrator.get({ id });

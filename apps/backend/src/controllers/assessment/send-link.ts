@@ -5,7 +5,7 @@ type Parameters = {
   link: string;
 };
 
-export const handler = async ({ email, link }: Parameters) => {
+export const sendLink = async ({ email, link }: Parameters) => {
   try {
     const emailPromise = sendEmail(
       email,

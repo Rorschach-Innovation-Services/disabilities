@@ -9,7 +9,7 @@ type Parameters = {
   title: string;
 };
 
-export const handler = async ({ admin, content, title }: Parameters) => {
+export const saveTask = async ({ admin, content, title }: Parameters) => {
   try {
     const adminDoc = await Administrator.get({ id: admin });
     if (!adminDoc) return { message: 'Admin not found' };

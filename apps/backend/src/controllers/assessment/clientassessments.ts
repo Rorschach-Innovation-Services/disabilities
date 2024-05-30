@@ -15,7 +15,7 @@ type Parameters = {
   companyID: string;
 };
 
-export const handler = async ({ companyID }: Parameters) => {
+export const getClientAssessments = async ({ companyID }: Parameters) => {
   try {
     // Ensure company exists
     const company = await Company.get({ id: companyID });

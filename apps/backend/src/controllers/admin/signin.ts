@@ -7,7 +7,7 @@ type Parameters = {
   password: string;
 };
 
-export const handler = async ({ email, password }: Parameters) => {
+export const signIn = async ({ email, password }: Parameters) => {
   try {
     const adminResponse = await Administrator.query(
       { _en: 'administrator' },

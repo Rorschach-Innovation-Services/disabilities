@@ -1,8 +1,7 @@
-import { Request, Response } from 'express';
 import { Administrator } from '../../models';
 import sendEmail from '../../utilities/sendEmail';
 
-export const handler = async (email: string) => {
+export const sendResetLink = async (email: string) => {
   try {
     const adminResponse = await Administrator.query(
       { _en: 'administrator' },

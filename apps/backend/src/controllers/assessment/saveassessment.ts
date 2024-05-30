@@ -1,13 +1,7 @@
 /**
  * Save Assessment Controller
  */
-import {
-  Assessment,
-  Employee,
-  Company,
-  Department,
-  Question,
-} from '../../models';
+import { Assessment, Employee, Company, Department } from '../../models';
 import scoreSleepHealth from '../../utilities/score';
 import generateReport from '../../utilities/genReport';
 
@@ -28,7 +22,7 @@ type Parameters = {
  * @param res
  * @returns
  */
-const saveAssessment = async ({
+export const saveAssessment = async ({
   company,
   employee,
   department,
@@ -95,5 +89,3 @@ const saveAssessment = async ({
     return { message: 'Internal Server Error', error };
   }
 };
-
-export default saveAssessment;

@@ -6,7 +6,7 @@ type Parameters = {
   email: string;
 };
 
-export const handler = async ({ name, email }: Parameters) => {
+export const register = async ({ name, email }: Parameters) => {
   try {
     const admin = await Administrator.create({
       email,

@@ -10,7 +10,7 @@ type Parameters = {
   bio: string;
 };
 
-export const handler = async ({
+export const updateProfile = async ({
   email,
   id,
   bio,

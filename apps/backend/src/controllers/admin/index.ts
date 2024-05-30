@@ -1,8 +1,8 @@
 /**
  * Admin Controllers
  */
-import register from './register';
-import signin from './signin';
-import resetpassword from './resetpassword';
+import { register } from './register';
+import { signIn } from './signin';
+import { resetPassword } from './resetpassword';
 
-export { register, signin, resetpassword };
+export { register, signIn, resetPassword };

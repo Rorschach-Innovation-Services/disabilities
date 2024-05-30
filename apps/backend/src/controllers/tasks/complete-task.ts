@@ -3,7 +3,7 @@
  */
 import { Task } from '../../models';
 
-export const handler = async (id: string, complete: boolean) => {
+export const completeTask = async (id: string, complete: boolean) => {
   try {
     const task = await Task.get({ id });
     await Task.update({ id }, { complete });

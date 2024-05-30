@@ -5,7 +5,7 @@ type Parameters = {
   photo: string;
 };
 
-export const handler = async ({ id, photo }: Parameters) => {
+export const updatePhoto = async ({ id, photo }: Parameters) => {
   try {
     const admin = await Administrator.get({ id });
     if (!admin) {

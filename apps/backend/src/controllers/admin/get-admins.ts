@@ -1,6 +1,6 @@
 import { Administrator } from '../../models';
 
-export const handler = async () => {
+export const getAdmins = async () => {
   try {
     const adminsResponse = await Administrator.query(
       { _en: 'administrator' },

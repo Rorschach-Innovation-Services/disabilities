@@ -3,7 +3,7 @@
  */
 import { Company } from '../../models';
 
-export const handler = async (id: string, body: Record<string, any>) => {
+export const updateCompany = async (id: string, body: Record<string, any>) => {
   try {
     const company = await Company.get({ id });
     await Company.update({ id }, { ...body });

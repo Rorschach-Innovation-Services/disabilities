@@ -1,7 +1,7 @@
 import { Assessment, Employee } from '../../models';
 import { Score } from '../../models/assessment.model';
 
-export const handler = async () => {
+export const getAverages = async () => {
   try {
     const employeesResponse = await Employee.query(
       { _en: 'employee' },

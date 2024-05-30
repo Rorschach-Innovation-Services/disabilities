@@ -3,7 +3,7 @@
  */
 import { Assessment, Company, Employee } from '../../models';
 
-export const handler = async () => {
+export const getCompanies = async () => {
   try {
     const companiesResponse = await Company.query(
       { _en: 'company' },

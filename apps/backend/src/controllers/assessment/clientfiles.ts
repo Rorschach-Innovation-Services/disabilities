@@ -2,7 +2,6 @@
  * Getting client csv files Handlers
  */
 import { Assessment, Company, Employee } from '../../models/';
-import { Request, Response } from 'express';
 import { parseAsync } from 'json2csv';
 import { isAfter } from 'date-fns';
 import {
@@ -17,7 +16,7 @@ import {
  * @param response object
  * @returns response
  */
-export const getClientFiles = async (_: Request, response: Response) => {
+export const getClientFiles = async () => {
   try {
     const companyResponse = await Company.query(
       { _en: 'company' },
@@ -25,7 +24,7 @@ export const getClientFiles = async (_: Request, response: Response) => {
     );
     const companies = companyResponse.items || [];
     if (!companies) {
-      return response.status(404).json({ message: 'Companies not found' });
+      return { message: 'Companies not found' };
     }
 
     // Holding data to be stored in the master csv file
@@ -107,8 +106,8 @@ export const getClientFiles = async (_: Request, response: Response) => {
     return {
       companies: sortedCompanyList,
       masterFile: `SEP=,\n${masterCSVFile}`,
-    });
+    };
   } catch (error) {
-    return { message: 'Internal Server Error' });
+    return { message: 'Internal Server Error' };
   }
 };

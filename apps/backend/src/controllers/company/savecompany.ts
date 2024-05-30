@@ -22,7 +22,7 @@ type Parameters = {
 /**
  * Save the company and if employees found, send them emails
  */
-export const handler = async ({
+export const saveCompany = async ({
   department,
   name,
   id,

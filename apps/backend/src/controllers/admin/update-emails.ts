@@ -6,7 +6,11 @@ type Parameters = {
   secondaryEmail: string;
 };
 
-export const handler = async ({ id, email, secondaryEmail }: Parameters) => {
+export const updateEmail = async ({
+  id,
+  email,
+  secondaryEmail,
+}: Parameters) => {
   try {
     const admin = await Administrator.get({ id });
     if (!admin) {

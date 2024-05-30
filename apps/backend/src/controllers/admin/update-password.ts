@@ -7,7 +7,11 @@ type Parameters = {
   newPassword: string;
 };
 
-export const handler = async ({ id, password, newPassword }: Parameters) => {
+export const updatePassword = async ({
+  id,
+  password,
+  newPassword,
+}: Parameters) => {
   try {
     const saltRounds = 10;
     const admin = await Administrator.get({ id });
