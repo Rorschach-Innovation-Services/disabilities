@@ -1,4 +1,4 @@
-import { genSaltSync, hashSync } from 'bcrypt';
+import { genSaltSync, hashSync } from 'bcryptjs';
 import { Administrator } from '../../models';
 import {
   getQueryStringParameters,
@@ -14,7 +14,7 @@ export const resetPassword = async (event: APIGatewayEvent) => {
       return { statusCode: 400, message: 'Request Body is required!' };
     if (!parameters?.id)
       return { statusCode: 400, message: 'Admin ID is required!' };
-    const saltRounds = 10;
+    const saltRounds = 12;
     const adminResponse = await Administrator.get({ id: parameters.id });
     const admin = adminResponse;
     if (!admin) {

@@ -1,4 +1,4 @@
-import { genSaltSync, hashSync, compareSync } from 'bcrypt';
+import { genSaltSync, hashSync, compareSync } from 'bcryptjs';
 import { Administrator } from '../../models';
 import {
   getQueryStringParameters,
@@ -16,10 +16,10 @@ export const updatePassword = async (event: APIGatewayEvent) => {
       return { statusCode: 400, message: 'Admin ID is required!' };
     const { id } = parameters;
     const { password, newPassword } = requestBody;
-    const saltRounds = 10;
+    const saltRounds = 12;
     const admin = await Administrator.get({ id });
-    if (!admin) {
-      return { message: 'Admin Not Found!' };
+    if (Object.keys(admin).length === 0) {
+      return { statusCode: 400, message: 'Admin Not Found!' };
     }
     const verified = compareSync(password, admin.password || '');
     if (!verified) {

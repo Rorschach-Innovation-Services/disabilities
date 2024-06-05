@@ -8,12 +8,6 @@ interface TransformDataInput {
 }
 
 export type TransformedResult = {
-  Age: number;
-  Gender: string;
-  'Email address': string;
-  Timestamp: string;
-  'Name of organisation': string;
-  'ID Number': string;
   [key: string]: string | number | undefined;
 };
 
@@ -28,15 +22,6 @@ export const transformData = ({
   assessment,
   company,
 }: TransformDataInput): TransformedResult => {
-  let result: TransformedResult = {
-    Timestamp: assessment.created,
-    'Email address': employee.email,
-    Age: employee.age,
-    Gender: employee.gender,
-    'Name of organisation': company.name,
-    'ID Number': employee.id_number.toString(),
-  };
-
   (assessment.questionnaire as any[]).forEach((question) => {
     // Remove comma that will interfere with the delimiter
     if (question.content.includes(',')) {

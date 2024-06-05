@@ -1,10 +1,10 @@
 import JWT from "jsonwebtoken";
-import { Request, Response, NextFunction } from "express";
-import { secretToken } from "../server";
+
+const secretToken = process.env.SECRET_TOKEN||"KmLA7K3cbp";
 
 /**
  * Generate a JWT token
- * @param identifier An object containing an identifer - email
+ * @param identifier An object containing an identifier - email
  * @returns the token
  */
 export const generateToken = (identifier: Object) => {
@@ -19,22 +19,13 @@ export const generateToken = (identifier: Object) => {
  * @returns response or goes to next function
  */
 export const verifyToken = (
-  request: Request,
-  response: Response,
-  next: NextFunction
+  headers: Record<string, string>,
 ) => {
-  const header = request.headers["authorization"];
+  const header = headers["authorization"];
   const token = header && header.split(" ")[1]; // header = "Bearer <token>"
-  if (!token) {
-    return response.status(401).send({ message: "Unauthorized!" });
-  }
+  if (!token) throw new Error("Unauthorized! - No Token"); 
   JWT.verify(token, secretToken as string, (error, user) => {
-    if (error) {
-      return response
-        .status(401)
-        .send({ message: "Unauthorized! - Wrong Token" });
-    }
-    request.user = user;
-    next();
+    if (error) 
+      throw new Error("Unauthorized! - Wrong Token")
   });
 };

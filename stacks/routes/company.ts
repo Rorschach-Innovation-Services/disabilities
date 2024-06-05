@@ -1,7 +1,7 @@
 import { RoutesParameters } from './type';
 
 export const companyRoutes = ({ api, table, bucket }: RoutesParameters) => {
-  api.route('GET /api/company', {
+  api.route('GET /api/companies', {
     handler: 'apps/backend/src/controllers/company/getcompanies.getCompanies',
     link: [table, bucket],
     environment: {
@@ -9,7 +9,7 @@ export const companyRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('GET /api/company/{id}', {
+  api.route('GET /api/companies/{id}', {
     handler: 'apps/backend/src/controllers/company/get-company.getCompany',
     link: [table, bucket],
     environment: {
@@ -17,7 +17,7 @@ export const companyRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('POST /api/company/register', {
+  api.route('POST /api/companies/register', {
     handler: 'apps/backend/src/controllers/company/savecompany.saveCompany',
     link: [table, bucket],
     environment: {
@@ -25,7 +25,7 @@ export const companyRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('POST /api/company/{id}/update', {
+  api.route('POST /api/companies/{id}/update', {
     handler:
       'apps/backend/src/controllers/company/update-company.updateCompany',
     link: [table, bucket],
@@ -34,7 +34,7 @@ export const companyRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('DELETE /api/company', {
+  api.route('DELETE /api/companies', {
     handler:
       'apps/backend/src/controllers/company/deletecompanies.deleteCompaies',
     link: [table, bucket],
@@ -43,7 +43,7 @@ export const companyRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('DELETE /api/company/{id}', {
+  api.route('DELETE /api/companies/{id}', {
     handler:
       'apps/backend/src/controllers/company/delete-company.deleteCompany',
     link: [table, bucket],

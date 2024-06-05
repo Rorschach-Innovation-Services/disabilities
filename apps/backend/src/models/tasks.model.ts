@@ -21,7 +21,7 @@ export const Task = new Entity<
   { _en: EntityNames },
   { id: string; adminId: string }
 >({
-  name: 'department',
+  name: 'task',
   partitionKey: { order: ['id'] },
   sortKey: { order: ['id'] },
   gsPartitionKey: { order: ['_en'] },

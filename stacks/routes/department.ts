@@ -1,7 +1,7 @@
 import { RoutesParameters } from './type';
 
 export const departmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
-  api.route('GET /api/department/spreadsheet/{departmentId}', {
+  api.route('GET /api/departments/spreadsheet/{departmentId}', {
     handler:
       'apps/backend/src/controllers/department/getspreadsheet.getSpreadsheet',
     link: [table, bucket],
@@ -10,7 +10,7 @@ export const departmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('GET /api/department/{departmentId}', {
+  api.route('GET /api/departments/{departmentId}', {
     handler:
       'apps/backend/src/controllers/department/getdepartment.getDepartment',
     link: [table, bucket],
@@ -19,7 +19,7 @@ export const departmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('DELETE /api/department', {
+  api.route('DELETE /api/departments', {
     handler:
       'apps/backend/src/controllers/department/deletedepartment.deleteDepartments',
     link: [table, bucket],
@@ -28,7 +28,7 @@ export const departmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('GET /api/department/group-report/{departmentId}', {
+  api.route('GET /api/departments/group-report/{departmentId}', {
     handler:
       'apps/backend/src/controllers/department/groupreport.createGroupReport',
     link: [table, bucket],

@@ -22,7 +22,7 @@ export const Questionnaire = new Entity<
   { _en: EntityNames },
   { id: string }
 >({
-  name: 'department',
+  name: 'questionnaire',
   partitionKey: { order: ['id'] },
   sortKey: { order: ['id'] },
   gsPartitionKey: { order: ['_en'] },

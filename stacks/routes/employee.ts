@@ -1,7 +1,7 @@
 import { RoutesParameters } from './type';
 
 export const employeeRoutes = ({ api, table, bucket }: RoutesParameters) => {
-  api.route('GET /api/employee/{id}', {
+  api.route('GET /api/employees/{id}', {
     handler: 'apps/backend/src/controllers/employee/getemployee.getEmployee',
     link: [table, bucket],
     environment: {
@@ -9,7 +9,7 @@ export const employeeRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('POST /api/employee/{id}', {
+  api.route('POST /api/employees/{id}', {
     handler:
       'apps/backend/src/controllers/employee/updateemployee.updateEmployee',
     link: [table, bucket],
@@ -18,7 +18,7 @@ export const employeeRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('GET /api/employee/register', {
+  api.route('GET /api/employees/register', {
     handler: 'apps/backend/src/controllers/employee/employee.saveEmployee',
     link: [table, bucket],
     environment: {
@@ -26,7 +26,7 @@ export const employeeRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('POST /api/employee/delete', {
+  api.route('POST /api/employees/delete', {
     handler:
       'apps/backend/src/controllers/employee/deleteemployees.deleteEmployees',
     link: [table, bucket],
@@ -35,7 +35,7 @@ export const employeeRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('GET /api/employee/individual-report/{employeeId}', {
+  api.route('GET /api/employees/individual-report/{employeeId}', {
     handler:
       'apps/backend/src/controllers/employee/report.createIndividualReport',
     link: [table, bucket],

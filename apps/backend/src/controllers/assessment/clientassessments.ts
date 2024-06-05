@@ -28,13 +28,16 @@ export const getClientAssessments = async (event: APIGatewayEvent) => {
       { companyId: company.id },
       { index: 'gsIndex', limit: 1 }
     );
-    const departments = departmentResponse.items || [];
-    if (!departments.length) {
+    const departments =
+      departmentResponse.items.filter((item) => item._en === 'department') ||
+      [];
+    if (departments.length === 0) {
       return { clientName: company.name, departments: [], masterFile: '' };
     }
 
     const dates: string[] = [];
-    departments.forEach(async (department) => {
+    for (let i = 0; i < departments.length; i++) {
+      const department = departments[i];
       const assDates: Date[] = [];
       const assessmentResponse = await Assessment.query(
         {
@@ -42,8 +45,11 @@ export const getClientAssessments = async (event: APIGatewayEvent) => {
         },
         { beginsWith: `${department.id}` }
       );
-      const assessments = assessmentResponse.items || [];
-      (department as any).assessments = assessments;
+      const assessments =
+        assessmentResponse.items.filter((item) => item._en === 'assessment') ||
+        [];
+      departments[i] = { ...departments[i], assessments };
+      // departments[index].assessments = assessments;
 
       assessments.forEach((assessment) => {
         assDates.push(new Date(assessment.created));
@@ -52,12 +58,35 @@ export const getClientAssessments = async (event: APIGatewayEvent) => {
         Math.max(...assDates.map((date: Date) => date.getTime()))
       );
       dates.push(assDates.length === 0 ? 'none' : latestDate.toDateString());
-    });
+    }
+    // departments.forEach(async (department, index) => {
+    //   const assDates: Date[] = [];
+    //   const assessmentResponse = await Assessment.query(
+    //     {
+    //       companyId: company.id,
+    //     },
+    //     { beginsWith: `${department.id}` }
+    //   );
+    //   const assessments =
+    //     assessmentResponse.items.filter((item) => item._en === 'assessment') ||
+    //     [];
+    //   departments[index] = { ...departments[index], assessments };
+    //   // departments[index].assessments = assessments;
+    //
+    //   assessments.forEach((assessment) => {
+    //     assDates.push(new Date(assessment.created));
+    //   });
+    //   const latestDate = new Date(
+    //     Math.max(...assDates.map((date: Date) => date.getTime()))
+    //   );
+    //   dates.push(assDates.length === 0 ? 'none' : latestDate.toDateString());
+    // });
 
     const responseAssessments: any[] = [];
     const departmentCSVs: string[] = [];
     const masterFileData: TransformedResult[] = [];
 
+    console.log('departments', departments);
     for (const department of departments) {
       const csvData: TransformedResult[] = [];
 
@@ -84,11 +113,15 @@ export const getClientAssessments = async (event: APIGatewayEvent) => {
 
     return {
       clientName: company.name,
-      departments: responseAssessments.map((department, index) => ({
-        ...department.toJSON(),
-        lastAssessmentDate: dates[index],
-        departmentFile: departmentCSVs[index],
-      })),
+      departments: responseAssessments.map((department, index) => {
+        console.log('typeof department', index, typeof department);
+        console.log('department', index, department);
+        return {
+          ...department,
+          lastAssessmentDate: dates[index],
+          departmentFile: departmentCSVs[index],
+        };
+      }),
       masterFile: `SEP=,\n${masterCSVFile}`,
     };
   } catch (error) {

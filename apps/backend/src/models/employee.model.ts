@@ -24,7 +24,7 @@ export const Employee = new Entity<
   { _en?: EntityNames },
   { companyId: string; id: string; departmentId: string }
 >({
-  name: 'administrator',
+  name: 'employee',
   partitionKey: { order: ['id'] },
   sortKey: { order: ['id'] },
   gsPartitionKey: { order: ['_en'] },

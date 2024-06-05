@@ -70,3 +70,12 @@ export function getQueryStringParameters(
 
   return params;
 }
+
+type SendResponseParameters = {
+  statusCode: number;
+  body: Record<string, any> | string;
+};
+
+export const sendResponse = ({ statusCode, body }: SendResponseParameters) => {
+  return { statusCode, body: typeof body === "string" ? JSON.stringify({ message: body }) : JSON.stringify(body) }
+};

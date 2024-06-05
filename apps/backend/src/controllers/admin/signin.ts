@@ -1,39 +1,37 @@
 import { Administrator } from '../../models';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { generateToken } from '../../middleware/JWT';
-import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
+import { getRequestBody, APIGatewayEvent, sendResponse } from 'src/utilities/api';
 
 export const signIn = async (event: APIGatewayEvent) => {
   try {
     const requestBody = getRequestBody(event);
-    if (!requestBody)
-      return { statusCode: 400, message: 'Request Body is required!' };
+    if (!requestBody) return sendResponse({ statusCode: 400, body: 'Request Body is required!' });
     const { email, password } = requestBody;
+    console.log("requestBody", requestBody)
     const adminResponse = await Administrator.query(
       { _en: 'administrator' },
       { index: 'gsIndex', limit: 1 }
     );
     const admins = adminResponse.items;
-    if (!admins || admins.length === 0)
-      return { message: 'User does not exist. Please Request Registration' };
+    if (!admins || admins.length === 0) return sendResponse({ statusCode: 400, body: 'User does not exist. Please Request Registration' });
     const admin = admins[0];
 
-    if (!admin) {
-      return { message: 'User does not exist. Please Request Registration' };
+    if (Object.keys(admin).length === 0) {
+      return sendResponse({ statusCode: 400, body: 'User does not exist. Please Request Registration' });
     } else {
       if (admin.deleted)
-        return {
-          message: 'User does no longer exist. Please Request Registration',
-        };
+        return sendResponse({ statusCode: 400, body: 'User does no longer exist. Please Request Registration' });
       const verified = await bcrypt.compare(password, admin.password || '');
       if (!verified) {
-        return { message: 'Incorrect Email/Password' };
+        return sendResponse({ statusCode: 400, body: 'Incorrect Email/Password' });
       }
       const token = generateToken({ email, role: 'admin' });
       admin.password = '';
-      return { message: 'Successful login', token, admin };
+      return sendResponse({ statusCode: 200, body: { message: 'Successful login', token, admin } });
     }
   } catch (error) {
-    return { message: 'Internal Server Error' };
+    console.error('Error in signIn', error);
+    return sendResponse({ statusCode: 500, body: 'Internal Server Error' });
   }
 };

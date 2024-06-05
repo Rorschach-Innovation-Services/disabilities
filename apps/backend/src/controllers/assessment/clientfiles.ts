@@ -22,7 +22,8 @@ export const getClientFiles = async () => {
       { _en: 'company' },
       { index: 'gsIndex' }
     );
-    const companies = companyResponse.items || [];
+    const companies =
+      companyResponse.items.filter((item) => item._en === 'company') || [];
     if (!companies) {
       return { message: 'Companies not found' };
     }
@@ -45,7 +46,9 @@ export const getClientFiles = async () => {
         },
         {}
       );
-      const assessments = assessmentResponse.items || [];
+      const assessments =
+        assessmentResponse.items.filter((item) => item._en === 'assessment') ||
+        [];
 
       if (!assessments.length) {
         // Add attributes to the modified company
@@ -87,7 +90,8 @@ export const getClientFiles = async () => {
         { _en: 'employee' },
         { index: 'gsIndex', beginsWith: company.id }
       );
-      const employees = employeesResponse.items || [];
+      const employees =
+        employeesResponse.items.filter((item) => item._en === 'employee') || [];
       const clientCSVFile = await parseAsync(singleClientData, csvOptions);
       modifiedCompany.csvFile = `SEP=,\n${clientCSVFile}`;
       modifiedCompany.lastAssessmentDate = assessmentDate;
@@ -108,6 +112,7 @@ export const getClientFiles = async () => {
       masterFile: `SEP=,\n${masterCSVFile}`,
     };
   } catch (error) {
+    console.error('error', error);
     return { message: 'Internal Server Error' };
   }
 };

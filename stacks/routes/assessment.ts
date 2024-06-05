@@ -1,7 +1,7 @@
 import { RoutesParameters } from './type';
 
 export const assessmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
-  api.route('GET /api/assessment', {
+  api.route('GET /api/assessments', {
     handler:
       'apps/backend/src/controllers/assessment/assessment.getAssessments',
     link: [table, bucket],
@@ -10,7 +10,7 @@ export const assessmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('POST /api/assessment/send-link', {
+  api.route('POST /api/assessments/send-link', {
     handler: 'apps/backend/src/controllers/assessment/send-link.sendLink',
     link: [table, bucket],
     environment: {
@@ -18,7 +18,7 @@ export const assessmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('DELETE /api/assessment', {
+  api.route('DELETE /api/assessments', {
     handler:
       'apps/backend/src/controllers/assessment/deleteassements.deleteAssessments',
     link: [table, bucket],
@@ -27,7 +27,7 @@ export const assessmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('POST /api/assessment/get-assessment', {
+  api.route('POST /api/assessments/get-assessment', {
     handler: 'apps/backend/src/controllers/assessment/assessment.getAssessment',
     link: [table, bucket],
     environment: {
@@ -35,7 +35,7 @@ export const assessmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('POST /api/assessment/save', {
+  api.route('POST /api/assessments/save', {
     handler:
       'apps/backend/src/controllers/assessment/saveassessment.saveAssessment',
     link: [table, bucket],
@@ -44,7 +44,7 @@ export const assessmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('GET /api/assessment/client-files', {
+  api.route('GET /api/assessments/client-files', {
     handler:
       'apps/backend/src/controllers/assessment/clientfiles.getClientFiles',
     link: [table, bucket],
@@ -53,7 +53,7 @@ export const assessmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('GET /api/assessment/client-assessments/{companyID}', {
+  api.route('GET /api/assessments/client-assessments/{companyID}', {
     handler:
       'apps/backend/src/controllers/assessment/clientassessments.getClientAssessments',
     link: [table, bucket],
@@ -62,7 +62,7 @@ export const assessmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
-  api.route('GET /api/assessment/averages', {
+  api.route('GET /api/assessments/averages', {
     handler: 'apps/backend/src/controllers/assessment/averages.getAverages',
     link: [table, bucket],
     environment: {

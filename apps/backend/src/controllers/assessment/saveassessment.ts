@@ -2,7 +2,7 @@
  * Save Assessment Controller
  */
 import { Assessment, Employee, Company, Department } from '../../models';
-import scoreSleepHealth from '../../utilities/score';
+import calculatedScore from '../../utilities/score';
 import generateReport from '../../utilities/genReport';
 import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
 
@@ -29,7 +29,7 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
     if (!requestBody)
       return { statusCode: 400, message: 'Request Body is required!' };
     const { employee, questionnaire, company, department } = requestBody;
-    const assessmentScore = scoreSleepHealth(questionnaire);
+    const assessmentScore = calculatedScore(questionnaire);
 
     /**Check if the company exists in the database */
     const companyDocument = await Company.get({ id: company });
@@ -76,14 +76,15 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
       departmentId: department,
       deleted: false,
     });
-    const reportRes = await generateReport(assessment);
-    if (typeof reportRes !== 'undefined' && 'error' in reportRes) {
-      return {
-        message: 'Something Went Wrong While generating report!',
-        error: reportRes.error,
-      };
-    }
-    return { message: 'Successful', data: reportRes };
+    // const reportRes = await generateReport(assessment);
+    // if (typeof reportRes !== 'undefined' && 'error' in reportRes) {
+    //   return {
+    //     message: 'Something Went Wrong While generating report!',
+    //     error: reportRes.error,
+    //   };
+    // }
+    // return { message: 'Successful', data: reportRes };
+    return { message: 'Successful' };
   } catch (error) {
     console.log('error', error);
     return { message: 'Internal Server Error', error };

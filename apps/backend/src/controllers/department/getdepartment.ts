@@ -17,7 +17,9 @@ export const getDepartment = async (event: APIGatewayEvent) => {
       { _en: 'employee' },
       { index: 'gsIndex', beginsWith: `${company.id}:${department.id}` }
     );
-    const employees = employeesResponse.items || [];
+    const employees = (employeesResponse.items || []).filter(
+      (item) => item._en === 'employee'
+    );
     for (let i = 0; i < employees.length; i++) {
       const assessmentResponse = await Assessment.query(
         {
@@ -25,9 +27,9 @@ export const getDepartment = async (event: APIGatewayEvent) => {
         },
         { beginsWith: `${department.id}:${employees[i].id}` }
       );
-      const assessments = (assessmentResponse.items || []).sort(
-        (a, b) => Number(b.created) - Number(a.created)
-      );
+      const assessments = (assessmentResponse.items || [])
+        .filter((item) => item._en === 'assessment')
+        .sort((a, b) => Number(b.created) - Number(a.created));
       let assessment: any = undefined;
       if (assessments.length > 0) assessment = assessments[0];
 
@@ -41,6 +43,7 @@ export const getDepartment = async (event: APIGatewayEvent) => {
       department: {
         ...department,
         employees: employees.filter((employee) => !employee.deleted),
+        company,
       },
     };
   } catch (error) {

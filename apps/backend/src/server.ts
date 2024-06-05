@@ -1,15 +1,9 @@
-import express, { Request, Response, json } from 'express';
 import cors from 'cors';
 import router from './routes';
-import contactUs from './controllers/other/contact-us';
-import defaultConfig from './configuration/default';
-import testingConfig from './configuration/testing';
-import productionConfig from './configuration/production';
 import path from 'path';
 import dotenv from 'dotenv';
 
 dotenv.config();
-const mode = process.env.NODE_ENV as string;
 
 /**
  * Determines the mode
@@ -33,7 +27,7 @@ const config: Function = (): Object => {
   // };
 };
 
-const app = express();
+/* const app = express();
 const PORT = config().port || 9000;
 console.log('config', config());
 
@@ -67,4 +61,4 @@ app.listen(PORT, (): void =>
 
 //Export the secret token
 const secretToken = config().tokenSecret;
-export { app, secretToken };
+export { app, secretToken }; */

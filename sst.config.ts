@@ -12,7 +12,8 @@ export default $config({
   app(input) {
     return {
       name: 'inclusivity',
-      removal: input?.stage === 'production' ? 'retain' : 'remove',
+      // removal: input?.stage === 'production' ? 'retain' : 'remove',
+      removal: 'retain',
       home: 'aws',
       providers: {
         aws: {
@@ -28,13 +29,6 @@ export default $config({
     // });
 
     const bucket = new sst.aws.Bucket('InclusivityBucket');
-    const site = new sst.aws.StaticSite('InclusivitySite', {
-      path: 'apps/frontend',
-      build: {
-        command: 'yarn run build',
-        output: 'dist',
-      },
-    });
     const table = new sst.aws.Dynamo('InclusivityTable', {
       fields: {
         pk: 'string',
@@ -57,6 +51,17 @@ export default $config({
     employeeRoutes({ api, table, bucket });
     questionRoutes({ api, table, bucket });
     taskRoutes({ api, table, bucket });
+
+    const site = new sst.aws.StaticSite('InclusivitySite', {
+      path: 'apps/frontend',
+      build: {
+        command: 'yarn run build',
+        output: 'dist',
+      },
+      environment: {
+        VITE_API_ENDPOINT: api.url.apply((url) => `${url}/api`),
+      },
+    });
 
     const router = new sst.aws.Router('InclusivityRouter', {
       routes: {

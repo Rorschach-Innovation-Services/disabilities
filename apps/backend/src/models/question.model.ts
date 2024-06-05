@@ -17,7 +17,7 @@ export const Question = new Entity<
   { _en: EntityNames },
   { givenId: string }
 >({
-  name: 'department',
+  name: 'question',
   partitionKey: { order: ['id'] },
   sortKey: { order: ['id'] },
   gsPartitionKey: { order: ['_en'] },

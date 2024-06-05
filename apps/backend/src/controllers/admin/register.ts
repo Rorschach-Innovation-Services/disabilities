@@ -14,7 +14,7 @@ export const register = async (event: APIGatewayEvent) => {
       password: '',
       deleted: false,
       bio: '',
-      role: 'admin',
+      role: 'administrator',
       photo: '',
       companyId: '',
       location: '',

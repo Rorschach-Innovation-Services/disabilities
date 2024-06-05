@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import { Routes } from './routes/route';
 import { SnackbarProvider } from 'notistack';
 import { createTheme, ThemeProvider } from '@mui/material';
