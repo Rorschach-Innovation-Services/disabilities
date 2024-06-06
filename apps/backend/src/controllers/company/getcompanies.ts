@@ -1,17 +1,15 @@
 /**
  * Get all companies consulted by an admin
  */
-import { Assessment, Company, Employee } from '../../models';
+import { Assessment, Company, Employee, Department } from '../../models';
 
 export const getCompanies = async () => {
-    console.log("called")
   try {
     const companiesResponse = await Company.query(
       { _en: 'company' },
       { index: 'gsIndex' }
     );
     const companies = companiesResponse.items;
-    console.log("companies", companies)
     const existingCompanies = companies.filter((company) => !company.deleted);
     const returnCompanies = Promise.all(
       existingCompanies.map(async (company) => {
@@ -24,13 +22,17 @@ export const getCompanies = async () => {
           { _en: 'employee' },
           { index: 'gsIndex', beginsWith: company.id }
         );
+        const departmentsResponse = await Department.query(
+          { companyId: company.id },
+          { index: 'gsIndex' }
+        );
         const employees = employeesResponse.items || [];
         const employeesLength = employees.length;
         company.status =
           parseInt(`${assessments.length / employeesLength}`) === 1
             ? 'Profile Completed'
             : 'In Progress';
-        return company;
+        return { ...company, departments: departmentsResponse.items || [] };
       })
     );
     return returnCompanies.then((res) => {
@@ -41,7 +43,7 @@ export const getCompanies = async () => {
       return { companies: sortedCompanyList };
     });
   } catch (error) {
-    console.error(error)
+    console.error(error);
     return { message: 'Internal Server Error' };
   }
 };

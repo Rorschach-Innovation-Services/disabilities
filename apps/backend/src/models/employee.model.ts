@@ -4,12 +4,7 @@ export type EmployeeAttributes = {
   id: string;
   name: string;
   email: string;
-  age: number;
-  phone: string;
-  gender: string;
-  bio: string;
   companyId: string;
-  id_number: string;
   departmentId: string;
   deleted: boolean;
   created: number;

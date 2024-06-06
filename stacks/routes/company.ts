@@ -36,7 +36,7 @@ export const companyRoutes = ({ api, table, bucket }: RoutesParameters) => {
   });
   api.route('DELETE /api/companies', {
     handler:
-      'apps/backend/src/controllers/company/deletecompanies.deleteCompaies',
+      'apps/backend/src/controllers/company/deletecompanies.deleteCompanies',
     link: [table, bucket],
     environment: {
       TABLE_NAME: table.name,

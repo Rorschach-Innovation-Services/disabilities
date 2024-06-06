@@ -5,6 +5,7 @@ export type DepartmentAttributes = {
   name: string;
   employeeSize: number;
   companyId: string;
+  completedQuestionnaires: Record<number, number>;
   deleted: boolean;
   created: number;
   modified: number;

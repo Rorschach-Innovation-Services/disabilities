@@ -28,13 +28,12 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
     const requestBody = getRequestBody(event);
     if (!requestBody)
       return { statusCode: 400, message: 'Request Body is required!' };
-    const { employee, questionnaire, company, department } = requestBody;
-    const assessmentScore = calculatedScore(questionnaire);
+    const { employeeEmail, questionnaire, company, department } = requestBody;
 
     /**Check if the company exists in the database */
     const companyDocument = await Company.get({ id: company });
     if (!companyDocument) {
-      return { message: 'Company not found' };
+      return { statusCode: 400, message: 'Company not found' };
     }
 
     /**Check if the department exists in the database */
@@ -42,36 +41,52 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
       id: department,
     });
     if (!departmentDocument) {
-      return { message: 'Department not found' };
+      return { statusCode: 400, message: 'Department not found' };
     }
 
     /**Check if the employee exists in the database */
-    const employeeDoc = await Employee.get({
-      id: employee,
-    });
-    if (!employeeDoc) {
-      return { message: 'Employee Not Found!' };
+    const employeesResponse = await Employee.query(
+      {
+        _en: 'employee',
+      },
+      { beginsWith: `${company}:${department}` }
+    );
+    const employees = employeesResponse.items || [];
+
+    let employeeFound = null;
+    let employeeExists = false;
+    for (const employee of employees) {
+      if (employee.email === employeeEmail) {
+        employeeExists = true;
+        employeeFound = employee;
+        break;
+      }
     }
 
-    const assessmentResponse = await Assessment.query(
-      { companyId: companyDocument.id },
-      { beginsWith: department }
-    );
-    const assessments = assessmentResponse.items || [];
-
     /**Limit the number of employee assessments a company needs to complete to not exceed the . */
-    if (assessments.length === departmentDocument.employeeSize) {
+    if (employees.length === departmentDocument.employeeSize) {
       return {
+        statusCode: 400,
         message: 'Cannot Submit Assessment. Limit Exceeded!',
-        employee: employeeDoc.id,
+        employee: employeeEmail,
       };
+    }
+
+    if (!employeeExists) {
+      const createdEmployee = await Employee.create({
+        name: employeeEmail,
+        email: employeeEmail,
+        companyId: company,
+        departmentId: department,
+        deleted: false,
+      });
+      employeeFound = createdEmployee;
     }
 
     /**Create and save the assessment */
     const assessment = await Assessment.create({
-      employeeId: employee,
+      employeeId: employeeFound.id,
       questionnaire,
-      score: assessmentScore,
       companyId: company,
       departmentId: department,
       deleted: false,

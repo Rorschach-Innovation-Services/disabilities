@@ -35,10 +35,6 @@ export const Questionnaire = () => {
     url: '/question',
     method: 'get',
   });
-  const employeeRequest = useAxios({
-    url: '/employees/register',
-    method: 'post',
-  });
   const deleteEmployeeRequest = useAxios({
     url: '/employees/delete',
     method: 'post',
@@ -48,30 +44,14 @@ export const Questionnaire = () => {
     method: 'post',
   });
 
-  const sendEmployeeData = () => {
-    // save employee data
-    employeeRequest.executeWithData({
-      company: companyId,
-      name: state.employee.name,
-      email: state.employee.email,
-      age: state.employee.age,
-      gender: state.employee.gender,
-      department: departmentId,
-      id_number: state.employee.idNumber,
-    });
-  };
-
-  useEffect(() => {
-    if (employeeRequest.error || !employeeRequest.response) return;
-
-    // Save employee questionnaire responses
+  const sendData = () => {
     sleepQuestionRequest.executeWithData({
       company: companyId,
-      employee: employeeId || employeeRequest.response.employee,
+      employeeEmail: state.employee.email,
       questionnaire: state.questions,
       department: departmentId,
     });
-  }, [employeeRequest.response, employeeRequest.error]);
+  };
 
   const showErrorMessage = () => {
     return assessmentError !== null && assessmentError.length > 0 ? (
@@ -217,12 +197,10 @@ export const Questionnaire = () => {
           >
             {showProgress()}
             {renderStep()}
-            {employeeRequest.loading || sleepQuestionRequest.loading ? (
+            {sleepQuestionRequest.loading ? (
               <Box sx={{ textAlign: 'center' }}>
                 <LoadingButton
-                  loading={
-                    employeeRequest.loading || sleepQuestionRequest.loading
-                  }
+                  loading={sleepQuestionRequest.loading}
                   variant="outlined"
                   loadingPosition="start"
                   startIcon={<Save sx={{ color: 'transparent' }} />}
@@ -245,7 +223,7 @@ export const Questionnaire = () => {
                 variant="contained"
                 onClick={() => {
                   state.step === state.questionCount
-                    ? sendEmployeeData()
+                    ? sendData()
                     : handleNext();
                 }}
                 sx={{

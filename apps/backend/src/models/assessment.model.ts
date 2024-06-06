@@ -3,8 +3,8 @@ import { Entity, MasterTable, EntityNames } from '@repo/db-wrapper';
 export type AssessmentAttributes = {
   id: string;
   questionnaire: any[];
-  score: Record<string, any>;
   companyId: string;
+  questionnaireId: string;
   departmentId: string;
   employeeId: string;
   created: number;
@@ -27,26 +27,3 @@ export const Assessment = new Entity<
   gsSortKey: { order: ['employeeId', 'id'] },
   table: MasterTable,
 });
-
-export interface Score {
-  TIB: number;
-  TIBValue: number;
-  TST: number;
-  TSTValue: number;
-  SE: number;
-  SEValue: number;
-  Quality: number;
-  DayTimeFunction: number;
-  DayTimeFunctionValue: number;
-  Disorder: string;
-  DisorderValue: number;
-  DisorderManagement: string;
-  DisorderManagementValue: number;
-  DisorderModifiedValue: number;
-  MedToSleep: string;
-  MedToSleepValue: number;
-  TotalValue: number;
-  MedModifiedTotalValue: number;
-  SleepHealthScore: number;
-  SleepHealthScorePercentage: number;
-}
