@@ -1,15 +1,18 @@
 import { Entity, EntityNames, MasterTable } from '@repo/db-wrapper';
 
+export type QuestionnaireQuestionItem = {
+  id: string;
+  question: string;
+  helperText: string;
+};
+
 export type QuestionnaireAttributes = {
   id: string;
   name: string;
   creator: string;
   order: number; // The order in which the questiionaires are administered
   date: string;
-  questionnaire: {
-    id: string;
-    content: string;
-  }[];
+  questions: QuestionnaireQuestionItem[];
   created: number;
   modified: number;
   _en?: EntityNames;

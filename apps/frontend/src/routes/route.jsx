@@ -20,7 +20,7 @@ import { ClientsPage } from '../pages/clients/clients-page';
 import { SingleClientPage } from '../pages/clients/single-client';
 import { AboutUs } from '../pages/about-us/about-us';
 import { Index } from '../pages/home/index';
-import { Research } from '../pages/reasearch/research';
+import { Research } from '../pages/research/research';
 import { Services } from '../pages/services/services';
 import { Dale } from '../pages/team-members/dale-rae';
 import { Philippa } from '../pages/team-members/philippa-forshaw';
@@ -52,6 +52,8 @@ import { ForgotPassword } from '../pages/forgot-password/forgot-password';
 import { Staff } from '../pages/staff/staff';
 import { Settings } from '../pages/settings/settings';
 import { RegisterCompanyDepartment } from '../pages/register-client/register.client';
+import { QuestionnaireBank } from '../pages/questionnaire-bank/banks';
+import { QuestionnaireAdd } from '../pages/questionnaire-add/add';
 
 const ProtectedRoute = (routeProps) => {
   const { name, token } = useLocalStorage();
@@ -174,6 +176,16 @@ export const Routes = () => {
           exact
           path="/questionnaire/:companyId/:departmentId/"
           component={Questionnaire}
+        />
+        <ProtectedRoute
+          exact
+          path="/questionnaire-bank"
+          component={QuestionnaireBank}
+        />
+        <ProtectedRoute
+          exact
+          path="/questionnaire-add"
+          component={QuestionnaireAdd}
         />
         <ProtectedRoute
           exact
