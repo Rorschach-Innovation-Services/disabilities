@@ -11,7 +11,6 @@ export type QuestionnaireAttributes = {
   name: string;
   creator: string;
   order: number; // The order in which the questiionaires are administered
-  date: string;
   questions: QuestionnaireQuestionItem[];
   created: number;
   modified: number;

@@ -5,6 +5,7 @@ import { Question } from './question.model';
 import { Company } from './company.model';
 import { Task } from './tasks.model';
 import { Department } from './department.model';
+import { Questionnaire } from './questionnaire.model.ts';
 
 // Export A list of Models
 export {
@@ -15,4 +16,5 @@ export {
   Company,
   Department,
   Task,
+  Questionnaire,
 };

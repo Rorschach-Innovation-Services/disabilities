@@ -5,26 +5,19 @@ import {
   Button,
   useMediaQuery,
   Box,
-  IconButton,
   Breadcrumbs,
 } from '@mui/material';
 import { Shell } from '../../components/shell';
 import { useAxios } from '../../hooks/axios';
 import { ClientsTable } from './components/items';
-import { Bottom } from './components/bottom';
 import { TopSection } from './components/top-section';
 import { useMediaStorage } from '../../hooks/media';
-import { getKey } from '../../utils/get-key';
 import { CustomMessage } from '../../components/message';
-import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { Loading } from '../../components/loading';
-import { Save } from '@mui/icons-material';
-import { LoadingButton } from '@mui/lab';
-import { useHistory } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import { EditQuestion } from './components/edit';
 import { v4 } from 'uuid';
 
-const CLIENTS_TO_DISPLAY = 5;
 const data = {
   id: 'q1',
   name: 'Employee Satisfaction Survey',
@@ -59,56 +52,32 @@ const data = {
   _en: 'questionnaire',
 };
 
-const styles = {
-  actionButtons: {
-    backgroundColor: 'black',
-    color: 'white',
-    textTransform: 'none',
-    borderRadius: '10px',
-    height: '30px',
-  },
-  actionButtonText: {
-    fontSize: '10px',
-    fontWeight: '500',
-    lineHeight: '11px',
-  },
-  text: {
-    fontSize: '9px',
-    fontWeight: '500',
-    lineHeight: '10px',
-  },
-};
-
 export const QuestionnaireAdd = () => {
+  const { state } = useLocation();
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState(null);
   const [questionnaireName, setQuestionnaireName] = useState('');
   const [openMessage, setOpenMessage] = useState(false);
-  const [clients, setClients] = useState(data.questions);
-  const media = useMediaStorage();
+  const [clients, setClients] = useState([]);
   const { push } = useHistory();
-  const useIconsOnly = useMediaQuery('(max-width:800px)');
-  const { execute, response, error, loading } = useAxios({
-    url: '/assessments/client-files',
-    method: 'get',
-  });
-  const deleteRequest = useAxios({
-    url: '/companies',
-    method: 'delete',
-  });
-
-  // useEffect(() => {
-  //   execute();
-  // }, []);
+  const { execute, executeWithParameters, response, error, loading } = useAxios(
+    {
+      url: '/questionnaires/createQuestionnaire',
+      method: 'post',
+    }
+  );
 
   useEffect(() => {
-    if (!deleteRequest.response || deleteRequest.error) return;
-    if (response) {
-      window.location.reload();
+    if (state && state.questionnaire) {
+      setClients(state.questionnaire.questions);
+      setQuestionnaireName(state.questionnaire.name);
     }
-  }, [deleteRequest.response, deleteRequest.error]);
+  }, [state]);
 
-  // if (loading || !response)
+  useEffect(() => {
+    if (response && !error) push('/questionnaire-bank');
+  }, [response, error]);
+
   if (loading)
     return (
       <Box
@@ -235,10 +204,44 @@ export const QuestionnaireAdd = () => {
         </Grid>
         <Grid item xs={12} align="right" sx={{ marginTop: '50px' }}>
           <Button
+            onClick={() => push('/questionnaire-bank')}
+            variant="outlined"
+            sx={{ width: '100px', marginRight: '10px' }}
+          >
+            Back
+          </Button>
+          <Button
             disabled={questionnaireName.length === 0 || clients.length === 0}
+            onClick={() => {
+              if (state && state.questionnaire) {
+                executeWithParameters({
+                  url: '/questionnaires/updateQuestionnaire',
+                  method: 'POST',
+                  data: {
+                    name: questionnaireName,
+                    id: state.questionnaire.id,
+                    questions: clients.map(({ id, question, helperText }) => ({
+                      id,
+                      question,
+                      helperText,
+                    })),
+                  },
+                })();
+              } else {
+                execute({
+                  name: questionnaireName,
+                  admin: localStorage.getItem('adminID'),
+                  questions: clients.map(({ id, question, helperText }) => ({
+                    id,
+                    question,
+                    helperText,
+                  })),
+                });
+              }
+            }}
             variant="contained"
           >
-            Create Questionnaire
+            {state && state.questionnaire ? 'Update' : 'Create'} Questionnaire
           </Button>
         </Grid>
       </Shell>

@@ -7,6 +7,7 @@ import { departmentRoutes } from './stacks/routes/department';
 import { employeeRoutes } from './stacks/routes/employee';
 import { questionRoutes } from './stacks/routes/questions';
 import { taskRoutes } from './stacks/routes/tasks';
+import { questionnaireRoutes } from './stacks/routes/questionnaire';
 
 export default $config({
   app(input) {
@@ -51,6 +52,7 @@ export default $config({
     employeeRoutes({ api, table, bucket });
     questionRoutes({ api, table, bucket });
     taskRoutes({ api, table, bucket });
+    questionnaireRoutes({ api, table, bucket });
 
     const site = new sst.aws.StaticSite('InclusivitySite', {
       path: 'apps/frontend',

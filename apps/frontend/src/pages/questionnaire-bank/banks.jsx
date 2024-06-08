@@ -112,62 +112,29 @@ const styles = {
 };
 
 export const QuestionnaireBank = () => {
-  const [selected, setSelected] = useState([]);
-  const [links, setLinks] = useState([]);
-  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState(null);
   const [openMessage, setOpenMessage] = useState(false);
-  const [linksLoaded, setLinksLoaded] = useState(false);
   const [step, setStep] = useState(1);
-  const [clients, setClients] = useState(data);
+  const [clients, setClients] = useState([]);
   const { push } = useHistory();
   const useIconsOnly = useMediaQuery('(max-width:800px)');
   const { execute, response, error, loading } = useAxios({
-    url: '/assessments/client-files',
+    url: '/questionnaires',
     method: 'get',
   });
   const deleteRequest = useAxios({
-    url: '/companies',
+    url: '/questionnaires',
     method: 'delete',
   });
 
-  const getClients = () => {
-    // const list = response.companies;
-    const list = data;
-    const result = [];
-
-    let i = (step - 1) * CLIENTS_TO_DISPLAY;
-    let count = 0;
-
-    while (count < CLIENTS_TO_DISPLAY && i < list.length) {
-      result.push(list[i]);
-      i++;
-      count++;
-    }
-
-    setClients(result);
-  };
-
-  // useEffect(() => {
-  //   execute();
-  // }, []);
+  useEffect(() => {
+    execute();
+  }, []);
   // return only 4 clients to display at a time
-
   useEffect(() => {
     if (!response) return;
-    getClients();
-  }, [step, response, error]);
-
-  // Filter clients for the once searched for
-  useEffect(() => {
-    if (!response) return;
-    if (search === '') return getClients();
-    // const list = response.companies;
-    const list = data;
-    const result = list.filter((client) =>
-      client.name.toLowerCase().includes(search.toLowerCase())
-    );
-    setClients(result);
-  }, [search]);
+    setClients(response.questionnaires);
+  }, [response, error]);
 
   const handleBack = () => {
     setStep((prev) => prev - 1);
@@ -177,24 +144,14 @@ export const QuestionnaireBank = () => {
     setStep((prev) => prev + 1);
   };
 
-  const toggleSelection = (row) => {
-    if (selected.includes(row.id)) {
-      const copy = selected.filter((id) => id !== row.id);
-      setSelected(copy);
-    } else {
-      setSelected((prev) => [...prev, row.id]);
-    }
-  };
-
   useEffect(() => {
     if (!deleteRequest.response || deleteRequest.error) return;
-    if (response) {
+    if (deleteRequest) {
       window.location.reload();
     }
   }, [deleteRequest.response, deleteRequest.error]);
 
-  // if (loading || !response)
-  if (loading)
+  if (loading || !response)
     return (
       <Box
         sx={{
@@ -252,36 +209,32 @@ export const QuestionnaireBank = () => {
       childrenContainerStyling={{ backgroundColor: '#F0F0F0' }}
     >
       <CustomMessage
-        message="You are about a delete a client. Are you sure you want to continue?"
+        message="You are about a delete a questionnaire. Are you sure you want to continue?"
         open={openMessage}
         buttons
         onCancelClick={() => {
           setOpenMessage(false);
-          setSelected([]);
         }}
         onContinueClick={() => {
-          deleteRequest.execute({
-            companyIDs: selected,
-          });
+          deleteRequest.executeWithParameters({
+            url: '/questionnaires/deleteQuestionnaire/' + selected,
+            method: 'get',
+          })();
+          setOpenMessage(false);
         }}
       />
       <TopSection
-        selected={selected}
-        response={response}
-        search={search}
-        setSearch={setSearch}
         buttonText="Create Questionnaire"
         buttonIcon
         onButtonClick={() => push('/questionnaire-add')}
       />
       <Grid item xs={12}>
         <ClientsTable
-          selected={selected}
-          toggleSelection={toggleSelection}
           clients={clients}
-          setOpenMessage={setOpenMessage}
-          setSelected={setSelected}
-          links={links ? links : []}
+          setOpenMessage={(bool, id) => {
+            setSelected(id);
+            setOpenMessage(bool);
+          }}
         />
       </Grid>
       <Grid container item xs={12} textAlign="right">
@@ -309,13 +262,9 @@ export const QuestionnaireBank = () => {
                 m: 'auto',
               }}
             >
-              {/* {response ? step : ''} of{' '} */}
-              {/* {response && response.companies.length > 0 */}
-              {/*   ? Math.ceil(response.companies.length / CLIENTS_TO_DISPLAY) */}
-              {/*   : 0} */}
-              {data ? step : ''} of{' '}
-              {data && data.length > 0
-                ? Math.ceil(data.length / CLIENTS_TO_DISPLAY)
+              {response ? step : ''} of{' '}
+              {response && response.questionnaires.length > 0
+                ? Math.ceil(response.questionnaires.length / CLIENTS_TO_DISPLAY)
                 : 0}
             </Typography>
             <IconButton
@@ -332,68 +281,14 @@ export const QuestionnaireBank = () => {
             </IconButton>
           </Box>
         </Grid>
-        <Grid item xs={6} textAlign="right">
-          <Button
-            variant="contained"
-            disabled={!selected.length}
-            onClick={() => setSelected([])}
-            sx={{
-              ...styles.actionButtons,
-              padding: '9px 33px 10px 35px',
-              width: '100px',
-            }}
-          >
-            <Typography variant="body1" sx={{ ...styles.actionButtonText }}>
-              Cancel
-            </Typography>
-          </Button>
-          {deleteRequest.loading ? (
-            <LoadingButton
-              loading={deleteRequest.loading}
-              variant="outlined"
-              loadingPosition="start"
-              startIcon={<Save sx={{ color: 'transparent' }} />}
-              sx={{
-                textTransform: 'none',
-                backgroundColor: 'black',
-                color: 'white !important',
-                padding: '1% 2%',
-                fontSize: '10px',
-                borderRadius: '10px',
-                height: '30px',
-                mt: '3%',
-                ml: '1%',
-              }}
-            >
-              Deleting...
-            </LoadingButton>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={() => setOpenMessage(true)}
-              disabled={!selected.length}
-              sx={{
-                ...styles.actionButtons,
-                ml: '5px',
-                padding: '9px 17px 10px 19px',
-                width: '107px',
-              }}
-            >
-              <Typography variant="body1" sx={{ ...styles.actionButtonText }}>
-                Delete selected
-              </Typography>
-            </Button>
-          )}
+        <Grid item xs={12}>
+          <Bottom
+            allClients={data}
+            styles={styles}
+            step={step}
+            clients={clients}
+          />
         </Grid>
-      </Grid>
-      <Grid item xs={12}>
-        <Bottom
-          allClients={data}
-          styles={styles}
-          step={step}
-          clients={clients}
-          search={search}
-        />
       </Grid>
     </Shell>
   );

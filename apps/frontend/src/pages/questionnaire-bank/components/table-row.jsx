@@ -34,58 +34,21 @@ const styles = {
   },
 };
 
-export const CustomTableRow = ({
-  row,
-  toggleSelection,
-  links,
-  index,
-  selected,
-  setSelected,
-  setOpenMessage,
-}) => {
+export const CustomTableRow = ({ row, index, setOpenMessage }) => {
   const { push } = useHistory();
   const [anchorEl, setAnchorEl] = useState(null);
   const changePadding = useMediaQuery('(max-width:560px)');
-  const { response, executeWithData, error, loading } = useAxios({
-    url: '/companies',
-    method: 'delete',
-  });
-
-  useEffect(() => {
-    if (response && !error) {
-      window.location.reload();
-    }
-  }, [response, error]);
-
-  const handleSelectEvent = (event, row) => {
-    event.stopPropagation();
-    toggleSelection(row);
-  };
 
   return (
     <TableRow
-      onClick={() => push(`/clients/${row.id}`)}
+      onClick={() => push(`/questionnaire-add`, { questionnaire: row })}
       sx={{
-        backgroundColor: `${selected ? 'primary.main' : 'white'}`,
-        color: `${selected ? 'white' : 'black'}`,
+        backgroundColor: 'white',
+        color: 'black',
         marginBottom: '7%',
         cursor: 'pointer',
       }}
     >
-      <TableCell
-        component="th"
-        scope="row"
-        sx={{
-          'td:first-of-type,': {
-            borderRadius: '15px 0 0 15px',
-          },
-          padding: changePadding ? '8px' : '16px',
-        }}
-      >
-        <IconButton onClick={(e) => handleSelectEvent(e, row)}>
-          {selected ? <SelectedBlackIcon /> : <UnselectedIcon />}
-        </IconButton>
-      </TableCell>
       <TableCell sx={{ padding: changePadding ? '8px' : '16px' }}>
         <Typography
           sx={{
@@ -115,21 +78,14 @@ export const CustomTableRow = ({
           padding: changePadding ? '8px' : '16px',
         }}
       >
-        {loading ? (
-          <Typography sx={{ fontSize: '12px', fontWeight: 500 }}>
-            Deleting...
-          </Typography>
-        ) : (
-          <IconButton
-            onClick={(event) => {
-              event.stopPropagation();
-              setOpenMessage(true);
-              setSelected((prev) => [...prev, row.id]);
-            }}
-          >
-            <Box component="img" src={DeleteIcon} />
-          </IconButton>
-        )}
+        <IconButton
+          onClick={(event) => {
+            event.stopPropagation();
+            setOpenMessage(true, row.id);
+          }}
+        >
+          <Box component="img" src={DeleteIcon} />
+        </IconButton>
       </TableCell>
     </TableRow>
   );

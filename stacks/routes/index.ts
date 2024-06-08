@@ -8,6 +8,7 @@ import { questionRoutes } from './questions';
 import { assessmentRoutes } from './assessment';
 import { taskRoutes } from './tasks';
 import { departmentRoutes } from './department';
+import { questionnaireRoutes } from './questionnaire.ts';
 
 export default {
   adminRoutes,
@@ -17,4 +18,5 @@ export default {
   assessmentRoutes,
   departmentRoutes,
   taskRoutes,
+  questionnaireRoutes,
 };

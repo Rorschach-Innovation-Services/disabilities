@@ -3,20 +3,13 @@ import { Box, IconButton, useMediaQuery } from '@mui/material';
 import { CustomTable } from '../../../components/table';
 import { CustomTableRow } from './table-row';
 
-export const ClientsTable = ({
-  selected,
-  toggleSelection,
-  clients,
-  links,
-  setOpenMessage,
-  setSelected,
-}) => {
+export const ClientsTable = ({ clients, setOpenMessage }) => {
   const changePadding = useMediaQuery('(max-width:560px)');
 
   return (
     <Fragment>
       <CustomTable
-        headings={['Select', 'Name', 'Question Count', 'Delete']}
+        headings={['Name', 'Question Count', 'Delete']}
         headCellSx={{
           fontSize: changePadding ? '9px' : '12px',
           color: 'grey !important',
@@ -30,18 +23,10 @@ export const ClientsTable = ({
               key={row.id}
               row={row}
               index={index}
-              links={links}
-              selected={selected.includes(row.id)}
-              setSelected={setSelected}
               setOpenMessage={setOpenMessage}
-              toggleSelection={toggleSelection}
             />
           ))}
       </CustomTable>
-      <Box component="div" sx={{ float: 'right' }}>
-        <IconButton></IconButton>
-        <IconButton></IconButton>
-      </Box>
     </Fragment>
   );
 };

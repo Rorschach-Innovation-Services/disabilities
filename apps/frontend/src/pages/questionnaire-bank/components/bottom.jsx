@@ -3,9 +3,8 @@ import { Box, Typography } from '@mui/material';
 
 const CLIENTS_TO_DISPLAY = 5;
 
-export const Bottom = ({ allClients, step, styles, clients, search }) => {
+export const Bottom = ({ allClients, step, styles, clients }) => {
   const setShowing = () => {
-    if (search.length > 0) return clients.length;
     if (allClients && step * CLIENTS_TO_DISPLAY < allClients.length)
       return step * CLIENTS_TO_DISPLAY;
     else return allClients.length;
