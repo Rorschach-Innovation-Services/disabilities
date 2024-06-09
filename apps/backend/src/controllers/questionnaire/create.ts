@@ -14,10 +14,14 @@ export const createQuestionnaire = async (event: APIGatewayEvent) => {
       { index: 'gsIndex' }
     );
     const questionnaire = await Questionnaire.create({
-      creator: adminDoc.id,
+      creator: {
+        id: adminDoc.id,
+        name: adminDoc.name,
+      },
       name,
-      order: responses.items.length + 0 + 1,
+      order: (responses.items.filter((item) => !item.deleted).length || 0) + 1,
       questions,
+      deleted: false,
     });
     return { message: 'Created Questionnaire', questionnaire };
   } catch (error) {

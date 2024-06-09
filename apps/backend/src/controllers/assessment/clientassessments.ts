@@ -26,7 +26,7 @@ export const getClientAssessments = async (event: APIGatewayEvent) => {
     //Find assessments associated to department
     const departmentResponse = await Department.query(
       { companyId: company.id },
-      { index: 'gsIndex', limit: 1 }
+      { index: 'gsIndex' }
     );
     const departments =
       departmentResponse.items.filter((item) => item._en === 'department') ||
@@ -59,34 +59,11 @@ export const getClientAssessments = async (event: APIGatewayEvent) => {
       );
       dates.push(assDates.length === 0 ? 'none' : latestDate.toDateString());
     }
-    // departments.forEach(async (department, index) => {
-    //   const assDates: Date[] = [];
-    //   const assessmentResponse = await Assessment.query(
-    //     {
-    //       companyId: company.id,
-    //     },
-    //     { beginsWith: `${department.id}` }
-    //   );
-    //   const assessments =
-    //     assessmentResponse.items.filter((item) => item._en === 'assessment') ||
-    //     [];
-    //   departments[index] = { ...departments[index], assessments };
-    //   // departments[index].assessments = assessments;
-    //
-    //   assessments.forEach((assessment) => {
-    //     assDates.push(new Date(assessment.created));
-    //   });
-    //   const latestDate = new Date(
-    //     Math.max(...assDates.map((date: Date) => date.getTime()))
-    //   );
-    //   dates.push(assDates.length === 0 ? 'none' : latestDate.toDateString());
-    // });
 
     const responseAssessments: any[] = [];
     const departmentCSVs: string[] = [];
     const masterFileData: TransformedResult[] = [];
 
-    console.log('departments', departments);
     for (const department of departments) {
       const csvData: TransformedResult[] = [];
 
@@ -114,8 +91,6 @@ export const getClientAssessments = async (event: APIGatewayEvent) => {
     return {
       clientName: company.name,
       departments: responseAssessments.map((department, index) => {
-        console.log('typeof department', index, typeof department);
-        console.log('department', index, department);
         return {
           ...department,
           lastAssessmentDate: dates[index],

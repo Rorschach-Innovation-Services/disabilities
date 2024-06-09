@@ -1,38 +1,32 @@
-import React, { useState } from "react";
-import { Checkbox } from "@mui/material";
-import { QuestionnaireItem } from "./questionnaire-item";
+import React, { useState } from 'react';
+import { Checkbox } from '@mui/material';
+import { QuestionnaireItem } from './questionnaire-item';
 
-export const Questionnaire = ({ questionnaire, dispatch }) => {
-  const [checked, setChecked] = useState(false);
-
+export const Questionnaire = ({ state, questionnaire, dispatch }) => {
   return (
-    <QuestionnaireItem
-      questionnaire={questionnaire}
-      onClick={() => {
-        dispatch({
-          type: "unselect-questionnaires"
-        });
-        dispatch({
-          type: "view-questionnaire",
-          payload: questionnaire
-        })
-      }}
-    >
+    <QuestionnaireItem questionnaire={questionnaire} onClick={() => {}}>
       <Checkbox
-        checked={checked}
+        checked={
+          state.selected !== null && state.selected.id === questionnaire.id
+        }
         onClick={(event) => {
           event.stopPropagation();
-          dispatch({
-            type: "select-questionnaire",
-            payload: questionnaire._id
-          });
-          setChecked((prev) => !prev)
+          if (state.selected === null) {
+            dispatch({
+              type: 'selected questionnaire',
+              payload: questionnaire,
+            });
+          } else {
+            dispatch({
+              type: 'selected questionnaire',
+              payload: null,
+            });
           }
-        }
+        }}
         sx={{
-          "&.Mui-checked":{
-            color: "black"
-          }
+          '&.Mui-checked': {
+            color: 'black',
+          },
         }}
       />
     </QuestionnaireItem>

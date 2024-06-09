@@ -1,6 +1,6 @@
 import React, { useEffect, useReducer, useState, Fragment } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Typography, useMediaQuery, Button } from '@mui/material';
+import { Typography, Box, useMediaQuery, Button } from '@mui/material';
 import { Clients } from './components/clients';
 import { Calendar } from './components/calendar';
 import { ClientInfo } from './components/client-info';
@@ -43,7 +43,7 @@ export const Dashboard = () => {
   // Execute network requests to fetch data
   useEffect(() => {
     setName(localStorage.getItem('adminName'));
-    averagesRequest.execute();
+    // averagesRequest.execute();
     clientRequest.execute();
     tasksRequest.execute();
   }, []);
@@ -187,8 +187,23 @@ export const Dashboard = () => {
                 }}
               />
             </Container>
-            <StatsList state={state} />
-            <Clients state={state} dispatch={dispatch} links={links} />
+            {/* <StatsList state={state} /> */}
+            {state.clients.length === 0 && (
+              <Box>
+                <Typography
+                  sx={{
+                    fontSize: '20px',
+                    textAlign: 'center',
+                    marginTop: '80px',
+                  }}
+                >
+                  There are no companies ready for the second questionnaire
+                </Typography>
+              </Box>
+            )}
+            {state.clients.length > 0 && (
+              <Clients state={state} dispatch={dispatch} links={links} />
+            )}
           </Container>
           <Container
             sx={{

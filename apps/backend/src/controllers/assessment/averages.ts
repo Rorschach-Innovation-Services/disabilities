@@ -21,18 +21,24 @@ export const getAverages = async () => {
     const numberOfAssessments = employees.length;
     /**Calculate the averages */
     let averageSleepHours: number = 0;
-    console.log("assessments", assessments)
+    console.log('assessments', assessments);
     assessments.map((assessment) => {
       averageSleepHours += (assessment.score as Score).TSTValue;
     });
-    if(completedAssessments > 0)averageSleepHours = parseInt(
-      (averageSleepHours / completedAssessments).toFixed(1)
-    );
+    if (completedAssessments > 0)
+      averageSleepHours = parseInt(
+        (averageSleepHours / completedAssessments).toFixed(1)
+      );
     return {
       message: 'Successful!',
-      data: { averageSleepHours, numberOfAssessments, completedAssessments },
+      data: {
+        averageSleepHours,
+        numberOfAssessments,
+        completedAssessments,
+        averageRating: 0,
+      },
     };
   } catch (error) {
-    return { message: 'Internal Server Error' };
+    return { statusCode: 500, message: 'Internal Server Error' };
   }
 };

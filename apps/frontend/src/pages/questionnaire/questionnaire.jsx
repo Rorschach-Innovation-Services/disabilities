@@ -8,22 +8,15 @@ import { Question } from './components/question';
 import { useAxios } from '../../hooks/axios';
 import { Progress } from './components/progress';
 import { Complete } from './components/complete';
+import { Loading } from '../../components/loading';
 import { sortQuestionArray } from '../../utils/sort';
 import { Save } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
 import { isDate, getHours, getMinutes } from 'date-fns';
 import { CustomMessage } from '../../components/message';
 
-const removeParenthesis = (text) => {
-  const index = text.indexOf('(');
-  if (index !== -1) {
-    return text.substring(0, index);
-  }
-  return text;
-};
-
 export const Questionnaire = () => {
-  const { companyId, employeeId, departmentId } = useParams();
+  const { companyId, departmentId, questionnaireId } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
   const [filled, setFilled] = useState(false); // If questions have been loaded
   const [questionViews, setQuestionViews] = useState([]); // info for each question indexed
@@ -31,25 +24,22 @@ export const Questionnaire = () => {
   const [questionError, setQuestionError] = useState('');
   const [assessmentError, setAssessmentError] = useState('');
   const decreaseWidth = useMediaQuery('(max-width:500px)');
-  const { response, error, execute } = useAxios({
+  const { response, error, executeWithParameters, loading } = useAxios({
     url: '/question',
     method: 'get',
   });
-  const deleteEmployeeRequest = useAxios({
-    url: '/employees/delete',
-    method: 'post',
-  });
-  const sleepQuestionRequest = useAxios({
+  const saveAssessmentRequest = useAxios({
     url: '/assessments/save',
     method: 'post',
   });
 
   const sendData = () => {
-    sleepQuestionRequest.executeWithData({
+    saveAssessmentRequest.executeWithData({
       company: companyId,
       employeeEmail: state.employee.email,
       questionnaire: state.questions,
       department: departmentId,
+      questionnaireId,
     });
   };
 
@@ -79,29 +69,24 @@ export const Questionnaire = () => {
   };
 
   useEffect(() => {
-    execute();
+    executeWithParameters({
+      url: `/questionnaires/${questionnaireId}`,
+      method: 'get',
+    })();
   }, []);
 
   useEffect(() => {
     if (error || !response || filled) return;
-    if (response.questions) {
+    const questions = response.questionnaire.questions;
+    if (questions) {
       dispatch({
         type: 'question count',
-        payload: response.questions.length,
+        payload: questions.length,
       });
       const tempQuestions = [];
 
-      // Sort the questions in terms of the id
-      sortQuestionArray(response.questions);
-
-      // Remove parenthesis from question content
-      for (let i = 0; i < response.questions.length; i++) {
-        response.questions[i].content = removeParenthesis(
-          response.questions[i].content
-        );
-      }
       // Set up sleep health screening questions
-      for (const question of response.questions) {
+      for (const question of questions) {
         dispatch({
           type: 'add question',
           payload: { ...question, response: '' },
@@ -109,8 +94,8 @@ export const Questionnaire = () => {
 
         const properties = {
           id: question.id,
-          helperText: '',
-          title: question.content,
+          helperText: question.helperText,
+          title: question.question,
         };
 
         // Store properties for question
@@ -147,16 +132,16 @@ export const Questionnaire = () => {
   };
 
   useEffect(() => {
-    if (sleepQuestionRequest.error) {
+    if (saveAssessmentRequest.error) {
       setAssessmentError(
-        sleepQuestionRequest.error.data.message.toLowerCase().includes('limit')
+        saveAssessmentRequest.error.data.message.toLowerCase().includes('limit')
           ? 'Number of assessments that can be submitted has been exceeded.'
           : 'There has been an error trying to save assessment responses.'
       );
     }
-    if (sleepQuestionRequest.error || !sleepQuestionRequest.response) return;
+    if (saveAssessmentRequest.error || !saveAssessmentRequest.response) return;
     setComplete(true);
-  }, [sleepQuestionRequest.response, sleepQuestionRequest.error]);
+  }, [saveAssessmentRequest.response, saveAssessmentRequest.error]);
 
   const renderStep = () => {
     if (state.step === 0) {
@@ -170,6 +155,31 @@ export const Questionnaire = () => {
   const handleBack = () => {
     dispatch({ type: 'decrement step' });
   };
+
+  if (loading)
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100vh',
+          textAlign: 'center',
+          transform: 'translateY(50%)',
+        }}
+      >
+        <Loading
+          textSx={{ fontSize: '25px' }}
+          loadingSx={{
+            width: '250px !important',
+            height: '250px !important',
+          }}
+          containerSx={{
+            margin: 'auto',
+            marginTop: '-100px',
+            textAlign: 'center',
+          }}
+        />
+      </Box>
+    );
 
   return (
     <React.Fragment>
@@ -197,10 +207,10 @@ export const Questionnaire = () => {
           >
             {showProgress()}
             {renderStep()}
-            {sleepQuestionRequest.loading ? (
+            {saveAssessmentRequest.loading ? (
               <Box sx={{ textAlign: 'center' }}>
                 <LoadingButton
-                  loading={sleepQuestionRequest.loading}
+                  loading={saveAssessmentRequest.loading}
                   variant="outlined"
                   loadingPosition="start"
                   startIcon={<Save sx={{ color: 'transparent' }} />}
@@ -221,6 +231,11 @@ export const Questionnaire = () => {
             ) : (
               <Button
                 variant="contained"
+                disabled={
+                  state.questions.length >= state.step &&
+                  state.questions[state.step - 1] &&
+                  state.questions[state.step - 1].response === ''
+                }
                 onClick={() => {
                   state.step === state.questionCount
                     ? sendData()

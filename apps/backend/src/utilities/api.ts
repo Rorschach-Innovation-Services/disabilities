@@ -77,5 +77,27 @@ type SendResponseParameters = {
 };
 
 export const sendResponse = ({ statusCode, body }: SendResponseParameters) => {
-  return { statusCode, body: typeof body === "string" ? JSON.stringify({ message: body }) : JSON.stringify(body) }
+  return {
+    statusCode,
+    body:
+      typeof body === 'string'
+        ? JSON.stringify({ message: body })
+        : JSON.stringify(body),
+  };
+};
+
+type AssessmentEmailTemplatesParameters = {
+  questionnaireId: string;
+  companyId: string;
+  departmentId: string;
+};
+
+export const assessmentEmailTemplates = ({
+  questionnaireId,
+  companyId,
+  departmentId,
+}: AssessmentEmailTemplatesParameters) => {
+  const emailSubject = 'Welcome to the Sleep Science Wellness Assessment';
+  const emailMessage = `Please complete the following questions for our team to determine your sleep score. Please click the link to access the sleep assessment: http://www.sleepscience.co.za/questionnaire/${questionnaireId}/${companyId}/${departmentId}`;
+  return { emailSubject, emailMessage };
 };

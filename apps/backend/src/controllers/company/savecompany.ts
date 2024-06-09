@@ -1,10 +1,14 @@
 /**
  * Save Company Controllers
  */
-import { Company, Employee } from '../../models';
+import { Company, Employee, Questionnaire } from '../../models';
 import emailSend from '../../utilities/sendEmail';
 import { Department } from '../../models/department.model';
-import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
+import {
+  getRequestBody,
+  APIGatewayEvent,
+  assessmentEmailTemplates,
+} from 'src/utilities/api';
 
 /**
  * Save the company and if employees found, send them emails
@@ -26,8 +30,10 @@ export const saveCompany = async (event: APIGatewayEvent) => {
       logo,
       phone,
       employeeSize,
+      questionnaireId,
     } = requestBody;
-    if (id === null) {
+    const questionnaire = await Questionnaire.get({ id: questionnaireId });
+    if (id === '') {
       const company = await Company.create({
         name,
         sector,
@@ -45,6 +51,7 @@ export const saveCompany = async (event: APIGatewayEvent) => {
       const departmentData = await Department.create({
         name: department,
         companyId: company?.id as string,
+        completedQuestionnaires: { [questionnaire.order]: 1 },
         employeeSize,
         deleted: false,
       });
@@ -61,20 +68,30 @@ export const saveCompany = async (event: APIGatewayEvent) => {
           });
           return employeeData;
         });
-
-        employeesList.forEach(async (employee: any) => {
-          const emailSubject =
-            'Welcome to the Sleep Science Wellness Assessment';
-          const emailMessage = `Please complete the following questions for our team to determine your sleep score. Please click the link to access the sleep assessment: http://www.sleepscience.co.za/questionnaire/${company?.id}/${departmentData?.id}/${employee.id}`;
-          await emailSend(
-            employee.email,
-            employee.name,
-            emailSubject,
-            emailMessage
-          );
+        const { emailSubject, emailMessage } = assessmentEmailTemplates({
+          questionnaireId,
+          companyId: company?.id,
+          departmentId: departmentData?.id,
         });
+
+        await Promise.all(
+          employeesList.map((em) => {
+            const funct = async (employee: any) => {
+              await emailSend(
+                employee.email,
+                employee.name,
+                emailSubject,
+                emailMessage
+              );
+            };
+            return funct(em);
+          })
+        );
         return {
           message: 'Company, department and employees registered!',
+          company: company?.id,
+          department: departmentData?.id,
+          questionnaireId,
         };
       } else {
         /**Register company and department only */
@@ -82,15 +99,17 @@ export const saveCompany = async (event: APIGatewayEvent) => {
           message: 'Company Registered!',
           company: company?.id,
           department: departmentData?.id,
+          questionnaireId,
         };
       }
     } else {
       const company = await Company.get({ id });
-      if (!company) return { message: 'Company not found' };
+      if (!company) return { statusCode: 400, message: 'Company not found' };
 
       const departmentData = await Department.create({
         name: department,
         companyId: company?.id as string,
+        completedQuestionnaires: { [questionnaire.order]: 1 },
         employeeSize,
         deleted: false,
       });
@@ -107,28 +126,43 @@ export const saveCompany = async (event: APIGatewayEvent) => {
           });
           return employeeData;
         });
-        employeesList.forEach(async (employee: any) => {
-          const emailSubject =
-            'Welcome to the Sleep Science Wellness Assessment';
-          const emailMessage = `Please complete the following questions for our team to determine your sleep score. Please click the link to access the sleep assessment: http://www.sleepscience.co.za/questionnaire/${company.id}/${departmentData?.id}/${employee.id}`;
-          await emailSend(
-            employee.email,
-            employee.name,
-            emailSubject,
-            emailMessage
-          );
+
+        const { emailSubject, emailMessage } = assessmentEmailTemplates({
+          questionnaireId,
+          companyId: company?.id,
+          departmentId: departmentData?.id,
         });
-        return { message: 'Company Registered!' };
+        await Promise.all(
+          employeesList.map((item) => {
+            const funct = async (employee: any) => {
+              await emailSend(
+                employee.email,
+                employee.name,
+                emailSubject,
+                emailMessage
+              );
+            };
+            return funct(item);
+          })
+        );
+        return {
+          message: 'Company Registered!',
+          company: company?.id,
+          department: departmentData?.id,
+          questionnaireId,
+        };
       } else {
         /**Register company only */
         return {
           message: 'Company Registered!',
           company: company.id,
           department: departmentData?.id,
+          questionnaireId,
         };
       }
     }
   } catch (error) {
-    return { message: 'Internal Server Error', error };
+    console.error('Error saving company', error);
+    return { statusCode: 500, message: 'Internal Server Error', error };
   }
 };

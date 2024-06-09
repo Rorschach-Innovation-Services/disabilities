@@ -46,9 +46,31 @@ export const Question = ({
 
   // Determine the appropriate input user can use to answer question
   const renderAnswerSection = () => {
+    const question = getQuestion();
+    if (question.question.toLowerCase().includes('email'))
+      return (
+        <TextBoxInput
+          placeholder="Email"
+          value={state.employee.email}
+          updateState={(value) => {
+            dispatch({
+              type: 'employee',
+              payload: { key: 'email', value },
+            });
+            dispatch({
+              type: 'add response',
+              payload: { id, response: value },
+            });
+          }}
+          errorMessage="Please ensure that the email you have entered is correct."
+          displayErrorMessage={error === 'email'}
+          setError={setError}
+          sx={{ marginTop: '160px' }}
+        />
+      );
     return (
       <SliderOption
-        value={getQuestion().response}
+        value={question.response}
         onChange={(value) =>
           dispatch({
             type: 'add response',

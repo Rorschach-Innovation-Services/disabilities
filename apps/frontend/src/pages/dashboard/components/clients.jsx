@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import {
   Avatar,
+  Stack,
   Box,
   Table,
   TableBody,
@@ -12,9 +13,13 @@ import {
   IconButton,
   Container,
   Modal,
+  Button,
 } from '@mui/material';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { Colours } from '../../../colours';
+import { useAxios } from '../../../hooks/axios';
+import { Loading } from '../../../components/loading';
+import { useHistory } from 'react-router-dom';
 
 const CLIENTS_TO_DISPLAY = 4;
 
@@ -48,8 +53,9 @@ const styles = {
 
 export const Clients = ({ state, dispatch, links }) => {
   const [step, setStep] = useState(1);
+  const { push } = useHistory();
   const [open, setOpen] = React.useState(false);
-  const headings = ['', 'Client Member', 'Date Added', 'Status', 'Email'];
+  const headings = ['', 'Company Name', 'Date Added', 'Status', 'Email'];
   const departmentHeadings = [
     '',
     'Department Name',
@@ -58,6 +64,10 @@ export const Clients = ({ state, dispatch, links }) => {
     'Completed',
   ];
   const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const { executeWithParameters, response, error, loading } = useAxios({
+    url: '/questionnaires/send/',
+    method: 'get',
+  });
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -65,6 +75,19 @@ export const Clients = ({ state, dispatch, links }) => {
   useEffect(() => {
     dispatch({ type: 'client', payload: state.clients[0] });
   }, []);
+
+  useEffect(() => {
+    if (response && !error) {
+      handleClose();
+      push(`/generate-link`, [
+        {
+          companyID: response.companyId,
+          departmentID: response.departmentId,
+          questionnaireId: response.questionnaireId,
+        },
+      ]);
+    }
+  }, [response, error]);
 
   const getBackgroundColor = (row) => {
     if (state.selectedClient && state.selectedClient.id === row.id)
@@ -200,17 +223,6 @@ export const Clients = ({ state, dispatch, links }) => {
       </TableBody>
     );
   };
-  if (
-    'selectedClient' in state &&
-    typeof state.selectedClient !== 'undefined' &&
-    'departments' in state.selectedClient
-  )
-    console.log(
-      'value',
-      getDepartmentsForSecondQuestionnaire(
-        state.selectedClient.departments || []
-      )
-    );
 
   const renderClients = () => {
     if (!state.clients) return <TableBody></TableBody>;
@@ -315,34 +327,79 @@ export const Clients = ({ state, dispatch, links }) => {
           >
             Send Second Questionnaire
           </Typography>
-          <Table
-            sx={{
-              minWidth: 500,
-              borderCollapse: 'separate',
-              borderSpacing: '0px 10px',
-            }}
-            aria-label="simple table"
-          >
-            <TableHead>
-              <TableRow>
-                {departmentHeadings.map((heading, index) => (
-                  <TableCell
-                    key={heading + index}
-                    sx={{
-                      ...styles.tableCell,
-                      ...styles.tableHeader,
-                      textDecoration:
-                        heading === 'See all' ? 'underline' : undefined,
-                      width: heading === 'See all' ? '70px' : undefined,
-                    }}
-                  >
-                    {heading}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            {renderDepartmentsClients()}
-          </Table>
+          {loading && (
+            <Loading
+              textSx={{ fontSize: '14px' }}
+              loadingSx={{
+                width: '100px !important',
+                height: '100px !important',
+              }}
+              containerSx={{ marginLeft: '22%', marginTop: '10%' }}
+            />
+          )}
+          {!loading && (
+            <Box
+              sx={{
+                maxHeight: '300px',
+                minHeight: '200px',
+                overflowY: 'scroll',
+              }}
+            >
+              <Table
+                sx={{
+                  minWidth: 500,
+                  borderCollapse: 'separate',
+                  borderSpacing: '0px 10px',
+                }}
+                aria-label="simple table"
+              >
+                <TableHead>
+                  <TableRow>
+                    {departmentHeadings.map((heading, index) => (
+                      <TableCell
+                        key={heading + index}
+                        sx={{
+                          ...styles.tableCell,
+                          ...styles.tableHeader,
+                          textDecoration:
+                            heading === 'See all' ? 'underline' : undefined,
+                          width: heading === 'See all' ? '70px' : undefined,
+                        }}
+                      >
+                        {heading}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                {renderDepartmentsClients()}
+              </Table>
+            </Box>
+          )}
+          <Stack direction="row" justifyContent="right" spacing={3}>
+            <Button
+              variant="outlined"
+              sx={{ marginTop: '20px', width: '100px' }}
+              onClick={() => {
+                setSelectedDepartment(null);
+                handleClose();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              disabled={selectedDepartment === null || loading}
+              sx={{ marginTop: '20px', width: '100px' }}
+              onClick={() => {
+                executeWithParameters({
+                  url: `/questionnaires/send/${selectedDepartment.id}`,
+                  method: 'get',
+                })();
+              }}
+            >
+              {loading ? 'Sending...' : 'Send'}
+            </Button>
+          </Stack>
         </TableContainer>
       </Modal>
       <Container

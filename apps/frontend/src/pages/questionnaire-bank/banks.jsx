@@ -265,7 +265,7 @@ export const QuestionnaireBank = () => {
               {response ? step : ''} of{' '}
               {response && response.questionnaires.length > 0
                 ? Math.ceil(response.questionnaires.length / CLIENTS_TO_DISPLAY)
-                : 0}
+                : 1}
             </Typography>
             <IconButton
               sx={{ ml: '3px' }}
@@ -283,7 +283,7 @@ export const QuestionnaireBank = () => {
         </Grid>
         <Grid item xs={12}>
           <Bottom
-            allClients={data}
+            allClients={response.questionnaires || []}
             styles={styles}
             step={step}
             clients={clients}

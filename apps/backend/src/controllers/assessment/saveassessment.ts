@@ -28,7 +28,13 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
     const requestBody = getRequestBody(event);
     if (!requestBody)
       return { statusCode: 400, message: 'Request Body is required!' };
-    const { employeeEmail, questionnaire, company, department } = requestBody;
+    const {
+      employeeEmail,
+      questionnaire,
+      company,
+      department,
+      questionnaireId,
+    } = requestBody;
 
     /**Check if the company exists in the database */
     const companyDocument = await Company.get({ id: company });
@@ -89,6 +95,7 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
       questionnaire,
       companyId: company,
       departmentId: department,
+      questionnaireId,
       deleted: false,
     });
     // const reportRes = await generateReport(assessment);

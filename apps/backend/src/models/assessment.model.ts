@@ -2,7 +2,12 @@ import { Entity, MasterTable, EntityNames } from '@repo/db-wrapper';
 
 export type AssessmentAttributes = {
   id: string;
-  questionnaire: any[];
+  questionnaire: {
+    response: number | string;
+    id: string;
+    question: string;
+    helperText: string;
+  }[];
   companyId: string;
   questionnaireId: string;
   departmentId: string;

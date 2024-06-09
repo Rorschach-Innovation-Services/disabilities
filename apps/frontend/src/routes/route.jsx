@@ -169,12 +169,7 @@ export const Routes = () => {
         <Route exact path="/sign-in" component={SignInPage} />
         <Route
           exact
-          path="/questionnaire/:companyId/:departmentId/:employeeId"
-          component={Questionnaire}
-        />
-        <Route
-          exact
-          path="/questionnaire/:companyId/:departmentId/"
+          path="/questionnaire/:questionnaireId/:companyId/:departmentId/"
           component={Questionnaire}
         />
         <ProtectedRoute

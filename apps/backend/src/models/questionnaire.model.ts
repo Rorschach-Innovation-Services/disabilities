@@ -9,10 +9,14 @@ export type QuestionnaireQuestionItem = {
 export type QuestionnaireAttributes = {
   id: string;
   name: string;
-  creator: string;
+  creator: {
+    name: string;
+    id: string;
+  };
   order: number; // The order in which the questiionaires are administered
   questions: QuestionnaireQuestionItem[];
   created: number;
+  deleted: boolean;
   modified: number;
   _en?: EntityNames;
 };
