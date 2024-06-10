@@ -73,7 +73,7 @@ export const DisplayQuestionnaireHints = ({ open, setOpen, label }) => {
         <Box sx={style}>
           <Box>
             {label === 'current status' && renderHint(data.currenStatus)}
-            {label === 'importance' && renderHint(data.important)}
+            {label === 'important to us' && renderHint(data.important)}
             {label === 'do ability' && renderHint(data.doAbility)}
           </Box>
           <Stack justifyContent="center" sx={{ marginTop: '20px' }}>

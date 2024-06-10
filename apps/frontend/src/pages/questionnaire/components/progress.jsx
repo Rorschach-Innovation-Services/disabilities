@@ -78,12 +78,14 @@ export const Progress = ({
             {getCategory()}
           </Typography>
 
-          <IconButton
-            onClick={() => setOpen(true)}
-            sx={{ marginTop: '-7px !important' }}
-          >
-            <HelpOutline />
-          </IconButton>
+          {getCategory().length > 0 && (
+            <IconButton
+              onClick={() => setOpen(true)}
+              sx={{ marginTop: '-7px !important' }}
+            >
+              <HelpOutline />
+            </IconButton>
+          )}
         </Stack>
         <Box
           component="div"
