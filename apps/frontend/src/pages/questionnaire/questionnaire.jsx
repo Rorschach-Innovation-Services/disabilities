@@ -64,6 +64,14 @@ export const Questionnaire = () => {
         current={state.step}
         questionCount={state.questionCount}
         handleBack={handleBack}
+        getCategory={() => {
+          const questionProps = questionViews[state.step - 1];
+          return questionProps.category;
+        }}
+        getCaption={() => {
+          const questionProps = questionViews[state.step - 1];
+          return questionProps.label;
+        }}
       />
     );
   };
@@ -96,6 +104,8 @@ export const Questionnaire = () => {
           id: question.id,
           helperText: question.helperText,
           title: question.question,
+          label: question.label,
+          category: question.category,
         };
 
         // Store properties for question
@@ -126,6 +136,8 @@ export const Questionnaire = () => {
         helperText={props.helperText}
         dispatch={dispatch}
         title={props.title}
+        label={props.label}
+        category={props.category}
         setError={setQuestionError}
       />
     );

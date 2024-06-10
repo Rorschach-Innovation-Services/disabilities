@@ -123,13 +123,18 @@ export const QuestionnaireAdd = () => {
                   ...newClients[index],
                   question: row.question,
                   helperText: row.helperText,
+                  label: row.label,
+                  category: row.category,
                 };
                 return newClients;
               });
             }
           } else {
-            const { question, helperText } = row;
-            setClients((prev) => [...prev, { question, id: v4(), helperText }]);
+            const { question, helperText, label, category } = row;
+            setClients((prev) => [
+              ...prev,
+              { question, id: v4(), helperText, label, category },
+            ]);
           }
         }}
       />
@@ -220,22 +225,30 @@ export const QuestionnaireAdd = () => {
                   data: {
                     name: questionnaireName,
                     id: state.questionnaire.id,
-                    questions: clients.map(({ id, question, helperText }) => ({
-                      id,
-                      question,
-                      helperText,
-                    })),
+                    questions: clients.map(
+                      ({ id, question, helperText, label, category }) => ({
+                        id,
+                        question,
+                        helperText,
+                        label,
+                        category,
+                      })
+                    ),
                   },
                 })();
               } else {
                 execute({
                   name: questionnaireName,
                   admin: localStorage.getItem('adminID'),
-                  questions: clients.map(({ id, question, helperText }) => ({
-                    id,
-                    question,
-                    helperText,
-                  })),
+                  questions: clients.map(
+                    ({ id, question, helperText, label, category }) => ({
+                      id,
+                      question,
+                      helperText,
+                      label,
+                      category,
+                    })
+                  ),
                 });
               }
             }}

@@ -151,7 +151,7 @@ export const QuestionnaireBank = () => {
     }
   }, [deleteRequest.response, deleteRequest.error]);
 
-  if (loading || !response)
+  if (loading || !response || deleteRequest.loading)
     return (
       <Box
         sx={{

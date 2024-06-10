@@ -4,6 +4,8 @@ export type QuestionnaireQuestionItem = {
   id: string;
   question: string;
   helperText: string;
+  label: string;
+  category: string;
 };
 
 export type QuestionnaireAttributes = {

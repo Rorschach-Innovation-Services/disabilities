@@ -31,6 +31,8 @@ export const Question = ({
   error,
   setError,
   customGetQuestion,
+  category,
+  label,
 }) => {
   const changeLayout = useMediaQuery('(max-width:780px)');
 
@@ -100,12 +102,14 @@ export const Question = ({
       </Typography>
       <Typography
         variant="subtitle2"
+        component="pre"
         sx={{
           marginTop: '1%',
           color: 'darkslategrey',
           fontSize: '12px',
           width: '72%',
           marginBottom: '40px',
+          whitespace: 'pre',
         }}
       >
         {helperText}

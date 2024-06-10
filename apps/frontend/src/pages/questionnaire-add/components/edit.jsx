@@ -32,20 +32,28 @@ export const EditQuestion = ({
     selected?.question || ''
   );
   const [help, setHelp] = React.useState(selected?.helperText || '');
+  const [label, setLabel] = React.useState(selected?.label || '');
+  const [category, setCategory] = React.useState(selected?.category || '');
 
   React.useEffect(() => {
     if (selected !== null) {
       setInternalValue(selected.question);
       setHelp(selected.helperText);
+      setLabel(selected.label);
+      setCategory(selected.category);
     } else {
       setInternalValue('');
       setHelp('');
+      setLabel('');
+      setCategory('');
     }
   }, [selected]);
 
   const handleClose = () => {
     setInternalValue('');
     setHelp('');
+    setLabel('');
+    setCategory('');
     setOpen(false);
   };
 
@@ -69,8 +77,8 @@ export const EditQuestion = ({
                 Question Title:
               </Typography>
               <TextField
-                label="Outlined"
                 variant="outlined"
+                label="Question"
                 value={internalValue}
                 onChange={(event) => setInternalValue(event.target.value)}
                 sx={{
@@ -80,7 +88,59 @@ export const EditQuestion = ({
                   maxHeight: '30px',
                   bordeRadius: '5px',
                   width: '300px',
-                  marginLeft: '25px !important',
+                  marginLeft: '21px !important',
+                }}
+              />
+            </Stack>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ marginBottom: '20px !important' }}
+            >
+              <Typography sx={{ marginTop: '11px !important' }}>
+                Label:
+              </Typography>
+              <TextField
+                variant="outlined"
+                label="E.g. Current Status"
+                value={label}
+                onChange={(event) => setLabel(event.target.value)}
+                sx={{
+                  backgroundColor: 'white',
+                  fontSize: '9px',
+                  lineHeight: '11px',
+                  minHeight: '30px',
+                  maxHeight: '130px',
+                  overflowY: 'scrolll',
+                  bordeRadius: '5px',
+                  width: '300px',
+                  marginLeft: '83px !important',
+                }}
+              />
+            </Stack>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ marginBottom: '20px !important' }}
+            >
+              <Typography sx={{ marginTop: '11px !important' }}>
+                Category:
+              </Typography>
+              <TextField
+                label="E.g. Engage"
+                variant="outlined"
+                value={category}
+                onChange={(event) => setCategory(event.target.value)}
+                sx={{
+                  backgroundColor: 'white',
+                  fontSize: '9px',
+                  lineHeight: '11px',
+                  minHeight: '30px',
+                  maxHeight: '130px',
+                  overflowY: 'scrolll',
+                  bordeRadius: '5px',
+                  width: '300px',
+                  marginLeft: '58px !important',
                 }}
               />
             </Stack>
@@ -90,21 +150,24 @@ export const EditQuestion = ({
               sx={{ marginBottom: '50px !important' }}
             >
               <Typography sx={{ marginTop: '11px !important' }}>
-                Helper Text:
+                Additional Info:
               </Typography>
               <TextField
-                label="Outlined"
+                multiline
                 variant="outlined"
+                label="Question details"
                 value={help}
                 onChange={(event) => setHelp(event.target.value)}
                 sx={{
                   backgroundColor: 'white',
                   fontSize: '9px',
                   lineHeight: '11px',
-                  maxHeight: '30px',
+                  minHeight: '30px',
+                  maxHeight: '130px',
+                  overflowY: 'scroll',
                   bordeRadius: '5px',
                   width: '300px',
-                  marginLeft: '45px !important',
+                  marginLeft: '19px !important',
                 }}
               />
             </Stack>
@@ -124,11 +187,15 @@ export const EditQuestion = ({
                       ...selected,
                       question: internalValue,
                       helperText: help,
+                      label,
+                      category,
                     });
                   else
                     onChange({
                       question: internalValue,
                       helperText: help,
+                      label,
+                      category,
                     });
                   handleClose();
                 }}
