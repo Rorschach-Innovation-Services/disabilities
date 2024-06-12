@@ -255,7 +255,7 @@ export const ClientsPage = () => {
               }}
             >
               {response ? step : ''} of{' '}
-              {response && response.companies.length > 0
+              {response && response.companies && response.companies.length > 0
                 ? Math.ceil(response.companies.length / CLIENTS_TO_DISPLAY)
                 : 0}
             </Typography>

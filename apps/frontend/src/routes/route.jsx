@@ -54,6 +54,7 @@ import { Settings } from '../pages/settings/settings';
 import { RegisterCompanyDepartment } from '../pages/register-client/register.client';
 import { QuestionnaireBank } from '../pages/questionnaire-bank/banks';
 import { QuestionnaireAdd } from '../pages/questionnaire-add/add';
+import { LiveDashboard } from '../pages/live-dashboard/dashboard';
 
 const ProtectedRoute = (routeProps) => {
   const { name, token } = useLocalStorage();
@@ -194,6 +195,11 @@ export const Routes = () => {
         />
         <ProtectedRoute exact path={`/settings`} component={Settings} />
         <ProtectedRoute exact path="/dashboard" component={Dashboard} />
+        <ProtectedRoute
+          exact
+          path="/live-dashboard"
+          component={LiveDashboard}
+        />
         <ProtectedRoute
           exact
           path="/employee/:employeeId"

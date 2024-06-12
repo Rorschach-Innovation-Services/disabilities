@@ -7,6 +7,8 @@ export type AssessmentAttributes = {
     id: string;
     question: string;
     helperText: string;
+    label: string;
+    category: string;
   }[];
   companyId: string;
   questionnaireId: string;

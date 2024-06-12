@@ -70,16 +70,7 @@ export const CustomTableSingleRow = ({
   }, [response, error]);
 
   const setPeopleCount = () => {
-    const seen = [];
-    const result = [];
-    for (const a of assessment.assessments) {
-      if (seen.includes(a.employee)) continue;
-      if (assessment.employees.includes(a.employee)) {
-        result.push(a);
-        seen.push(a.employee);
-      }
-    }
-    return result.length;
+    return assessment.employeeSize || 0;
   };
 
   return (

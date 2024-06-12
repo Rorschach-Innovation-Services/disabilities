@@ -22,12 +22,13 @@ export const transformData = ({
   assessment,
   company,
 }: TransformDataInput): TransformedResult => {
+  const result = {};
   (assessment.questionnaire as any[]).forEach((question) => {
     // Remove comma that will interfere with the delimiter
-    if (question.content.includes(',')) {
-      question.content = question.content.replace(',', '');
+    if (question.question.includes(',')) {
+      question.question = question.question.replace(',', '');
     }
-    result[question.content] = question.response;
+    result[question.question] = question.response;
   });
 
   return result;

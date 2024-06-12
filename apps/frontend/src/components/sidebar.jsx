@@ -7,6 +7,7 @@ import DashboardIcon from '../assets/icons/dashboard.svg';
 import StuffIcon from '../assets/icons/staff.svg';
 import SettingsIcon from '../assets/icons/settings.svg';
 import DatabaseIcon from '../assets/icons/database.svg';
+import RadarIcon from '../assets/icons/chart-radar.svg';
 import { useHistory } from 'react-router-dom';
 import { Colours } from '../colours';
 
@@ -15,31 +16,43 @@ const items = [
     text: 'Start New Assessment',
     icon: StartAssessmentIcon,
     route: '/assessment/questions',
+    key: 'questions',
   },
   {
     text: 'Dashboard',
     icon: DashboardIcon,
     route: '/dashboard',
+    key: 'dashboard',
   },
   {
     text: 'Clients',
     icon: AssessmentIcon,
     route: '/clients',
+    key: 'clients',
   },
   {
     text: 'Staff',
     icon: StuffIcon,
     route: '/staff',
+    key: 'staff',
   },
   {
     text: 'Questionnaires',
     icon: DatabaseIcon,
     route: '/questionnaire-bank',
+    key: 'questionnaire-bank',
+  },
+  {
+    text: 'Live Dashboard',
+    icon: RadarIcon,
+    route: '/live-dashboard',
+    key: 'live-dashboard',
   },
   {
     text: 'Settings',
     icon: SettingsIcon,
     route: '/settings',
+    key: 'settings',
   },
 ];
 
@@ -109,6 +122,15 @@ export const SideBar = () => {
   const [selected, setSelected] = useState(
     pathnameList[pathnameList.length - 1]
   );
+
+  const isSelected = (item) => {
+    const route = item.route.toLowerCase();
+    const key = item.key.toLowerCase();
+    const lastRouteName = pathnameList[route.split('/').length - 1];
+    if (key === lastRouteName) return true;
+    return false;
+  };
+
   return (
     <Container
       sx={{
@@ -140,14 +162,15 @@ export const SideBar = () => {
           key={item.text}
           icon={item.icon}
           text={item.text}
-          selected={selected.includes(
+          /*           selected={selected.includes(
             `${
               item.route.toLowerCase().split('/')[
                 item.route.toLowerCase().split('/').length - 1
               ]
             }`
-          )}
-          select={() => setSelected(`${item.text.toLowerCase()}`)}
+          )} */
+          selected={isSelected(item)}
+          select={() => setSelected(`${item.route.toLowerCase()}`)}
           route={item.route}
         />
       ))}

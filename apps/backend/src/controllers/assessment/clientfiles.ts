@@ -25,7 +25,7 @@ export const getClientFiles = async () => {
     const companies =
       companyResponse.items.filter((item) => item._en === 'company') || [];
     if (!companies) {
-      return { message: 'Companies not found' };
+      return { statusCode: 400, message: 'Companies not found' };
     }
 
     // Holding data to be stored in the master csv file
@@ -113,6 +113,6 @@ export const getClientFiles = async () => {
     };
   } catch (error) {
     console.error('error', error);
-    return { message: 'Internal Server Error' };
+    return { statusCode: 500, message: 'Internal Server Error' };
   }
 };
