@@ -1,6 +1,10 @@
 import { Shell } from '../../components/shell';
-import { RadarChart } from './components/chart';
+import { RadarChart } from './components/radar';
+import { BubbleChart } from './components/matrix';
+import { ScatterPlotComponent } from './components/do-ability';
 import { Grid } from '@mui/material';
+import { LiveDashboardBanner } from './components/banner';
+import { useState } from 'react';
 
 const series = [
   {
@@ -21,28 +25,21 @@ const series = [
 ];
 
 export const LiveDashboard = () => {
+  const [step, setStep] = useState(0);
+
   return (
     <Shell heading="Live Dashboard">
-      <Grid container spacing={2}>
-        <Grid item xs={6}>
-          <RadarChart
-            title="Current vs Do-ability"
-            series={series.slice(0, 2)}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <RadarChart
-            title="Current vs Important"
-            series={series.slice(1, 3)}
-          />
-        </Grid>
-        <Grid item xs={6}>
-          <RadarChart
-            title="Current vs Important vs Do-ability"
-            series={series}
-          />
-        </Grid>
-      </Grid>
+      <LiveDashboardBanner step={step} setStep={setStep} />
+      {step === 0 && (
+        <RadarChart title="Current vs Important" series={series.slice(1, 3)} />
+      )}
+      {step === 1 && <ScatterPlotComponent />}
+      {step === 2 && (
+        <>
+          <BubbleChart />
+        </>
+      )}
+      <Grid container spacing={2}></Grid>
     </Shell>
   );
 };
