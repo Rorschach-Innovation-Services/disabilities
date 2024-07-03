@@ -1,7 +1,10 @@
 import React, { useEffect, useReducer, useState, Fragment } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Typography, Box, useMediaQuery, Button } from '@mui/material';
-import { Clients } from './components/clients';
+import {
+  Clients,
+  getClientDepartmentsForSecondQuestionnaire,
+} from './components/clients';
 import { Calendar } from './components/calendar';
 import { ClientInfo } from './components/client-info';
 import { useLocalStorage } from '../../hooks/storage';
@@ -188,7 +191,8 @@ export const Dashboard = () => {
               />
             </Container>
             {/* <StatsList state={state} /> */}
-            {state.clients.length === 0 && (
+            {getClientDepartmentsForSecondQuestionnaire(state.clients)
+              .length === 0 && (
               <Box>
                 <Typography
                   sx={{
@@ -201,9 +205,8 @@ export const Dashboard = () => {
                 </Typography>
               </Box>
             )}
-            {state.clients.length > 0 && (
-              <Clients state={state} dispatch={dispatch} links={links} />
-            )}
+            {getClientDepartmentsForSecondQuestionnaire(state.clients).length >
+              0 && <Clients state={state} dispatch={dispatch} links={links} />}
           </Container>
           <Container
             sx={{

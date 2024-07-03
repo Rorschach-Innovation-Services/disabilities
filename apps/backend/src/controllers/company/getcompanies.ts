@@ -1,7 +1,7 @@
 /**
  * Get all companies consulted by an admin
  */
-import { Assessment, Company, Employee, Department } from '../../models';
+import { Company, Department } from '../../models';
 
 export const getCompanies = async () => {
   try {
@@ -13,25 +13,15 @@ export const getCompanies = async () => {
     const existingCompanies = companies.filter((company) => !company.deleted);
     const returnCompanies = Promise.all(
       existingCompanies.map(async (company) => {
-        const assessmentsResonse = await Assessment.query(
-          { companyId: company.id },
-          {}
-        );
-        const assessments = assessmentsResonse.items || [];
-        const employeesResponse = await Employee.query(
-          { _en: 'employee' },
-          { index: 'gsIndex', beginsWith: company.id }
-        );
         const departmentsResponse = await Department.query(
           { companyId: company.id },
           { index: 'gsIndex' }
         );
-        const employees = employeesResponse.items || [];
-        const employeesLength = employees.length;
-        company.status =
-          parseInt(`${assessments.length / employeesLength}`) === 1
-            ? 'Profile Completed'
-            : 'In Progress';
+        company.status = departmentsResponse.items
+          .filter((item) =>
+            [0, 1].includes(Object.keys(item.completedQuestionnaires).length)
+          )
+          .length.toString();
         return { ...company, departments: departmentsResponse.items || [] };
       })
     );

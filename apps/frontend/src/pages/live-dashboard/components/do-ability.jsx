@@ -1,28 +1,28 @@
 import ReactApexChart from 'react-apexcharts';
 
-export const ScatterPlotComponent = () => {
-  const series = [
-    {
-      name: 'Engage',
-      data: [[4.3, 4.1]],
-    },
-    {
-      name: 'Nest',
-      data: [[4.4, 4.0]],
-    },
-    {
-      name: 'Attract',
-      data: [[3.7, 3.9]],
-    },
-    {
-      name: 'Back',
-      data: [[4.4, 4.1]],
-    },
-    {
-      name: 'Learn',
-      data: [[4.0, 4.0]],
-    },
-  ];
+export const ScatterPlotComponent = ({ series }) => {
+  // const series = [
+  //   {
+  //     name: 'Engage',
+  //     data: [[4.3, 4.1]],
+  //   },
+  //   {
+  //     name: 'Nest',
+  //     data: [[4.4, 4.0]],
+  //   },
+  //   {
+  //     name: 'Attract',
+  //     data: [[3.7, 3.9]],
+  //   },
+  //   {
+  //     name: 'Back',
+  //     data: [[4.4, 4.1]],
+  //   },
+  //   {
+  //     name: 'Learn',
+  //     data: [[4.0, 4.0]],
+  //   },
+  // ];
 
   const options = {
     chart: {
@@ -34,7 +34,8 @@ export const ScatterPlotComponent = () => {
       },
     },
     xaxis: {
-      tickAmount: 10,
+      tickAmount: 5,
+      stepSize: 1,
       min: 0,
       max: 5,
       title: {
@@ -62,7 +63,7 @@ export const ScatterPlotComponent = () => {
     },
     dataLabels: {
       enabled: true,
-      formatter: function(val, { seriesIndex, dataPointIndex, w }) {
+      formatter: function (val, { seriesIndex, dataPointIndex, w }) {
         return w.globals.initialSeries[seriesIndex].name;
       },
       style: {
@@ -82,7 +83,7 @@ export const ScatterPlotComponent = () => {
     },
     tooltip: {
       show: true,
-      custom: function({ series, seriesIndex, dataPointIndex, w }) {
+      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
         const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
         return (
           '<div class="p-2" style="padding:5px;">' +

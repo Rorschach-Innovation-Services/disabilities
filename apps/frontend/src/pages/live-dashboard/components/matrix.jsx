@@ -1,7 +1,32 @@
 import ReactApexChart from 'react-apexcharts';
 
-export const BubbleChart = () => {
-  const series = [
+const colors = [
+  '#0070C0',
+  '#00E396',
+  '#FEB019',
+  '#FF4560',
+  '#775DD0',
+  '#00D9E0',
+  '#008FFB',
+  '#D7263D',
+  '#F9C80E',
+  '#9F86FF',
+  '#662E9B',
+  '#2A2B2A',
+  '#85FFC7',
+  '#FF6F91',
+  '#FF9671',
+  '#FFC75F',
+  '#F9F871',
+  '#EA7317',
+  '#3BB273',
+  '#A62349',
+  '#5C3C92',
+  '#0F4C5C',
+];
+
+export const BubbleChart = ({ styles, title, series }) => {
+  const testSeries = [
     {
       name: 'strategic integr. pols',
       data: [[4.0, 4.3, 20]],
@@ -107,26 +132,43 @@ export const BubbleChart = () => {
   const options = {
     chart: {
       height: 350,
-      type: 'bubble',
+      type: 'scatter',
+      zoom: {
+        enabled: true,
+        type: 'xy',
+      },
     },
     dataLabels: {
       enabled: false,
     },
     xaxis: {
-      tickAmount: 10,
+      tickAmount: 5,
+      stepSize: 1,
+      min: 0,
+      max: 6,
       type: 'numeric',
       title: {
         text: 'Important to us',
       },
     },
     yaxis: {
+      tickAmount: 10,
+      min: 0,
       max: 6,
       title: {
         text: 'Do-ability',
       },
     },
+    markers: {
+      size: 20,
+      colors,
+    },
+    fill: {
+      type: 'solid',
+    },
+    colors,
     title: {
-      text: 'Priorities: High Importance to us, high do-ability',
+      text: title,
       align: 'center',
     },
     tooltip: {
@@ -143,24 +185,38 @@ export const BubbleChart = () => {
       fontSize: '14px',
       itemMargin: {
         vertical: 5,
+        horizontal: 5,
       },
-      formatter: (seriesName) =>
-        `<div class="legend-item" style="display:block;text-align:center;padding:5px;">${seriesName}</div>`,
+      columns: 3,
+      formatter: (seriesName) => `<div class="legend-item">${seriesName}</div>`,
+    },
+    tooltip: {
+      show: true,
+      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+        const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
+        return (
+          '<div class="p-2" style="padding:5px;">' +
+          '<h4>' +
+          w.globals.seriesNames[seriesIndex] +
+          '</h4><br>' +
+          '<span>Important to us: ' +
+          data[0] +
+          '</span><br>' +
+          '<span>Do-ability: ' +
+          data[1] +
+          '</span>' +
+          '</div>'
+        );
+      },
     },
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}
-    >
+    <div className="chart-container" style={styles}>
       <ReactApexChart
         options={options}
         series={series}
-        type="bubble"
+        type="scatter"
         height={350}
       />
     </div>

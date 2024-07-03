@@ -1,10 +1,17 @@
 /**
  * Save Assessment Controller
  */
-import { Assessment, Employee, Company, Department } from '../../models';
+import {
+  Assessment,
+  Employee,
+  Company,
+  Department,
+  Questionnaire,
+} from '../../models';
 import calculatedScore from '../../utilities/score';
 import generateReport from '../../utilities/genReport';
 import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
+import { EmployeeAttributes } from 'src/models/employee.model';
 
 type Parameters = {
   employee: string;
@@ -50,6 +57,13 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
       return { statusCode: 400, message: 'Department not found' };
     }
 
+    const questionnaireDocument = await Questionnaire.get({
+      id: questionnaireId,
+    });
+    if (!questionnaireDocument) {
+      return { statusCode: 400, message: 'Questionnaire not found' };
+    }
+
     /**Check if the employee exists in the database */
     const employeesResponse = await Employee.query(
       {
@@ -59,7 +73,7 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
     );
     const employees = employeesResponse.items || [];
 
-    let employeeFound = null;
+    let employeeFound: null | EmployeeAttributes = null;
     let employeeExists = false;
     for (const employee of employees) {
       if (employee.email === employeeEmail) {
@@ -86,27 +100,41 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
         departmentId: department,
         deleted: false,
       });
-      employeeFound = createdEmployee;
+      employeeFound = createdEmployee as EmployeeAttributes;
     }
 
-    /**Create and save the assessment */
-    const assessment = await Assessment.create({
-      employeeId: employeeFound.id,
-      questionnaire,
-      companyId: company,
-      departmentId: department,
-      questionnaireId,
-      deleted: false,
-    });
-    // const reportRes = await generateReport(assessment);
-    // if (typeof reportRes !== 'undefined' && 'error' in reportRes) {
-    //   return {
-    //     message: 'Something Went Wrong While generating report!',
-    //     error: reportRes.error,
-    //   };
-    // }
-    // return { message: 'Successful', data: reportRes };
-    return { message: 'Successful' };
+    if (employeeFound !== null) {
+      /**Create and save the assessment */
+      const assessment = await Assessment.create({
+        employeeId: employeeFound.id,
+        questionnaire,
+        companyId: company,
+        departmentId: department,
+        questionnaireId,
+        deleted: false,
+      });
+      const completedQuestionnaires =
+        departmentDocument.completedQuestionnaires;
+      if (questionnaireDocument.order in completedQuestionnaires) {
+        completedQuestionnaires[questionnaireDocument.order] += 1;
+      } else {
+        completedQuestionnaires[questionnaireDocument.order] = 1;
+      }
+      await Department.update(
+        { id: departmentDocument.id },
+        { completedQuestionnaires }
+      );
+      // const reportRes = await generateReport(assessment);
+      // if (typeof reportRes !== 'undefined' && 'error' in reportRes) {
+      //   return {
+      //     message: 'Something Went Wrong While generating report!',
+      //     error: reportRes.error,
+      //   };
+      // }
+      // return { message: 'Successful', data: reportRes };
+      return { message: 'Error employee not found' };
+    }
+    return { statusCode: 400, message: 'Successful' };
   } catch (error) {
     console.log('error', error);
     return { message: 'Internal Server Error', error };

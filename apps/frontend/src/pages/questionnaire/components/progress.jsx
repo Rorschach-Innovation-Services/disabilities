@@ -75,7 +75,7 @@ export const Progress = ({
               fontWeight: 'bold',
             }}
           >
-            {getCategory()}
+            Code
           </Typography>
 
           {getCategory().length > 0 && (

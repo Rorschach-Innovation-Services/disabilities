@@ -1,5 +1,15 @@
-import { Assessment } from '../../models/';
-import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
+import {
+  getCurrentAgainstImportance,
+  getDoAbilityMatrix,
+  getHighMatrix,
+  getRadarChartValues,
+} from 'src/utilities/assessments';
+import { Assessment, Company, Department } from '../../models/';
+import {
+  getRequestBody,
+  APIGatewayEvent,
+  getQueryStringParameters,
+} from 'src/utilities/api';
 
 /**
  * Retrieve all assessments
@@ -39,6 +49,38 @@ export const getAssessment = async (event: APIGatewayEvent) => {
       return { message: 'Assessment Not Found' };
     }
     return { assessment };
+  } catch (error) {
+    return { message: 'Internal Server Error' };
+  }
+};
+
+export const getDepartmentAssessments = async (event: APIGatewayEvent) => {
+  try {
+    const parameters = getQueryStringParameters(event);
+    if (!parameters?.departmentId)
+      return { statusCode: 400, message: 'Department id is required!' };
+    const { departmentId } = parameters;
+    const department = await Department.get({ id: departmentId });
+
+    const assessmentRequest = await Assessment.query(
+      { companyId: department.companyId },
+      { beginsWith: departmentId, fetchAll: true }
+    );
+
+    const assessments =
+      assessmentRequest.items.filter((item) => item._en === 'assessment') || [];
+    const radarChart = await getRadarChartValues(assessments);
+    const doAbilityMatrix = await getDoAbilityMatrix(assessments);
+    const highMatrix = await getHighMatrix(assessments, 'high');
+    const lowMatrix = await getHighMatrix(assessments, 'low');
+
+    return {
+      assessments,
+      radarChart,
+      doAbilityMatrix,
+      highMatrix,
+      lowMatrix,
+    };
   } catch (error) {
     return { message: 'Internal Server Error' };
   }

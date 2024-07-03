@@ -51,17 +51,36 @@ const styles = {
   },
 };
 
+const getDepartmentsForSecondQuestionnaire = (departments) => {
+  return departments.filter((item) => {
+    if ('completedQuestionnaires' in item) {
+      if ([0, 1].includes(Object.keys(item.completedQuestionnaires).length))
+        return true;
+    }
+  });
+};
+
+export const getClientDepartmentsForSecondQuestionnaire = (clients) => {
+  return clients.filter((client) => {
+    const departments = getDepartmentsForSecondQuestionnaire(
+      client.departments
+    );
+    if (departments.length > 0) return true;
+    return false;
+  });
+};
+
 export const Clients = ({ state, dispatch, links }) => {
   const [step, setStep] = useState(1);
   const { push } = useHistory();
   const [open, setOpen] = React.useState(false);
-  const headings = ['', 'Company Name', 'Date Added', 'Status', 'Email'];
+  const headings = ['', 'Company Name', 'Date Added', 'Departments', 'Email'];
   const departmentHeadings = [
     '',
     'Department Name',
     'Date Added',
     'Employees',
-    'Completed',
+    'Completed Q1',
   ];
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const { executeWithParameters, response, error, loading } = useAxios({
@@ -126,23 +145,6 @@ export const Clients = ({ state, dispatch, links }) => {
     }
 
     return result;
-  };
-
-  const getDepartmentsForSecondQuestionnaire = (departments) => {
-    return departments
-      .map((item) => {
-        if ('completedQuestionnaires' in item) {
-          if (
-            1 in item.completedQuestionnaires &&
-            2 in item.completedQuestionnaires
-          ) {
-            const firstCount = item.completedQuestionnaires[1];
-            const secondCount = item.completedQuestionnaires[2];
-            if (firstCount > secondCount) return item;
-          } else if (1 in item.completedQuestionnaires) return item;
-        }
-      })
-      .filter((item) => typeof item !== 'undefined');
   };
 
   const renderDepartmentsClients = () => {
@@ -215,7 +217,9 @@ export const Clients = ({ state, dispatch, links }) => {
               }}
             >
               <Typography sx={{ ...styles.tableRowText }}>
-                {Object.keys(row.completedQuestionnaires || {}).length}
+                {1 in row.completedQuestionnaires
+                  ? row.completedQuestionnaires[1]
+                  : 0}
               </Typography>
             </TableCell>
           </TableRow>

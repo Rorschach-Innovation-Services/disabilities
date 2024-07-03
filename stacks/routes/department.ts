@@ -19,6 +19,15 @@ export const departmentRoutes = ({ api, table, bucket }: RoutesParameters) => {
       BUCKET_NAME: bucket.name,
     },
   });
+  api.route('GET /api/departments/company/{companyId}', {
+    handler:
+      'apps/backend/src/controllers/department/company.getCompanyDepartments',
+    link: [table, bucket],
+    environment: {
+      TABLE_NAME: table.name,
+      BUCKET_NAME: bucket.name,
+    },
+  });
   api.route('DELETE /api/departments', {
     handler:
       'apps/backend/src/controllers/department/deletedepartment.deleteDepartments',

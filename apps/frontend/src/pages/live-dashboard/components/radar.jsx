@@ -36,7 +36,9 @@ export const RadarChart = ({ title, series }) => {
       categories: ['Engage', 'Nest', 'Attract', 'Back', 'Learn'],
     },
     yaxis: {
-      //   show: false,
+      show: true,
+      tickAmount: 5,
+      stepSize: 1,
     },
   };
 

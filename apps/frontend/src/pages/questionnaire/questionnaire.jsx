@@ -32,6 +32,7 @@ export const Questionnaire = () => {
     url: '/assessments/save',
     method: 'post',
   });
+  useEffect(() => console.log('state', state), [state]);
 
   const sendData = () => {
     saveAssessmentRequest.executeWithData({

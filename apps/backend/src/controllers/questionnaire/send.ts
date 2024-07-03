@@ -38,20 +38,20 @@ export const sendQuestionnaire = async (event: APIGatewayEvent) => {
       departmentId,
     });
 
-    await Promise.all(
-      employees.items.map((emp) => {
-        const funct = async (employee: any) => {
-          if (employee.email.length > 0)
-            await emailSend(
-              employee.email,
-              employee.name,
-              emailSubject,
-              emailMessage
-            );
-        };
-        return funct(emp);
-      })
-    );
+    // await Promise.all(
+    //   employees.items.map((emp) => {
+    //     const funct = async (employee: any) => {
+    //       if (employee.email.length > 0)
+    //         await emailSend(
+    //           employee.email,
+    //           employee.name,
+    //           emailSubject,
+    //           emailMessage
+    //         );
+    //     };
+    //     return funct(emp);
+    //   })
+    // );
     const index = secondQuestionnaire.order;
     const newCompletedQuestionnaires = { [index]: 1 };
     if (index in department.completedQuestionnaires)
