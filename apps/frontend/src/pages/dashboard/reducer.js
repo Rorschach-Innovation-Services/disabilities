@@ -16,7 +16,7 @@ export const dashboardReducer = (state, action) => {
             return {
             ...state,
             clients: action.payload,
-            selectedClient: action.payload[0],
+            selectedClient: action.payload ? action.payload[0]:[],
             };
         case "averages":
             return { ...state, ...action.payload };

@@ -22,6 +22,7 @@ import { Colours } from '../../colours.js';
 import { StatsList } from './components/stats-list';
 import { Tasks } from './components/Tasks';
 import { dashboardInitialState, dashboardReducer } from './reducer';
+import { config } from '../../config';
 
 export const Dashboard = () => {
   const [state, dispatch] = useReducer(dashboardReducer, dashboardInitialState);
@@ -42,6 +43,7 @@ export const Dashboard = () => {
     url: '/tasks',
     method: 'get',
   });
+  console.log('Api', import.meta.env);
 
   // Execute network requests to fetch data
   useEffect(() => {
@@ -84,10 +86,10 @@ export const Dashboard = () => {
 
   useEffect(() => {
     if (tasksRequest.error || !tasksRequest.response) return;
-    dispatch({
-      type: 'tasks',
-      payload: tasksRequest.response.tasks,
-    });
+    // dispatch({
+    //   type: 'tasks',
+    //   payload: tasksRequest.response.tasks,
+    // });
   }, [tasksRequest.response, tasksRequest.error]);
 
   // Set response to state

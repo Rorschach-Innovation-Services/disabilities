@@ -30,18 +30,22 @@ export default $config({
     // });
 
     const bucket = new sst.aws.Bucket('InclusivityBucket');
-    const table = new sst.aws.Dynamo('InclusivityTable', {
-      fields: {
-        pk: 'string',
-        sk: 'string',
-        gspk: 'string',
-        gssk: 'string',
-      },
-      primaryIndex: { hashKey: 'pk', rangeKey: 'sk' },
-      globalIndexes: {
-        gsIndex: { hashKey: 'gspk', rangeKey: 'gssk' },
-      },
-    });
+    // const table = new sst.aws.Dynamo('InclusivityTable', {
+    //   fields: {
+    //     pk: 'string',
+    //     sk: 'string',
+    //     gspk: 'string',
+    //     gssk: 'string',
+    //   },
+    //   primaryIndex: { hashKey: 'pk', rangeKey: 'sk' },
+    //   globalIndexes: {
+    //     gsIndex: { hashKey: 'gspk', rangeKey: 'gssk' },
+    //   },
+    // });
+    const tableName = 'InclusivityTableTable';
+    const tableARN =
+      'arn:aws:dynamodb:us-east-1:471112623249:table/inclusivity-carlton-InclusivityTableTable';
+    const table = aws.dynamodb.Table.get(tableName, tableARN);
 
     const api = new sst.aws.ApiGatewayV2('InclusivityAPI');
 
