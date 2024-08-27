@@ -1,14 +1,19 @@
 import { Questionnaire } from '../../models';
+import { Request, Response } from 'express';
 
-export const getQuestionnaires = async () => {
+export const getQuestionnaires = async (
+  request: Request,
+  response: Response,
+) => {
   try {
-    const response = await Questionnaire.query(
+    const responseQuery = await Questionnaire.query(
       { _en: 'questionnaire' },
-      { index: 'gsIndex' }
+      { index: 'gsIndex' },
     );
-    const questionnaires = response.items.filter((item) => !item.deleted);
-    return { message: 'Successful', questionnaires };
+    const questionnaires = responseQuery.items.filter((item) => !item.deleted);
+    return response.status(200).json({ message: 'Successful', questionnaires });
   } catch (error) {
-    return { stataCode: 500, message: 'Internal Server Error' };
+    return response.status(500).json({ message: 'Internal Server Error' });
+    // return { stataCode: 500, message: 'Internal Server Error' };
   }
 };

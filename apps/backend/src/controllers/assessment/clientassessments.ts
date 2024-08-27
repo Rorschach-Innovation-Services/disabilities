@@ -10,25 +10,31 @@ import {
 } from '../../utilities/transform';
 import { Assessment } from '../../models/assessment.model';
 import assert from 'assert';
-import { getQueryStringParameters, APIGatewayEvent } from 'src/utilities/api';
+import { getQueryStringParameters, APIGatewayEvent } from '../../utilities/api';
+import { Request, Response } from 'express';
 
-export const getClientAssessmentsOld = async (event: APIGatewayEvent) => {
+export const getClientAssessmentsOld = async (
+  request: Request,
+  response: Response,
+) => {
   try {
-    const parameters = getQueryStringParameters(event);
-    if (!parameters?.companyID)
-      return { statusCode: 400, message: 'Admin ID is required!' };
+    // const parameters = getQueryStringParameters(event);
+    const parameters = request.params;
+    // if (!parameters?.companyID)
+    //   return { statusCode: 400, message: 'Admin ID is required!' };
     // Ensure company exists
     console.log('Fetching company');
     const company = await Company.get({ id: parameters.companyID });
     if (!company) {
-      return { message: 'No such company exists' };
+      return response.status(400).json({ message: 'No such company exists' });
+      // return { message: 'No such company exists' };
     }
 
     //Find assessments associated to department
     console.log('Fetching department');
     const departmentResponse = await Department.query(
       { companyId: company.id },
-      { index: 'gsIndex' }
+      { index: 'gsIndex' },
     );
     const departments =
       departmentResponse.items.filter((item) => item._en === 'department') ||
@@ -47,7 +53,7 @@ export const getClientAssessmentsOld = async (event: APIGatewayEvent) => {
         {
           companyId: company.id,
         },
-        { beginsWith: `${department.id}` }
+        { beginsWith: `${department.id}` },
       );
       const assessments =
         assessmentResponse.items.filter((item) => item._en === 'assessment') ||
@@ -59,7 +65,7 @@ export const getClientAssessmentsOld = async (event: APIGatewayEvent) => {
         assDates.push(new Date(assessment.created));
       });
       const latestDate = new Date(
-        Math.max(...assDates.map((date: Date) => date.getTime()))
+        Math.max(...assDates.map((date: Date) => date.getTime())),
       );
       dates.push(assDates.length === 0 ? 'none' : latestDate.toDateString());
     }
@@ -99,7 +105,7 @@ export const getClientAssessmentsOld = async (event: APIGatewayEvent) => {
     console.log('Master Parse Async');
     const masterCSVFile = await parseAsync(masterFileData, csvOptions);
 
-    return {
+    return response.status(200).json({
       clientName: company.name,
       departments: responseAssessments.map((department, index) => {
         return {
@@ -109,34 +115,40 @@ export const getClientAssessmentsOld = async (event: APIGatewayEvent) => {
         };
       }),
       masterFile: `SEP=,\n${masterCSVFile}`,
-    };
+    });
   } catch (error) {
     console.log('error', error);
-    return { message: 'Internal Server Error' };
+    return response.status(500).json({ message: 'Internal Server Error' });
+    // return { message: 'Internal Server Error' };
   }
 };
 
-export const getClientAssessments = async (event: APIGatewayEvent) => {
+export const getClientAssessments = async (
+  request: Request,
+  response: Response,
+) => {
   try {
-    const parameters = getQueryStringParameters(event);
-    if (!parameters?.companyID)
-      return { statusCode: 400, message: 'Admin ID is required!' };
+    // const parameters = getQueryStringParameters(event);
+    const parameters = request.params;
+    // if (!parameters?.companyID)
+    //   return { statusCode: 400, message: 'Admin ID is required!' };
 
     // Ensure company exists
     console.log('Fetching company');
     const company = await Company.get({ id: parameters.companyID });
     if (!company) {
-      return { message: 'No such company exists' };
+      return response.status(400).json({ message: 'No such company exists' });
+      // return { message: 'No such company exists' };
     }
 
     // Fetch departments associated with the company
     console.log('Fetching departments');
     const departmentResponse = await Department.query(
       { companyId: company.id },
-      { index: 'gsIndex' }
+      { index: 'gsIndex' },
     );
     const departments = departmentResponse.items.filter(
-      (item) => item._en === 'department'
+      (item) => item._en === 'department',
     );
     if (departments.length === 0) {
       return { clientName: company.name, departments: [], masterFile: '' };
@@ -147,21 +159,21 @@ export const getClientAssessments = async (event: APIGatewayEvent) => {
     const assessmentsPromises = departments.map((department) =>
       Assessment.query(
         { companyId: company.id },
-        { beginsWith: `${department.id}` }
-      )
+        { beginsWith: `${department.id}` },
+      ),
     );
     const assessmentsResponses = await Promise.all(assessmentsPromises);
     const assessmentsByDepartment = assessmentsResponses.map((response) =>
-      response.items.filter((item) => item._en === 'assessment')
+      response.items.filter((item) => item._en === 'assessment'),
     );
 
     const dates: string[] = [];
     assessmentsByDepartment.forEach((assessments, index) => {
       const assDates = assessments.map(
-        (assessment) => new Date(assessment.created)
+        (assessment) => new Date(assessment.created),
       );
       const latestDate = new Date(
-        Math.max(...assDates.map((date) => date.getTime()))
+        Math.max(...assDates.map((date) => date.getTime())),
       );
       dates.push(assDates.length === 0 ? 'none' : latestDate.toDateString());
       departments[index] = { ...departments[index], assessments } as any;
@@ -201,7 +213,7 @@ export const getClientAssessments = async (event: APIGatewayEvent) => {
 
     const masterCSVFile = await parseAsync(masterFileData, csvOptions);
 
-    return {
+    return response.status(200).json({
       clientName: company.name,
       departments: responseAssessments.map((department, index) => {
         return {
@@ -211,9 +223,10 @@ export const getClientAssessments = async (event: APIGatewayEvent) => {
         };
       }),
       masterFile: `SEP=,\n${masterCSVFile}`,
-    };
+    });
   } catch (error) {
     console.log('error', error);
-    return { message: 'Internal Server Error' };
+    return response.status(500).json({ message: 'Internal Server Error' });
+    // return { message: 'Internal Server Error' };
   }
 };

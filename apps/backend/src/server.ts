@@ -2,6 +2,8 @@ import cors from 'cors';
 import router from './routes';
 import path from 'path';
 import dotenv from 'dotenv';
+import express, { Request, Response, json } from 'express';
+import { contactUs } from './controllers/other/contact-us';
 
 dotenv.config();
 
@@ -27,13 +29,11 @@ const config: Function = (): Object => {
   // };
 };
 
-/* const app = express();
+const app = express();
 const PORT = config().port || 9000;
-console.log('config', config());
 
 // Allows recognition of incoming Request Object(body) as JSON
 app.use(json());
-
 // Allow the frontend (or any domain outside the server) to access from all end-points
 app.use(cors());
 
@@ -44,6 +44,7 @@ app.use('/api/admin', router.admin);
 app.use('/api/employees', router.employee);
 app.use('/api/companies', router.company);
 app.use('/api/questions', router.question);
+app.use('/api/questionnaires', router.questionnaire);
 app.use('/api/assessments', router.assessment);
 app.use('/api/tasks', router.tasks);
 app.use('/api/departments', router.department);
@@ -56,9 +57,9 @@ app.get('*', (req: Request, res: Response) => {
 
 // Listen for the local development server
 app.listen(PORT, (): void =>
-  console.log(`Server Running at http://localhost:${PORT}`)
+  console.log(`Server Running at http://localhost:${PORT}`),
 );
 
 //Export the secret token
 const secretToken = config().tokenSecret;
-export { app, secretToken }; */
+export { app, secretToken };

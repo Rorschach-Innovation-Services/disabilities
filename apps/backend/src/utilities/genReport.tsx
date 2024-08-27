@@ -5,7 +5,7 @@ import fs from 'fs';
 import pdf from 'pdf-creator-node';
 import { join } from 'path';
 import { Employee } from '../models';
-import { Assessment, Score } from '../models/assessment.model';
+import { Assessment } from '../models/assessment.model';
 import sendReport from './sendReport';
 import { Stream } from 'stream';
 import { getIndividualReport } from '../templates/individual/main';
@@ -51,57 +51,57 @@ const generateReport = async (assessment: any) => {
     let categoryValue: string | undefined;
     let sleepFeedbackMessageValue: string | undefined;
 
-    const score = assessment.score as Score;
+    const score = assessment.score;
     const sleepDuration = assessment.questionnaire.filter(
-      (item: any) => item.id === '3'
+      (item: any) => item.id === '3',
     )[0].response;
 
     /**Icons */
     let facePath: string | undefined;
     const poorFace = fs.readFileSync(
-      join(__dirname, '../assets/icons/clipart2569310.png')
+      join(__dirname, '../assets/icons/clipart2569310.png'),
     );
     const poorFacePath = poorFace.toString('base64');
     const fairFace = fs.readFileSync(
-      join(__dirname, '../assets/icons/clipart3071872.png')
+      join(__dirname, '../assets/icons/clipart3071872.png'),
     );
     const fairFacePath = fairFace.toString('base64');
     const excellentFace = fs.readFileSync(
-      join(__dirname, '../assets/icons/smiley-face-png-transparent-5.png')
+      join(__dirname, '../assets/icons/smiley-face-png-transparent-5.png'),
     );
     const excellentFacePath = excellentFace.toString('base64');
     const rightArrowFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/right_arrow.png')
+      join(__dirname, '../assets/icons/right_arrow.png'),
     );
     const rightArrowPath = rightArrowFile.toString('base64');
     const downArrowFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/down-arrow.png')
+      join(__dirname, '../assets/icons/down-arrow.png'),
     );
     const downArrowPath = downArrowFile.toString('base64');
     const instagramFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/instagram.png')
+      join(__dirname, '../assets/icons/instagram.png'),
     );
     const instagramPath = instagramFile.toString('base64');
     const facebookFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/facebook.png')
+      join(__dirname, '../assets/icons/facebook.png'),
     );
     const facebookPath = facebookFile.toString('base64');
     const emailFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/email.png')
+      join(__dirname, '../assets/icons/email.png'),
     );
     const emailPath = emailFile.toString('base64');
     const websiteFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/website.png')
+      join(__dirname, '../assets/icons/website.png'),
     );
     const websitePath = websiteFile.toString('base64');
     const medicineFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/medicine.png')
+      join(__dirname, '../assets/icons/medicine.png'),
     );
     const medicinePath = medicineFile.toString('base64');
 
     /**Logo Image */
     const logoFile = fs.readFileSync(
-      join(__dirname, '../assets/individual-logo.png')
+      join(__dirname, '../assets/individual-logo.png'),
     );
     const logoPath = logoFile.toString('base64');
 
@@ -170,7 +170,7 @@ const generateReport = async (assessment: any) => {
           <CssBaseline />
           <ReportBody {...data} />
         </ThemeProvider>
-      </CacheProvider>
+      </CacheProvider>,
     );
 
     // Grab the CSS from emotion
@@ -212,64 +212,64 @@ const generateReport = async (assessment: any) => {
 
 export const generateStreamReport = async (
   assessment: any,
-  employee: any
+  employee: any,
 ): Promise<Stream> => {
   try {
     console.log('Starting to generate');
     let categoryValue: string | undefined;
     let sleepFeedbackMessageValue: string | undefined;
 
-    const score = assessment.score as Score;
+    const score = assessment.score;
     const sleepDuration = assessment.questionnaire.filter(
-      (item: any) => item.id === '3'
+      (item: any) => item.id === '3',
     )[0].response;
 
     /**Icons */
     let facePath: string | undefined;
     const poorFace = fs.readFileSync(
-      join(__dirname, '../assets/icons/clipart2569310.png')
+      join(__dirname, '../assets/icons/clipart2569310.png'),
     );
     const poorFacePath = poorFace.toString('base64');
     const fairFace = fs.readFileSync(
-      join(__dirname, '../assets/icons/clipart3071872.png')
+      join(__dirname, '../assets/icons/clipart3071872.png'),
     );
     const fairFacePath = fairFace.toString('base64');
     const excellentFace = fs.readFileSync(
-      join(__dirname, '../assets/icons/smiley-face-png-transparent-5.png')
+      join(__dirname, '../assets/icons/smiley-face-png-transparent-5.png'),
     );
     const excellentFacePath = excellentFace.toString('base64');
     const rightArrowFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/right_arrow.png')
+      join(__dirname, '../assets/icons/right_arrow.png'),
     );
     const rightArrowPath = rightArrowFile.toString('base64');
     const downArrowFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/down-arrow.png')
+      join(__dirname, '../assets/icons/down-arrow.png'),
     );
     const downArrowPath = downArrowFile.toString('base64');
     const instagramFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/instagram.png')
+      join(__dirname, '../assets/icons/instagram.png'),
     );
     const instagramPath = instagramFile.toString('base64');
     const facebookFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/facebook.png')
+      join(__dirname, '../assets/icons/facebook.png'),
     );
     const facebookPath = facebookFile.toString('base64');
     const emailFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/email.png')
+      join(__dirname, '../assets/icons/email.png'),
     );
     const emailPath = emailFile.toString('base64');
     const websiteFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/website.png')
+      join(__dirname, '../assets/icons/website.png'),
     );
     const websitePath = websiteFile.toString('base64');
     const medicineFile = fs.readFileSync(
-      join(__dirname, '../assets/icons/medicine.png')
+      join(__dirname, '../assets/icons/medicine.png'),
     );
     const medicinePath = medicineFile.toString('base64');
 
     /**Logo Image */
     const logoFile = fs.readFileSync(
-      join(__dirname, '../assets/individual-logo.png')
+      join(__dirname, '../assets/individual-logo.png'),
     );
     const logoPath = logoFile.toString('base64');
 
@@ -328,7 +328,7 @@ export const generateStreamReport = async (
           <CssBaseline />
           <ReportBody {...data} />
         </ThemeProvider>
-      </CacheProvider>
+      </CacheProvider>,
     );
 
     // Grab the CSS from emotion

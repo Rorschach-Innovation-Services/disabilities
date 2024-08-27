@@ -8,6 +8,7 @@ import question from './questions';
 import assessment from './assessment';
 import tasks from './tasks';
 import department from './department';
+import questionnaire from './questionnaire';
 
 export default {
   admin,
@@ -17,4 +18,5 @@ export default {
   assessment,
   department,
   tasks,
+  questionnaire,
 };

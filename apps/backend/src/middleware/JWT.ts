@@ -1,6 +1,7 @@
-import JWT from "jsonwebtoken";
+import JWT from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
 
-const secretToken = process.env.SECRET_TOKEN||"KmLA7K3cbp";
+const secretToken = process.env.SECRET_TOKEN || 'KmLA7K3cbp';
 
 /**
  * Generate a JWT token
@@ -8,7 +9,7 @@ const secretToken = process.env.SECRET_TOKEN||"KmLA7K3cbp";
  * @returns the token
  */
 export const generateToken = (identifier: Object) => {
-  return JWT.sign(identifier, secretToken as string, { expiresIn: "3hr" });
+  return JWT.sign(identifier, secretToken as string, { expiresIn: '3hr' });
 };
 
 /**
@@ -19,13 +20,20 @@ export const generateToken = (identifier: Object) => {
  * @returns response or goes to next function
  */
 export const verifyToken = (
-  headers: Record<string, string>,
+  request: Request,
+  response: Response,
+  next: NextFunction,
 ) => {
-  const header = headers["authorization"];
-  const token = header && header.split(" ")[1]; // header = "Bearer <token>"
-  if (!token) throw new Error("Unauthorized! - No Token"); 
+  const header = request.headers['authorization'];
+  const token = header && header.split(' ')[1]; // header = "Bearer <token>"
+  if (!token) throw new Error('Unauthorized! - No Token');
   JWT.verify(token, secretToken as string, (error, user) => {
-    if (error) 
-      throw new Error("Unauthorized! - Wrong Token")
+    if (error) {
+      return response
+        .status(401)
+        .send({ message: 'Unauthorized! - Wrong Token' });
+    }
+    request.user = user;
+    next();
   });
 };

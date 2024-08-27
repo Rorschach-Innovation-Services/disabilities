@@ -1,20 +1,24 @@
 import { Administrator } from '../../models';
-import { getQueryStringParameters, APIGatewayEvent } from 'src/utilities/api';
+import { getQueryStringParameters, APIGatewayEvent } from '../../utilities/api';
+import { Request, Response } from 'express';
 
-export const getAdmin = async (event: APIGatewayEvent) => {
+export const getAdmin = async (request: Request, response: Response) => {
   try {
-    console.log('Getting singular admin', event);
-    const parameters = getQueryStringParameters(event);
+    // const parameters = getQueryStringParameters(event);
+    const parameters = request.params;
     if (!parameters?.id)
-      return { statusCode: 400, message: 'Admin ID is required!' };
+      return response.status(400).json({ message: 'Admin ID is required!' });
+    // return { statusCode: 400, message: 'Admin ID is required!' };
     const admin = await Administrator.get({ id: parameters.id });
-    console.log('awaited admin', admin);
     if (!admin) {
-      return { message: 'Admin Not Found!' };
+      return response.status(400).json({ message: 'Admin Not Found!' });
+      // return { message: 'Admin Not Found!' };
     }
     admin.password = '';
-    return { admin };
+    return response.status(200).json({ message: 'Admin Deleted', admin });
+    // return { admin };
   } catch (error) {
-    return { message: 'Internal Server Error' };
+    return response.status(500).json({ message: 'Internal Server Error' });
+    // return { message: 'Internal Server Error' };
   }
 };

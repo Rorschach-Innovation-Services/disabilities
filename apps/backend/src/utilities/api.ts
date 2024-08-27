@@ -14,7 +14,7 @@ export type APIGatewayEvent =
  * @returns The request body string, or an empty string if the body is null.
  */
 export function getRequestBody(
-  event: APIGatewayEvent
+  event: APIGatewayEvent,
 ): null | Record<string, any> {
   return event.body ? JSON.parse(event.body) : '';
 }
@@ -40,7 +40,7 @@ export function getRequestHeaders(event: APIGatewayEvent): {
   const eventHeaders: APIGatewayProxyEventHeaders = event.headers;
 
   for (const [key, value] of Object.entries(eventHeaders)) {
-    headers[key] = value ? value : '';
+    headers[key as string] = value ? (value as string) : '';
   }
 
   return headers;
@@ -52,7 +52,7 @@ export function getRequestHeaders(event: APIGatewayEvent): {
  * @returns An object containing the request query string parameters with string values, or null if there are no query string parameters.
  */
 export function getQueryStringParameters(
-  event: APIGatewayEvent
+  event: APIGatewayEvent,
 ): { [name: string]: string } | null {
   const queryStringParams:
     | APIGatewayProxyEventQueryStringParameters
@@ -65,7 +65,7 @@ export function getQueryStringParameters(
   const params: { [name: string]: string } = {};
 
   for (const [key, value] of Object.entries(queryStringParams)) {
-    params[key] = value ? value : '';
+    params[key] = value ? (value as string) : '';
   }
 
   return params;

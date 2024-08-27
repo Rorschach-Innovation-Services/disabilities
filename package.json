@@ -1,9 +1,6 @@
 {
   "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+  "workspaces": [],
   "scripts": {
     "build": "turbo run build",
     "changeset-apply": "changeset version",

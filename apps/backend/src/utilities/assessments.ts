@@ -1,5 +1,5 @@
-import { Questionnaire } from 'src/models';
-import { AssessmentAttributes } from 'src/models/assessment.model';
+import { Questionnaire } from '../models';
+import { AssessmentAttributes } from '../models/assessment.model';
 
 type MetricItemValues = {
   string: {
@@ -9,22 +9,22 @@ type MetricItemValues = {
 };
 
 export const getCurrentAgainstImportance = async (
-  assessments: AssessmentAttributes[]
+  assessments: AssessmentAttributes[],
 ) => {
   const questionnaireResponses = await Questionnaire.query(
     { _en: 'questionnaire' },
-    { index: 'gsIndex' }
+    { index: 'gsIndex' },
   );
   const questionnaireIds = questionnaireResponses.items
     .filter(
       (questionnaire) =>
         (questionnaire.order === 1 || questionnaire.order === 2) &&
-        !questionnaire.deleted
+        !questionnaire.deleted,
     )
     .map((item) => item.id);
   if (questionnaireIds.length === 0) return {};
   const relevantAssessments = assessments.filter((item) =>
-    questionnaireIds.includes(item.questionnaireId)
+    questionnaireIds.includes(item.questionnaireId),
   );
   const result: Record<string, Record<string, number[]>> = {};
 
@@ -56,7 +56,7 @@ type ChartItem = {
 };
 
 export const getRadarChartValues = async (
-  assessments: AssessmentAttributes[]
+  assessments: AssessmentAttributes[],
 ) => {
   const data = await getCurrentAgainstImportance(assessments);
   const currentStatusItem: ChartItem = {
@@ -88,7 +88,7 @@ type DoAbilityMatrixSeries = {
 }[];
 
 export const getDoAbilityMatrix = async (
-  assessments: AssessmentAttributes[]
+  assessments: AssessmentAttributes[],
 ) => {
   const data = await getCurrentAgainstImportance(assessments);
   const metricNames = ['Engage', 'Nest', 'Attract', 'Back', 'Learn'];
@@ -113,22 +113,22 @@ type MatrixSeries = {
 
 export const getHighMatrix = async (
   assessments: AssessmentAttributes[],
-  type: 'low' | 'high'
+  type: 'low' | 'high',
 ) => {
   const questionnaireResponses = await Questionnaire.query(
     { _en: 'questionnaire' },
-    { index: 'gsIndex' }
+    { index: 'gsIndex' },
   );
   const questionnaireIds = questionnaireResponses.items
     .filter(
       (questionnaire) =>
         (questionnaire.order === 1 || questionnaire.order === 2) &&
-        !questionnaire.deleted
+        !questionnaire.deleted,
     )
     .map((item) => item.id);
   if (questionnaireIds.length === 0) return {};
   const relevantAssessments = assessments.filter((item) =>
-    questionnaireIds.includes(item.questionnaireId)
+    questionnaireIds.includes(item.questionnaireId),
   );
 
   const temp: Record<string, Record<string, number[]>> = {};

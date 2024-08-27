@@ -16,5 +16,3 @@ interface Question {
 const calculatedScore = (questionnaire: Question[]) => {
   return {};
 };
-
-export default scoreSleepHealth;

@@ -8,10 +8,10 @@ import {
   Department,
   Questionnaire,
 } from '../../models';
-import calculatedScore from '../../utilities/score';
 import generateReport from '../../utilities/genReport';
-import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
-import { EmployeeAttributes } from 'src/models/employee.model';
+import { getRequestBody, APIGatewayEvent } from '../../utilities/api';
+import { EmployeeAttributes } from '../../models/employee.model';
+import { Request, Response } from 'express';
 
 type Parameters = {
   employee: string;
@@ -30,11 +30,12 @@ type Parameters = {
  * @param res
  * @returns
  */
-export const saveAssessment = async (event: APIGatewayEvent) => {
+export const saveAssessment = async (request: Request, response: Response) => {
   try {
-    const requestBody = getRequestBody(event);
-    if (!requestBody)
-      return { statusCode: 400, message: 'Request Body is required!' };
+    // const requestBody = getRequestBody(event);
+    const requestBody = request.body;
+    // if (!requestBody)
+    //   return { statusCode: 400, message: 'Request Body is required!' };
     const {
       employeeEmail,
       questionnaire,
@@ -46,7 +47,8 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
     /**Check if the company exists in the database */
     const companyDocument = await Company.get({ id: company });
     if (!companyDocument) {
-      return { statusCode: 400, message: 'Company not found' };
+      return response.status(400).json({ message: 'Company Not Found!' });
+      // return { statusCode: 400, message: 'Company not found' };
     }
 
     /**Check if the department exists in the database */
@@ -54,14 +56,16 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
       id: department,
     });
     if (!departmentDocument) {
-      return { statusCode: 400, message: 'Department not found' };
+      return response.status(400).json({ message: 'Department Not Found!' });
+      // return { statusCode: 400, message: 'Department not found' };
     }
 
     const questionnaireDocument = await Questionnaire.get({
       id: questionnaireId,
     });
     if (!questionnaireDocument) {
-      return { statusCode: 400, message: 'Questionnaire not found' };
+      return response.status(400).json({ message: 'Questionnaire Not Found!' });
+      // return { statusCode: 400, message: 'Questionnaire not found' };
     }
 
     /**Check if the employee exists in the database */
@@ -69,7 +73,7 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
       {
         _en: 'employee',
       },
-      { beginsWith: `${company}:${department}` }
+      { beginsWith: `${company}:${department}` },
     );
     const employees = employeesResponse.items || [];
 
@@ -85,11 +89,16 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
 
     /**Limit the number of employee assessments a company needs to complete to not exceed the . */
     if (employees.length === departmentDocument.employeeSize) {
-      return {
+      return response.status(400).json({
         statusCode: 400,
         message: 'Cannot Submit Assessment. Limit Exceeded!',
         employee: employeeEmail,
-      };
+      });
+      // return {
+      //   statusCode: 400,
+      //   message: 'Cannot Submit Assessment. Limit Exceeded!',
+      //   employee: employeeEmail,
+      // };
     }
 
     if (!employeeExists) {
@@ -122,7 +131,7 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
       }
       await Department.update(
         { id: departmentDocument.id },
-        { completedQuestionnaires }
+        { completedQuestionnaires },
       );
       // const reportRes = await generateReport(assessment);
       // if (typeof reportRes !== 'undefined' && 'error' in reportRes) {
@@ -132,11 +141,15 @@ export const saveAssessment = async (event: APIGatewayEvent) => {
       //   };
       // }
       // return { message: 'Successful', data: reportRes };
-      return { message: 'Error employee not found' };
+      return response.status(400).json({
+        message: 'Error employee not found',
+      });
+      // return { message: 'Error employee not found' };
     }
     return { statusCode: 400, message: 'Successful' };
   } catch (error) {
     console.log('error', error);
-    return { message: 'Internal Server Error', error };
+    return response.status(500).json({ message: 'Internal Server Error' });
+    // return { message: 'Internal Server Error', error };
   }
 };

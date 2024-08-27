@@ -1,20 +1,21 @@
 import { Assessment, Employee } from '../../models';
-import { Score } from '../../models/assessment.model';
+import { Request, Response } from 'express';
 
-export const getAverages = async () => {
+export const getAverages = async (request: Request, response: Response) => {
   try {
     const employeesResponse = await Employee.query(
       { _en: 'employee' },
-      { index: 'gsIndex' }
+      { index: 'gsIndex' },
     );
     const employees = employeesResponse.items || [];
     const assessmentResponse = await Assessment.query(
       { _en: 'assessment' },
-      { index: 'gsIndex' }
+      { index: 'gsIndex' },
     );
     const assessments = assessmentResponse.items || [];
     if (!assessments) {
-      return { message: 'Assessments Not Found!' };
+      return response.status(400).json({ message: 'Assessments Not Found' });
+      // return { message: 'Assessments Not Found!' };
     }
     /**Number of Assessments */
     const completedAssessments = assessments.length;
@@ -22,14 +23,14 @@ export const getAverages = async () => {
     /**Calculate the averages */
     let averageSleepHours: number = 0;
     console.log('assessments', assessments);
-    assessments.map((assessment) => {
-      averageSleepHours += (assessment.score as Score).TSTValue;
-    });
+    // assessments.map((assessment) => {
+    //   averageSleepHours += assessment.score.TSTValue;
+    // });
     if (completedAssessments > 0)
       averageSleepHours = parseInt(
-        (averageSleepHours / completedAssessments).toFixed(1)
+        (averageSleepHours / completedAssessments).toFixed(1),
       );
-    return {
+    return response.status(200).json({
       message: 'Successful!',
       data: {
         averageSleepHours,
@@ -37,8 +38,9 @@ export const getAverages = async () => {
         completedAssessments,
         averageRating: 0,
       },
-    };
+    });
   } catch (error) {
-    return { statusCode: 500, message: 'Internal Server Error' };
+    return response.status(500).json({ message: 'Internal Server Error' });
+    // return { statusCode: 500, message: 'Internal Server Error' };
   }
 };

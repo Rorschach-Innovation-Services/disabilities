@@ -3,21 +3,25 @@ import {
   getQueryStringParameters,
   getRequestBody,
   APIGatewayEvent,
-} from 'src/utilities/api';
+} from '../../utilities/api';
+import { Request, Response } from 'express';
 
-export const updateProfile = async (event: APIGatewayEvent) => {
+export const updateProfile = async (request: Request, response: Response) => {
   try {
-    const parameters = getQueryStringParameters(event);
-    const requestBody = getRequestBody(event);
-    if (!requestBody)
-      return { statusCode: 400, message: 'Request Body is required!' };
-    if (!parameters?.id)
-      return { statusCode: 400, message: 'Admin ID is required!' };
+    // const parameters = getQueryStringParameters(event);
+    // const requestBody = getRequestBody(event);
+    const requestBody = request.body;
+    const parameters = request.params;
+    // if (!requestBody)
+    //   return { statusCode: 400, message: 'Request Body is required!' };
+    // if (!parameters?.id)
+    //   return { statusCode: 400, message: 'Admin ID is required!' };
     const { id } = parameters;
     const { email, bio, role, company, location, name } = requestBody;
     const admin = await Administrator.get({ id });
     if (!admin) {
-      return { message: 'Admin Not Found!' };
+      return response.status(400).json({ message: 'Admin Not Found!' });
+      // return { message: 'Admin Not Found!' };
     }
     const updatedAdmin = await Administrator.update(
       { id },
@@ -28,11 +32,13 @@ export const updateProfile = async (event: APIGatewayEvent) => {
         companyId: company,
         role,
         bio,
-      }
+      },
     );
     updatedAdmin.password = '';
+    return response.status(200).json({ admin: updatedAdmin });
     return { admin: updatedAdmin };
   } catch (error) {
-    return { message: 'Internal Server Error' };
+    return response.status(500).json({ message: 'Internal Server Error' });
+    // return { message: 'Internal Server Error' };
   }
 };

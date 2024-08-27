@@ -9,6 +9,7 @@ import {
   TransformedResult,
   csvOptions,
 } from '../../utilities/transform';
+import { Request, Response } from 'express';
 
 /**
  * Retrieve all client csv files and create master file
@@ -16,18 +17,22 @@ import {
  * @param response object
  * @returns response
  */
-export const getClientFilesOld = async () => {
+export const getClientFilesOld = async (
+  request: Request,
+  response: Response,
+) => {
   try {
     const companyResponse = await Company.query(
       { _en: 'company' },
-      { index: 'gsIndex' }
+      { index: 'gsIndex' },
     );
     const companies =
       companyResponse.items.filter(
-        (item) => item._en === 'company' && !item.deleted
+        (item) => item._en === 'company' && !item.deleted,
       ) || [];
     if (!companies) {
-      return { statusCode: 400, message: 'Companies not found' };
+      return response.status(400).json({ message: 'Companies not found' });
+      // return { statusCode: 400, message: 'Companies not found' };
     }
 
     // Holding data to be stored in the master csv file
@@ -46,11 +51,11 @@ export const getClientFilesOld = async () => {
         {
           companyId: company.id,
         },
-        {}
+        {},
       );
       const assessments =
         assessmentResponse.items.filter(
-          (item) => item._en === 'assessment' && !item.deleted
+          (item) => item._en === 'assessment' && !item.deleted,
         ) || [];
 
       if (!assessments.length) {
@@ -93,11 +98,11 @@ export const getClientFilesOld = async () => {
 
       const employeesResponse = await Employee.query(
         { _en: 'employee' },
-        { index: 'gsIndex', beginsWith: company.id }
+        { index: 'gsIndex', beginsWith: company.id },
       );
       const employees =
         employeesResponse.items.filter(
-          (item) => item._en === 'employee' && !item.deleted
+          (item) => item._en === 'employee' && !item.deleted,
         ) || [];
       console.log('Parse async');
       const clientCSVFile = await parseAsync(singleClientData, csvOptions);
@@ -116,28 +121,30 @@ export const getClientFilesOld = async () => {
     const sortedCompanyList = modifiedCompanies.sort((x, y) => {
       return Number(y.created) - Number(x.created);
     });
-    return {
+    return response.status(200).json({
       companies: sortedCompanyList,
       masterFile: `SEP=,\n${masterCSVFile}`,
-    };
+    });
   } catch (error) {
     console.error('error', error);
-    return { statusCode: 500, message: 'Internal Server Error' };
+    return response.status(500).json({ message: 'Internal Server Error' });
+    // return { statusCode: 500, message: 'Internal Server Error' };
   }
 };
 
-export const getClientFiles = async () => {
+export const getClientFiles = async (request: Request, response: Response) => {
   try {
     const companyResponse = await Company.query(
       { _en: 'company' },
-      { index: 'gsIndex' }
+      { index: 'gsIndex' },
     );
     const companies = companyResponse.items.filter(
-      (item) => item._en === 'company' && !item.deleted
+      (item) => item._en === 'company' && !item.deleted,
     );
 
     if (!companies.length) {
-      return { statusCode: 400, message: 'Companies not found' };
+      return response.status(400).json({ message: 'Companies not found' });
+      // return { statusCode: 400, message: 'Companies not found' };
     }
 
     const masterFileData: TransformedResult[] = [];
@@ -148,9 +155,9 @@ export const getClientFiles = async () => {
       Assessment.query({ companyId: company.id }, {}).then((response) => ({
         company,
         assessments: response.items.filter(
-          (item) => item._en === 'assessment' && !item.deleted
+          (item) => item._en === 'assessment' && !item.deleted,
         ),
-      }))
+      })),
     );
 
     const assessmentResults = await Promise.all(assessmentPromises);
@@ -173,7 +180,7 @@ export const getClientFiles = async () => {
         Employee.get({ id: assessment.employeeId }).then((employee) => ({
           assessment,
           employee,
-        }))
+        })),
       );
 
       const employeeResults = await Promise.all(employeePromises);
@@ -199,11 +206,11 @@ export const getClientFiles = async () => {
 
       const employeesResponse = await Employee.query(
         { _en: 'employee' },
-        { index: 'gsIndex', beginsWith: company.id }
+        { index: 'gsIndex', beginsWith: company.id },
       );
 
       const employees = employeesResponse.items.filter(
-        (item) => item._en === 'employee' && !item.deleted
+        (item) => item._en === 'employee' && !item.deleted,
       );
 
       const clientCSVFile = await parseAsync(singleClientData, csvOptions);
@@ -218,15 +225,16 @@ export const getClientFiles = async () => {
 
     const masterCSVFile = await parseAsync(masterFileData, csvOptions);
     const sortedCompanyList = modifiedCompanies.sort(
-      (x, y) => y.created - x.created
+      (x, y) => y.created - x.created,
     );
 
-    return {
+    return response.status(200).json({
       companies: sortedCompanyList,
       masterFile: `SEP=,\n${masterCSVFile}`,
-    };
+    });
   } catch (error) {
     console.error('error', error);
-    return { statusCode: 500, message: 'Internal Server Error' };
+    return response.status(500).json({ message: 'Internal Server Error' });
+    // return { statusCode: 500, message: 'Internal Server Error' };
   }
 };

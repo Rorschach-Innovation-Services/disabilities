@@ -1,5 +1,6 @@
 import { Assessment } from '../../models/assessment.model';
-import { getRequestBody, APIGatewayEvent } from 'src/utilities/api';
+import { getRequestBody, APIGatewayEvent } from '../../utilities/api';
+import { Request, Response } from 'express';
 
 type Parameters = {
   assessmentDates: {
@@ -10,11 +11,15 @@ type Parameters = {
   }[];
 };
 
-export const deleteAssessments = async (event: APIGatewayEvent) => {
+export const deleteAssessments = async (
+  request: Request,
+  response: Response,
+) => {
   try {
-    const requestBody = getRequestBody(event);
-    if (!requestBody)
-      return { statusCode: 400, message: 'Request Body is required!' };
+    // const requestBody = getRequestBody(event);
+    const requestBody = request.body;
+    // if (!requestBody)
+    //   return { statusCode: 400, message: 'Request Body is required!' };
     for (const data of requestBody.assessmentDates) {
       await Assessment.update(
         {
@@ -25,11 +30,14 @@ export const deleteAssessments = async (event: APIGatewayEvent) => {
         },
         {
           deleted: true,
-        }
+        },
       );
     }
-    return { message: 'Assessments successfully deleted' };
+    return response
+      .status(500)
+      .json({ message: 'Assessments successfully deleted' });
   } catch (error) {
+    return response.status(500).json({ message: 'Internal Server Error' });
     return { message: 'Internal Server Error' };
   }
 };

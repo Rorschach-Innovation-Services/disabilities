@@ -5,8 +5,8 @@ import { Router } from 'express';
 import { saveEmployee } from '../controllers/employee/employee';
 import { getEmployee } from '../controllers/employee/getemployee';
 import { updateEmployee } from '../controllers/employee/updateemployee';
-import { deleteEmployees } from '../controllers/employee/deleteemployees.controller';
-import { createIndividualReport } from '../controllers/employee/report.controller';
+import { deleteEmployees } from '../controllers/employee/deleteemployees';
+import { createIndividualReport } from '../controllers/employee/report';
 import { verifyToken } from '../middleware/JWT';
 import { checkRole } from '../middleware/roles';
 
@@ -19,7 +19,7 @@ router
     '/individual-report/:employeeId',
     verifyToken,
     checkRole,
-    createIndividualReport
+    createIndividualReport,
   )
   .post('/delete', verifyToken, checkRole, deleteEmployees)
   .post('/:id', verifyToken, checkRole, updateEmployee);

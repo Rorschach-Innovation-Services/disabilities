@@ -8,16 +8,18 @@ import {
   getRequestBody,
   APIGatewayEvent,
   assessmentEmailTemplates,
-} from 'src/utilities/api';
+} from '../../utilities/api';
+import { Request, Response } from 'express';
 
 /**
  * Save the company and if employees found, send them emails
  */
-export const saveCompany = async (event: APIGatewayEvent) => {
+export const saveCompany = async (request: Request, response: Response) => {
   try {
-    const requestBody = getRequestBody(event);
-    if (!requestBody)
-      return { statusCode: 400, message: 'Request Body is required!' };
+    // const requestBody = getRequestBody(event);
+    const requestBody = request.body;
+    // if (!requestBody)
+    //   return { statusCode: 400, message: 'Request Body is required!' };
     const {
       id,
       department,
@@ -62,16 +64,16 @@ export const saveCompany = async (event: APIGatewayEvent) => {
           const employeeData = await Employee.create({
             ...employee,
             name: employee.name,
-            department: departmentData?.id,
+            department: departmentData?.id as string,
             email: employee.email,
-            companyId: company?.id,
+            companyId: company?.id as string,
           });
           return employeeData;
         });
         const { emailSubject, emailMessage } = assessmentEmailTemplates({
           questionnaireId,
-          companyId: company?.id,
-          departmentId: departmentData?.id,
+          companyId: company?.id as string,
+          departmentId: departmentData?.id as string,
         });
 
         await Promise.all(
@@ -81,30 +83,32 @@ export const saveCompany = async (event: APIGatewayEvent) => {
                 employee.email,
                 employee.name,
                 emailSubject,
-                emailMessage
+                emailMessage,
               );
             };
             return funct(em);
-          })
+          }),
         );
-        return {
+        return response.status(200).json({
           message: 'Company, department and employees registered!',
           company: company?.id,
           department: departmentData?.id,
           questionnaireId,
-        };
+        });
       } else {
         /**Register company and department only */
-        return {
+        return response.status(200).json({
           message: 'Company Registered!',
           company: company?.id,
           department: departmentData?.id,
           questionnaireId,
-        };
+        });
       }
     } else {
       const company = await Company.get({ id });
-      if (!company) return { statusCode: 400, message: 'Company not found' };
+      if (!company)
+        return response.status(400).json({ message: 'Company not found' });
+      // return { statusCode: 400, message: 'Company not found' };
 
       const departmentData = await Department.create({
         name: department,
@@ -120,7 +124,7 @@ export const saveCompany = async (event: APIGatewayEvent) => {
           const employeeData = await Employee.create({
             ...employee,
             name: employee.name,
-            department: departmentData?.id,
+            department: departmentData?.id as string,
             email: employee.email,
             companyId: company.id,
           });
@@ -129,8 +133,8 @@ export const saveCompany = async (event: APIGatewayEvent) => {
 
         const { emailSubject, emailMessage } = assessmentEmailTemplates({
           questionnaireId,
-          companyId: company?.id,
-          departmentId: departmentData?.id,
+          companyId: company?.id as string,
+          departmentId: departmentData?.id as string,
         });
         await Promise.all(
           employeesList.map((item) => {
@@ -139,30 +143,30 @@ export const saveCompany = async (event: APIGatewayEvent) => {
                 employee.email,
                 employee.name,
                 emailSubject,
-                emailMessage
+                emailMessage,
               );
             };
             return funct(item);
-          })
+          }),
         );
-        return {
+        return response.status(200).json({
           message: 'Company Registered!',
           company: company?.id,
-          department: departmentData?.id,
+          department: departmentData?.id as string,
           questionnaireId,
-        };
+        });
       } else {
         /**Register company only */
-        return {
+        return response.status(200).json({
           message: 'Company Registered!',
           company: company.id,
           department: departmentData?.id,
           questionnaireId,
-        };
+        });
       }
     }
   } catch (error) {
     console.error('Error saving company', error);
-    return { statusCode: 500, message: 'Internal Server Error', error };
+    return response.status(500).json({ message: 'Internal Server Error' });
   }
 };

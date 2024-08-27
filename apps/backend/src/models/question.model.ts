@@ -1,4 +1,4 @@
-import { Entity, EntityNames, MasterTable } from '@repo/db-wrapper';
+import { Entity, MasterTable, EntityNames } from '../utilities/entity';
 
 export type QuestionAttributes = {
   id: string;
