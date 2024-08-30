@@ -1,19 +1,30 @@
 /**
  * Email the report to an employee
  */
-import { SES, config } from 'aws-sdk';
 import emailConfig from '../configuration/email';
 import nodemailer from 'nodemailer';
-import path from 'path';
+import { SESClient } from "@aws-sdk/client-ses";
+import { SendRawEmailCommand } from "@aws-sdk/client-ses";
 
-config.update({
+// Initialize the SES client
+const sesClient = new SESClient({
   region: emailConfig.region,
-  accessKeyId: emailConfig.accessKeyId,
-  secretAccessKey: emailConfig.secretAccessKey,
+  credentials: {
+    accessKeyId: emailConfig.accessKeyId,
+    secretAccessKey: emailConfig.secretAccessKey,
+  },
 });
+
 const sourceEmail = emailConfig.sourceEmail as string;
-const ses = new SES({ apiVersion: '2010-12-01' });
-let transporter = nodemailer.createTransport({ SES: ses });
+
+// Create a custom SES transport for nodemailer
+let transporter = nodemailer.createTransport({
+  SES: { 
+    ses: sesClient,
+    aws: { SendRawEmailCommand },
+  },
+});
+
 
 /**
  * Send PDF Report to employee

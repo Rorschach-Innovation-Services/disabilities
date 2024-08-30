@@ -1,15 +1,17 @@
 /**
  * Sending Emails to users
  */
-import { config, SES } from 'aws-sdk';
+import { SESClient, SendEmailCommand, SendEmailCommandInput } from "@aws-sdk/client-ses";
 import emailConfig from '../configuration/email';
 
-config.update({
-  region: emailConfig.region,
-  accessKeyId: emailConfig.accessKeyId,
-  secretAccessKey: emailConfig.secretAccessKey,
-});
 const sourceEmail = emailConfig.sourceEmail as string;
+const sesClient = new SESClient({
+  region: emailConfig.region,
+  credentials: {
+    accessKeyId: emailConfig.accessKeyId,
+    secretAccessKey: emailConfig.secretAccessKey,
+  },
+});
 
 /**
  * Send Email To Users
@@ -19,7 +21,7 @@ const sourceEmail = emailConfig.sourceEmail as string;
  * @param message For the email body
  * @returns Promise
  */
-const emailSend = (
+const emailSend = async (
   email: string,
   name: string,
   subject: string,
@@ -28,7 +30,7 @@ const emailSend = (
   const HtmlMessage = `<h3>Hi ${name}, </h3><p>${message}</p><p>Kind Regards,</p><p>Sleep Science Team.</p>`;
   const TextMessage = `Hi ${name},\n${message}\nKind Regards,\nSleep Science Team.</p>`;
   /** Content and details of the email */
-  const params: SES.SendEmailRequest = {
+  const params: SendEmailCommandInput = {
     Destination: {
       ToAddresses: [email],
     },
@@ -50,9 +52,8 @@ const emailSend = (
     },
     Source: sourceEmail,
   };
-  const sendPromise = new SES({ apiVersion: '2010-12-01' })
-    .sendEmail(params)
-    .promise();
-  return sendPromise;
+    const command = new SendEmailCommand(params);
+    const response = await sesClient.send(command);
+    return response;
 };
 export default emailSend;
