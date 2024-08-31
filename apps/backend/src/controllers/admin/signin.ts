@@ -17,7 +17,7 @@ export const signIn = async (request: Request, response: Response) => {
     console.log('requestBody', requestBody);
     const adminResponse = await Administrator.query(
       { _en: 'administrator' },
-      { index: 'gsIndex', limit: 1 },
+      { index: 'gsIndex', limit: 1, beginsWith: email.toLowerCase() },
     );
     const admins = adminResponse.items;
     if (!admins || admins.length === 0)
@@ -26,6 +26,7 @@ export const signIn = async (request: Request, response: Response) => {
         .send({ message: 'User does not exist. Please Request Registration' });
     // return sendResponse({ statusCode: 400, body: 'User does not exist. Please Request Registration' });
     const admin = admins[0];
+    console.log('admin', admin);
 
     if (Object.keys(admin).length === 0) {
       return response
