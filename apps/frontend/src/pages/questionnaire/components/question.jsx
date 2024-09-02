@@ -70,6 +70,25 @@ export const Question = ({
           sx={{ marginTop: '160px' }}
         />
       );
+      
+      // Function to get slider style based on question category
+      const getSliderStyle = (question) => {
+        switch (question.category) {
+          case 'Engage':
+            return { color: '#0074D9' };  
+          case 'Nest':
+            return { color: '#2ECC40' };  
+          case 'Learn':
+            return { color: '#FFDC00' };  
+          case 'Back':
+            return { color: '#FF851B' };  
+          case 'Attract':
+            return { color: '#B10DC9' };  
+          default:
+            return { color: '#ddd' };  
+        }
+      };
+      
     return (
       <SliderOption
         value={question.response}
@@ -83,6 +102,7 @@ export const Question = ({
         medium="Sometimes"
         high="Very much"
         setError={setError}
+        sliderStyle={getSliderStyle(question)} // Pass the custom color style here
       />
     );
   };

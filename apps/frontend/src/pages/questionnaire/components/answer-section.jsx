@@ -251,6 +251,7 @@ export const SliderOption = ({
   errorMessage,
   displayErrorMessage,
   setError,
+  sliderStyle, 
 }) => {
   return (
     <Box>
@@ -290,7 +291,20 @@ export const SliderOption = ({
           onChange(newValue);
         }}
         value={value}
-        sx={{ width: '93%', mt: '7vh' }}
+        sx={{
+          width: '93%',
+          mt: '7vh',
+          color: sliderStyle.color, // This applies your custom color to the slider
+          '& .MuiSlider-thumb': {
+            backgroundColor: sliderStyle.color, 
+          },
+          '& .MuiSlider-track': {
+            backgroundColor: sliderStyle.color, 
+          },
+          '& .MuiSlider-rail': {
+            color: sliderStyle.color, 
+          },
+        }}
       />
     </Box>
   );
