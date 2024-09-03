@@ -294,7 +294,7 @@ export const SliderOption = ({
         sx={{
           width: '93%',
           mt: '7vh',
-          color: sliderStyle.color, // This applies your custom color to the slider
+          color: sliderStyle.color, // This applies custom color to the slider
           '& .MuiSlider-thumb': {
             backgroundColor: sliderStyle.color, 
           },
