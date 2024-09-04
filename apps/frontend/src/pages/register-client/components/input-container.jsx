@@ -81,7 +81,8 @@ export const InputContainer = ({
               value={state.company.name}
               executeDispatch={executeDispatch('company id')}
               textFieldProps={{
-                onMouseEnter: handleAnotherOpen,
+               // onMouseEnter: handleAnotherOpen,
+                onClick: handleAnotherOpen,  // Change from onMouseEnter to onClick
                 disabled: true,
                 InputProps: {
                   endAdornment: <ArrowDropDownIcon />,
@@ -189,8 +190,8 @@ export const InputContainer = ({
           value={state.consultant.sleepScienceConsultant.name}
           executeDispatch={executeDispatch('sleep-science-consultant')}
           textFieldProps={{
-            // onClick: handleOpen,
-            onMouseEnter: handleOpen,
+            onClick: handleOpen, 
+           // onMouseEnter: handleOpen,
             disabled: true,
             InputProps: {
               endAdornment: <ArrowDropDownIcon />,
