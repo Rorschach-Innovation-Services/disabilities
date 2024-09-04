@@ -27,7 +27,7 @@ const colors = [
 ];
 
 export const BubbleChart = ({ styles, title, series }) => {
-  // Compute the averages for x and y axes
+  // averages for x and y axes
   const allDataPoints = series.flatMap(entry => entry.data);
   const xValues = allDataPoints.map(point => point[0]);
   const yValues = allDataPoints.map(point => point[1]);
