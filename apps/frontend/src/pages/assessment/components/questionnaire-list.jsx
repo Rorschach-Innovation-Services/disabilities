@@ -20,14 +20,17 @@ export const QuestionnaireList = ({ questionnaires, state, dispatch }) => {
       }}
     >
       <QuestionnaireHeading headings={headings} />
-      {questionnaires.map((questionnaire, index) => (
-        <Questionnaire
-          key={questionnaire.id + index}
-          questionnaire={questionnaire}
-          state={state}
-          dispatch={dispatch}
-        />
-      ))}
+      {questionnaires
+         .sort((a, b) => a.name.localeCompare(b.name))
+         .map((questionnaire, index) => (
+      <Questionnaire
+        key={questionnaire.id + index}
+        questionnaire={questionnaire}
+        state={state}
+         dispatch={dispatch}
+     />
+  ))}
+
     </Container>
   );
 };
