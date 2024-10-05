@@ -43,7 +43,8 @@ export const ScatterPlotComponent = ({ series }) => {
       },
     },
     yaxis: {
-      tickAmount: 10,
+      tickAmount: 5,
+      stepSize: 1,
       min: 0,
       max: 5,
       title: {
@@ -67,20 +68,30 @@ export const ScatterPlotComponent = ({ series }) => {
         return w.globals.initialSeries[seriesIndex].name;
       },
       style: {
-        fontSize: '12px',
-        fontWeight: 'bold',
-        colors: ['#000'],
+        fontSize: '14px', 
+        fontWeight: '600', 
+        color: '#fff', 
+        cssClass: 'apexcharts-data-label', 
       },
       background: {
         enabled: true,
-        padding: 4,
-        borderRadius: 2,
+        padding: 6,
+        borderRadius: 4,
         borderWidth: 1,
-        borderColor: '#fff',
-        opacity: 0.9,
+        borderColor: '#0070C0', 
+        opacity: 0.85, 
       },
-      offsetY: -6,
+      dropShadow: {
+        enabled: true,
+        top: 2,
+        left: 2,
+        blur: 4,
+        opacity: 0.2, 
+      },
+      offsetY: -20, 
+      offsetX: 0, 
     },
+    
     tooltip: {
       show: true,
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {

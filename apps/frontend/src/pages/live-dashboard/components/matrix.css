@@ -26,3 +26,22 @@
   text-align: center;
   padding: 5px;
 }
+
+.apexcharts-data-label {
+  background: linear-gradient(135deg, #0070C0, #00E396); /* Gradient background */
+  transition: transform 0.2s; /* Smooth transition for hover effect */
+}
+
+.apexcharts-data-label:hover {
+  transform: scale(1.1); /* Slightly scale up on hover for emphasis */
+}
+
+
+.apexcharts-data-label {
+  background: linear-gradient(135deg, #0070C0, #00E396); /* Gradient background */
+  transition: transform 0.2s; /* Smooth transition for hover effect */
+}
+
+.apexcharts-data-label:hover {
+  transform: scale(1.1); /* Slightly scale up on hover for emphasis */
+}
