@@ -44,35 +44,35 @@ export const BubbleChart = ({ styles, title, series }) => {
         type: 'xy',
       },
     },
-    dataLabels: {
-      enabled: true, // Enable data labels
-      formatter: function (val, { seriesIndex, dataPointIndex, w }) {
-        return w.globals.initialSeries[seriesIndex].name; // Show series name as label
-      },
-      style: {
-        fontSize: '14px', // Increased font size for better visibility
-        fontWeight: '600', // Semi-bold for a softer look
-        color: '#fff', // White text for contrast
-        cssClass: 'apexcharts-data-label', // Custom CSS class for more styling options
-      },
-      background: {
-        enabled: true,
-        padding: 6,
-        borderRadius: 4,
-        borderWidth: 1,
-        borderColor: '#0070C0', // Change border color for a softer appearance
-        opacity: 0.85, // Slightly more transparent for a modern look
-      },
-      dropShadow: {
-        enabled: true,
-        top: 2,
-        left: 2,
-        blur: 4,
-        opacity: 0.2, // Soft shadow for a lifted effect
-      },
-      offsetY: -30, 
-      offsetX: -0,
-    },
+    // dataLabels: {
+    //   enabled: true, // Enable data labels
+    //   formatter: function (val, { seriesIndex, dataPointIndex, w }) {
+    //     return w.globals.initialSeries[seriesIndex].name; // Show series name as label
+    //   },
+    //   style: {
+    //     fontSize: '14px', // Increased font size for better visibility
+    //     fontWeight: '600', // Semi-bold for a softer look
+    //     color: '#fff', // White text for contrast
+    //     cssClass: 'apexcharts-data-label', // Custom CSS class for more styling options
+    //   },
+    //   background: {
+    //     enabled: true,
+    //     padding: 6,
+    //     borderRadius: 4,
+    //     borderWidth: 1,
+    //     borderColor: '#0070C0', // Change border color for a softer appearance
+    //     opacity: 0.85, // Slightly more transparent for a modern look
+    //   },
+    //   dropShadow: {
+    //     enabled: true,
+    //     top: 2,
+    //     left: 2,
+    //     blur: 4,
+    //     opacity: 0.2, // Soft shadow for a lifted effect
+    //   },
+    //   offsetY: -20, 
+    //   offsetX: -0,
+    // },
     xaxis: {
       tickAmount: 5,
       stepSize: 1,
