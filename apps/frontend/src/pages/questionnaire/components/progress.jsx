@@ -40,7 +40,7 @@ export const Progress = ({
       />
       <Box component="div" sx={{ marginTop: '5%' }}>
         <Typography variant="h6" sx={{ fontSize: '24px', fontWeight: 'bold' }}>
-          Question - {getCaption()}
+          Category: {getCategory()}
         </Typography>
         <Typography
           variant="h6"
@@ -67,8 +67,8 @@ export const Progress = ({
           }}
         />
         <Stack direction="row" spacing={2}>
-          <Typography>
-          Category: {getCategory()}
+          <Typography sx={{ fontWeight: 'bold' }}>
+          Question - {getCaption()}
           </Typography>
           <Typography
             variant="caption"
