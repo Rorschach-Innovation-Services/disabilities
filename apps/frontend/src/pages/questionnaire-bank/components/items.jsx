@@ -18,7 +18,10 @@ export const ClientsTable = ({ clients, setOpenMessage }) => {
         }}
       >
         {clients &&
-          clients.map((row, index) => (
+
+          clients
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((row, index) => (
             <CustomTableRow
               key={row.id}
               row={row}
