@@ -22,6 +22,7 @@ export const Progress = ({
   handleBack,
   getCaption,
   getCategory,
+  getQtype
 }) => {
   const changeLayout = useMediaQuery('(max-width:780px)');
   const [open, setOpen] = useState(false);
@@ -66,6 +67,9 @@ export const Progress = ({
           }}
         />
         <Stack direction="row" spacing={2}>
+          <Typography>
+          Category: {getCategory()}
+          </Typography>
           <Typography
             variant="caption"
             sx={{
