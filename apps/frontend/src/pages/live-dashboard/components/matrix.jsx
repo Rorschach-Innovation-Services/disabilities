@@ -85,6 +85,7 @@ export const BubbleChart = ({ styles, title, series }) => {
     },
     yaxis: {
       tickAmount: 5,
+      stepSize: 1,
       min: 0,
       max: 5,
       title: {
