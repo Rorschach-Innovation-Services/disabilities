@@ -102,7 +102,7 @@ export const Question = ({
         medium="Sometimes"
         high="Very much"
         setError={setError}
-        sliderStyle={getSliderStyle(question)} // Pass the custom color style here
+        sliderStyle={getSliderStyle(question)} // custom color style here
       />
     );
   };

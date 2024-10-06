@@ -85,40 +85,63 @@ export const Questionnaire = () => {
   }, []);
 
   useEffect(() => {
-    if (error || !response || filled) return;
-    const questions = response.questionnaire.questions;
-    if (questions) {
-      dispatch({
-        type: 'question count',
-        payload: questions.length,
-      });
-      const tempQuestions = [];
+    if (response && !filled) {
+      const questions = response.questionnaire.questions;
+  
+      if (questions && questions.length > 0) {
+        // Grab the first question
+        const firstQuestion = questions.slice(0, 1);
 
-      // Set up sleep health screening questions
-      for (const question of questions) {
-        dispatch({
-          type: 'add question',
-          payload: { ...question, response: '' },
+        // Grab the remaining questions
+        const remainingQuestions = questions.slice(1);
+  
+        // Custom sort order for specific labels
+        const labelPriority = {
+          "Current Status": 1,
+          "Important to Us": 2,
+        };
+  
+        // Sorting the remaining questions
+        const sortedQuestions = remainingQuestions.sort((a, b) => {
+          const labelA = a.label;
+          const labelB = b.label;
+  
+          const priorityA = labelPriority[labelA] || 3; // Default priority
+          const priorityB = labelPriority[labelB] || 3;
+  
+          return priorityA - priorityB || labelA.localeCompare(labelB); // Alphabetical if same priority
         });
-
-        const properties = {
+  
+        // Combine first question with sorted remaining questions
+        const finalQuestions = [...firstQuestion, ...sortedQuestions];
+  
+        // Displaying the final ordered questions to the state
+        finalQuestions.forEach((question) => {
+          dispatch({
+            type: 'add question',
+            payload: { ...question, response: '' },
+          });
+        });
+  
+        // Save question properties for later rendering
+        setQuestionViews(finalQuestions.map(question => ({
           id: question.id,
           helperText: question.helperText,
           title: question.question,
           label: question.label,
           category: question.category,
-        };
-
-        // Store properties for question
-        tempQuestions.push({
-          ...properties,
+        })));
+  
+        // Set question count in state
+        dispatch({
+          type: 'question count',
+          payload: finalQuestions.length,
         });
       }
-      // Save question properties
-      setQuestionViews(tempQuestions);
+      setFilled(true);
     }
-    setFilled(true);
   }, [response, error, state]);
+  
 
   const handleNext = () => {
     dispatch({ type: 'increment step' });
