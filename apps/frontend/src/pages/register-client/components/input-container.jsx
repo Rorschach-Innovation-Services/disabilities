@@ -153,11 +153,23 @@ export const InputContainer = ({
           executeDispatch={executeDispatch('company employee count')}
           value={state.company.employeeCount}
         />
+          {state.company.new && (
         <InputItem
           label="Department:"
           executeDispatch={executeDispatch('company department')}
           value={state.company.department}
         />
+        )}
+       {!state.company.new && (
+        <>
+        <InputItem
+          label="Select Department"
+          executeDispatch={executeDispatch('company sector')}
+          value={state.company.department}
+        />
+        
+        </>
+        )}
       </Container>
       <Container>
         <Typography
