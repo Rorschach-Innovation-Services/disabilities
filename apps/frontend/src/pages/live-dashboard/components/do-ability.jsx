@@ -56,41 +56,41 @@ export const ScatterPlotComponent = ({ series }) => {
       align: 'center',
     },
     markers: {
-      size: 20,
+      size: 12,
     },
     fill: {
       type: 'solid',
       opacity: 0.8,
     },
-    dataLabels: {
-      enabled: true,
-      formatter: function (val, { seriesIndex, dataPointIndex, w }) {
-        return w.globals.initialSeries[seriesIndex].name;
-      },
-      style: {
-        fontSize: '14px', 
-        fontWeight: '600', 
-        color: '#fff', 
-        cssClass: 'apexcharts-data-label', 
-      },
-      background: {
-        enabled: true,
-        padding: 6,
-        borderRadius: 4,
-        borderWidth: 1,
-        borderColor: '#0070C0', 
-        opacity: 0.85, 
-      },
-      dropShadow: {
-        enabled: true,
-        top: 2,
-        left: 2,
-        blur: 4,
-        opacity: 0.2, 
-      },
-      offsetY: -20, 
-      offsetX: 0, 
-    },
+    // dataLabels: {
+    //   enabled: true,
+    //   formatter: function (val, { seriesIndex, dataPointIndex, w }) {
+    //     return w.globals.initialSeries[seriesIndex].name;
+    //   },
+    //   style: {
+    //     fontSize: '8px', 
+    //     fontWeight: '600', 
+    //     color: '#fff', 
+    //     cssClass: 'apexcharts-data-label', 
+    //   },
+    //   background: {
+    //     enabled: true,
+    //     padding: 6,
+    //     borderRadius: 4,
+    //     borderWidth: 1,
+    //     borderColor: '#0070C0', 
+    //     opacity: 0.85, 
+    //   },
+    //   dropShadow: {
+    //     enabled: true,
+    //     top: 2,
+    //     left: 2,
+    //     blur: 4,
+    //     opacity: 0.2, 
+    //   },
+    //   offsetY: -20, 
+    //   offsetX: 0, 
+    // },
     
     tooltip: {
       show: true,

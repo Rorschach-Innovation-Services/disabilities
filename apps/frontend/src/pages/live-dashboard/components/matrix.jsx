@@ -2,38 +2,31 @@ import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 
 const colors = [
-  '#0070C0',
-  '#00E396',
-  '#FEB019',
-  '#FF4560',
-  '#775DD0',
-  '#00D9E0',
-  '#008FFB',
-  '#D7263D',
-  '#F9C80E',
-  '#9F86FF',
-  '#662E9B',
-  '#2A2B2A',
-  '#85FFC7',
-  '#FF6F91',
-  '#FF9671',
-  '#FFC75F',
-  '#F9F871',
-  '#EA7317',
-  '#3BB273',
-  '#A62349',
-  '#5C3C92',
-  '#0F4C5C',
+  '#0070C0', '#00E396', '#FEB019', '#FF4560', '#775DD0', 
+  '#00D9E0', '#008FFB', '#D7263D', '#F9C80E', '#9F86FF', 
+  '#662E9B', '#2A2B2A', '#85FFC7', '#FF6F91', '#FF9671', 
+  '#FFC75F', '#F9F871', '#EA7317', '#3BB273', '#A62349', 
+  '#5C3C92', '#0F4C5C'
 ];
 
 export const BubbleChart = ({ styles, title, series }) => {
-  // averages for x and y axes
-  const allDataPoints = series.flatMap(entry => entry.data);
-  const xValues = allDataPoints.map(point => point[0]);
-  const yValues = allDataPoints.map(point => point[1]);
-  
-  const xAverage = xValues.reduce((sum, val) => sum + val, 0) / xValues.length;
-  const yAverage = yValues.reduce((sum, val) => sum + val, 0) / yValues.length;
+  // Jitter function to apply slight random variation to close points
+  const jitterAmount = 0.25; 
+
+  const jitter = (value) => {
+    return value + (Math.random() * 2 - 1) * jitterAmount;
+  };
+
+  // jitter to close points
+  const jitteredSeries = series.map((entry) => ({
+    ...entry,
+    data: entry.data.map(([x, y]) => [jitter(x), jitter(y)]),
+  }));
+
+  // Calculate the average for both x (Important to us) and y (Do-ability)
+  const allPoints = series.flatMap(entry => entry.data); 
+  const avgX = allPoints.reduce((sum, [x]) => sum + x, 0) / allPoints.length;
+  const avgY = allPoints.reduce((sum, [, y]) => sum + y, 0) / allPoints.length;
 
   const options = {
     chart: {
@@ -44,62 +37,45 @@ export const BubbleChart = ({ styles, title, series }) => {
         type: 'xy',
       },
     },
-    // dataLabels: {
-    //   enabled: true, // Enable data labels
-    //   formatter: function (val, { seriesIndex, dataPointIndex, w }) {
-    //     return w.globals.initialSeries[seriesIndex].name; // Show series name as label
-    //   },
-    //   style: {
-    //     fontSize: '14px', // Increased font size for better visibility
-    //     fontWeight: '600', // Semi-bold for a softer look
-    //     color: '#fff', // White text for contrast
-    //     cssClass: 'apexcharts-data-label', // Custom CSS class for more styling options
-    //   },
-    //   background: {
-    //     enabled: true,
-    //     padding: 6,
-    //     borderRadius: 4,
-    //     borderWidth: 1,
-    //     borderColor: '#0070C0', // Change border color for a softer appearance
-    //     opacity: 0.85, // Slightly more transparent for a modern look
-    //   },
-    //   dropShadow: {
-    //     enabled: true,
-    //     top: 2,
-    //     left: 2,
-    //     blur: 4,
-    //     opacity: 0.2, // Soft shadow for a lifted effect
-    //   },
-    //   offsetY: -20, 
-    //   offsetX: -0,
-    // },
     xaxis: {
-      tickAmount: 5,
-      stepSize: 1,
+      tickAmount: 5, 
+      type: 'numeric',
       min: 0,
       max: 5,
-      type: 'numeric',
       title: {
         text: 'Important to us',
       },
+      labels: {
+        formatter: function (val) {
+          return Number.isInteger(val) ? val : '';
+        },
+      },
     },
     yaxis: {
-      tickAmount: 5,
-      stepSize: 1,
+      tickAmount: 5, 
       min: 0,
       max: 5,
       title: {
         text: 'Do-ability',
       },
+      labels: {
+        formatter: function (val) {
+          return Number.isInteger(val) ? val : '';
+        },
+      },
     },
     markers: {
-      size: 20,
-      colors,
+      size: 12, 
+      colors: colors,
+      opacity: 0.6, 
+      strokeColors: '#fff', 
+      strokeWidth: 2,
+      shape: 'circle',
     },
     fill: {
       type: 'solid',
     },
-    colors,
+    colors: colors,
     title: {
       text: title,
       align: 'center',
@@ -110,16 +86,19 @@ export const BubbleChart = ({ styles, title, series }) => {
       show: true,
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {
         const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
+        // Custom tooltip with data points rounded to 2 decimal places
+        const roundedX = data[0].toFixed(2); // x value
+        const roundedY = data[1].toFixed(2); // y value
         return (
           '<div class="p-2" style="padding:5px;">' +
           '<h4>' +
           w.globals.seriesNames[seriesIndex] +
           '</h4><br>' +
           '<span>Important to us: ' +
-          data[0] +
+          roundedX +
           '</span><br>' +
           '<span>Do-ability: ' +
-          data[1] +
+          roundedY +
           '</span>' +
           '</div>'
         );
@@ -143,27 +122,31 @@ export const BubbleChart = ({ styles, title, series }) => {
     annotations: {
       xaxis: [
         {
-          x: xAverage,
+          x: avgX, // Average of "Important to us" values
           borderColor: '#000',
+          strokeDashArray: 3,
           label: {
-            text: `Avg x: ${xAverage.toFixed(2)}`,
+            borderColor: '#000',
             style: {
               color: '#000',
               background: '#fff',
             },
+            text: `Average Important to us: ${avgX.toFixed(2)}`,
           },
         },
       ],
       yaxis: [
         {
-          y: yAverage,
+          y: avgY, // Average of "Do-ability" values
           borderColor: '#000',
+          strokeDashArray: 3,
           label: {
-            text: `Avg y: ${yAverage.toFixed(2)}`,
+            borderColor: '#000',
             style: {
               color: '#000',
               background: '#fff',
             },
+            text: `Average Do-ability: ${avgY.toFixed(2)}`,
           },
         },
       ],
@@ -174,7 +157,7 @@ export const BubbleChart = ({ styles, title, series }) => {
     <div className="chart-container" style={styles}>
       <ReactApexChart
         options={options}
-        series={series}
+        series={jitteredSeries}
         type="scatter"
         height={350}
       />
