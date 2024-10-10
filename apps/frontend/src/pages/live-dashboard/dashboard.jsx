@@ -69,6 +69,7 @@ export const LiveDashboard = () => {
         setSelectedDepartment(client.departments[0].id);
     }
   }, [selectedClient]);
+  
   useEffect(() => {
     if (selectedDepartment.length > 0)
       assessmentsRequest.executeWithParameters({
