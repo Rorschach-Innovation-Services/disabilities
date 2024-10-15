@@ -14,8 +14,10 @@ export const InputContainer = ({
   const [anotherAnchorEl, setAnotherAnchorEl] = useState(null);
   const [anotherAnchorE2, setAnotherAnchorE2] = useState(null);
   const [admins, setAdmins] = useState([]);
+  const [selectedClient, setSelectedClient] = useState('');
   const [departments, setDepartments] = useState([]);
   const [error, setError] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState(null); // Stores the selected company
 
   const adminsReq = useAxios({
     url: '/admin/all',
@@ -35,10 +37,26 @@ export const InputContainer = ({
     companiesReq.execute({});
   }, []);
 
-  useEffect(() => {
-    if (companiesReq.error || !companiesReq.response) return;
-    setDepartments(companiesReq.response.companies);
-  }, [companiesReq.response, companiesReq.error]);
+ 
+useEffect(() => {
+  // Check if there's an error or no response
+  if (companiesReq.error || !companiesReq.response) return;
+
+  // Extract companies from the response
+  const companies = companiesReq.response.companies;
+
+  // Create an array of departments by iterating over each company
+  const allDepartments = companies
+    .map(company => company.departments)  // Extract departments array from each company
+    .flat();                              // Flatten the array of arrays into a single array
+
+  // Set the departments in the state
+  setDepartments(allDepartments);
+}, [companiesReq.response, companiesReq.error]);
+
+
+
+
 
   useEffect(() => {
     if (adminsReq.error || !adminsReq.response) return;
@@ -101,6 +119,7 @@ export const InputContainer = ({
               label="Select Company"
               value={state.company.name}
               executeDispatch={executeDispatch('company id')}
+              onChange={(event) => setSelectedClient(event.target.value)}
               textFieldProps={{
                // onMouseEnter: handleAnotherOpen,
                 onClick: handleAnotherOpen,  // Change from onMouseEnter to onClick
@@ -179,6 +198,7 @@ export const InputContainer = ({
           label="Department:"
           executeDispatch={executeDispatch('company department')}
           value={state.company.department}
+          id="simple-popover"
         />
         )}
        {!state.company.new && (
@@ -186,7 +206,7 @@ export const InputContainer = ({
           <InputItem
           label="Select Department"
           value={state.company.department}
-          executeDispatch={executeDispatch('Company department')}
+          executeDispatch={executeDispatch('company department')}
           textFieldProps={{
             onClick: handleAnotherOpen2, 
            // onMouseEnter: handleOpen,
@@ -205,6 +225,7 @@ export const InputContainer = ({
           open={anotherOpen2}
           anchorEl={anotherAnchorE2}
           onClose={() => setAnotherAnchorE2(null)}
+          onChange={(event) => setSelectedClient(event.target.value)}
           anchorOrigin={{
             vertical: 'top',
             horizontal: 'left',
@@ -215,7 +236,6 @@ export const InputContainer = ({
           }}
         >
           {departments.map((department, index) => (
-
             <Typography
               key={index}
               sx={{
@@ -237,9 +257,10 @@ export const InputContainer = ({
           ))}
         </Popover>
         <InputItem
-          label="New Department:"
+          label="New Department"
           executeDispatch={executeDispatch('company department')}
           value={state.company.department}
+          id="simple-popover"
         />
         </>
         )}
