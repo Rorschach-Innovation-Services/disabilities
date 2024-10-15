@@ -12,16 +12,33 @@ export const InputContainer = ({
 }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [anotherAnchorEl, setAnotherAnchorEl] = useState(null);
+  const [anotherAnchorE2, setAnotherAnchorE2] = useState(null);
   const [admins, setAdmins] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [error, setError] = useState(false);
+
   const adminsReq = useAxios({
     url: '/admin/all',
+    method: 'get',
+  });
+
+  const companiesReq = useAxios({
+    url: '/companies',
     method: 'get',
   });
 
   useEffect(() => {
     adminsReq.execute({});
   }, []);
+
+  useEffect(() => {
+    companiesReq.execute({});
+  }, []);
+
+  useEffect(() => {
+    if (companiesReq.error || !companiesReq.response) return;
+    setDepartments(companiesReq.response.companies);
+  }, [companiesReq.response, companiesReq.error]);
 
   useEffect(() => {
     if (adminsReq.error || !adminsReq.response) return;
@@ -35,11 +52,15 @@ export const InputContainer = ({
   const handleAnotherOpen = (event) => {
     setAnotherAnchorEl(event.currentTarget);
   };
-
+  const handleAnotherOpen2 = (event) => {
+    setAnotherAnchorE2(event.currentTarget);
+  };
   const open = Boolean(anchorEl);
   const anotherOpen = Boolean(anotherAnchorEl);
+  const anotherOpen2 = Boolean(anotherAnchorE2);
   const id = open ? 'simple-popover' : undefined;
   const anotherId = anotherOpen ? 'another-popover' : undefined;
+  const anotherId2 = anotherOpen2 ? 'another-popover2' : undefined;
 
   return (
     <Container
@@ -162,12 +183,64 @@ export const InputContainer = ({
         )}
        {!state.company.new && (
         <>
-        <InputItem
+          <InputItem
           label="Select Department"
-          executeDispatch={executeDispatch('company sector')}
+          value={state.company.department}
+          executeDispatch={executeDispatch('Company department')}
+          textFieldProps={{
+            onClick: handleAnotherOpen2, 
+           // onMouseEnter: handleOpen,
+            disabled: true,
+            InputProps: {
+              endAdornment: <ArrowDropDownIcon />,
+            },
+          }}
+          textStyles={{
+            cursor: 'pointer',
+          }}
+          id="simple-popover"
+        />
+        <Popover
+          id={anotherId2}
+          open={anotherOpen2}
+          anchorEl={anotherAnchorE2}
+          onClose={() => setAnotherAnchorE2(null)}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'left',
+          }}
+          sx={{
+            // height:"200px",
+            overflowY: 'auto',
+          }}
+        >
+          {departments.department.map((department, index) => (
+
+            <Typography
+              key={index}
+              sx={{
+                p: 2,
+                fontSize: '14px',
+                fontWeight: '500',
+                cursor: 'pointer',
+              }}
+              onClick={(event) => {
+                dispatch({
+                  type: 'Company departments',
+                  payload: { name: department.name, id: department.id },
+                });
+                setAnotherAnchorE2(null);
+              }}
+            >
+              {department.name}
+            </Typography>
+          ))}
+        </Popover>
+        <InputItem
+          label="New Department:"
+          executeDispatch={executeDispatch('company department')}
           value={state.company.department}
         />
-        
         </>
         )}
       </Container>
