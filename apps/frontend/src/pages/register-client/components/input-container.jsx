@@ -214,7 +214,7 @@ export const InputContainer = ({
             overflowY: 'auto',
           }}
         >
-          {departments.department.map((department, index) => (
+          {departments.map((department, index) => (
 
             <Typography
               key={index}
