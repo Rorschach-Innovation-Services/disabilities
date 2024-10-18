@@ -1,6 +1,7 @@
 import ReactApexChart from 'react-apexcharts';
 
 export const ScatterPlotComponent = ({ series }) => {
+  // Example series data with custom names and coordinates
   // const series = [
   //   {
   //     name: 'Engage',
@@ -62,36 +63,7 @@ export const ScatterPlotComponent = ({ series }) => {
       type: 'solid',
       opacity: 0.8,
     },
-    // dataLabels: {
-    //   enabled: true,
-    //   formatter: function (val, { seriesIndex, dataPointIndex, w }) {
-    //     return w.globals.initialSeries[seriesIndex].name;
-    //   },
-    //   style: {
-    //     fontSize: '8px', 
-    //     fontWeight: '600', 
-    //     color: '#fff', 
-    //     cssClass: 'apexcharts-data-label', 
-    //   },
-    //   background: {
-    //     enabled: true,
-    //     padding: 6,
-    //     borderRadius: 4,
-    //     borderWidth: 1,
-    //     borderColor: '#0070C0', 
-    //     opacity: 0.85, 
-    //   },
-    //   dropShadow: {
-    //     enabled: true,
-    //     top: 2,
-    //     left: 2,
-    //     blur: 4,
-    //     opacity: 0.2, 
-    //   },
-    //   offsetY: -20, 
-    //   offsetX: 0, 
-    // },
-    
+    colors: ['#0074D9', '#2ECC40', '#B10DC9', '#FF851B', '#FFDC00'], 
     tooltip: {
       show: true,
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {
