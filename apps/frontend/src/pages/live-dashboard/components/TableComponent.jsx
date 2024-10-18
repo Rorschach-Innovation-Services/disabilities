@@ -42,7 +42,6 @@ const ActionPlanTable = () => {
       <TableContainer>
         <Table>
           <TableHead>
-          <TableCell align="center">YEAR:</TableCell>
             <TableRow>
               <TableCell>Category</TableCell>
               <TableCell>Q1</TableCell>
