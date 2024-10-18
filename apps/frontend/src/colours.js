@@ -1,6 +1,6 @@
 // Common colours utilised all over the platform
 export const Colours = {
-  blue: "#8CB8E2",
+  blue: "#95b8df",
   customGreen: "#1F6521",
   lightGrey: "#BFBFBF",
   darkGrey: "#707070",
@@ -13,6 +13,7 @@ export const Colours = {
   main: "#F0F1FF",
   yellow: "#ffe96b",
   DashboardSide: "#DEDFFF",
+  
 };
 
 // TODO: Find places where "customOrange" is used and replace it with "orange"

@@ -73,7 +73,7 @@ const SideBarListItem = ({
       sx={{
         cursor: 'pointer',
         backgroundColor: `${
-          selected ? `${Colours.yellow} !important` : 'white'
+          selected ? `${Colours.blue} !important` : 'white'
         }`,
         borderBottomLeftRadius: '20px',
         borderTopLeftRadius: '20px',
