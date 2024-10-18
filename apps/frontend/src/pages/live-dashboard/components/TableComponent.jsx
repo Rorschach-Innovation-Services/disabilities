@@ -43,7 +43,7 @@ const ActionPlanTable = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Category</TableCell>
+              <TableCell></TableCell>
               <TableCell>Q1</TableCell>
               <TableCell>Q2</TableCell>
               <TableCell>Q3</TableCell>
