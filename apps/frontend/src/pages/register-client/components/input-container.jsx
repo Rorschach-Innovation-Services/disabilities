@@ -43,14 +43,13 @@ export const InputContainer = ({
   useEffect(() => {
     if (companiesReq.error || !companiesReq.response) return;
 
-    // Extract companies from the response
+    // Extracting companies from the response
     const companies = companiesReq.response.companies;
 
-    // Create an array of departments by iterating over each company
+    // Creating an array of departments by iterating over each company
     const allDepartments = companies
-      .map(company => company.departments) // Extract departments array from each company
-      .flat(); // Flatten the array of arrays into a single array
-
+      .map(company => company.departments) 
+      .flat(); 
     // Set the departments in the state
     setDepartments(allDepartments);
   }, [companiesReq.response, companiesReq.error]);
@@ -99,17 +98,27 @@ export const InputContainer = ({
 
   const handleDepartmentSelect = (department) => {
     if (!selectedCompany) {
-      setSelectedDepartment(department);
-      // must add error handling if the user has not selected a department
+      setError('Please select a company first.');
       return;
     }
-    dispatch({
-      type: 'Company departments',
-      payload: { name: department.name, id: department.id },
-    });
-    setSelectedDepartment(department.name); 
-    setAnotherAnchorE2(null);
-};
+  
+    const departmentExists = departments.some(
+      (dept) => dept.id === department.id && dept.companyId === selectedCompany.id
+    );
+  
+    if (departmentExists) {
+     
+      dispatch({
+        type: 'Company departments',
+        payload: { name: department.name, id: department.id },
+      });
+      setSelectedDepartment(department.name);
+      setAnotherAnchorE2(null);
+    } else {
+      setError('Selected department does not belong to the selected company.');
+    }
+  };
+  
 
   return (
     <Container
@@ -220,7 +229,7 @@ export const InputContainer = ({
           <>
             <InputItem
               label="Select Department"
-              value={selectedDepartment} // Display the selected department's name
+              value={selectedDepartment} 
               textFieldProps={{
                 onClick: handleAnotherOpen2,
                 disabled: true,
@@ -247,7 +256,7 @@ export const InputContainer = ({
               }}
             >
               {departments
-                .filter(department => department.companyId === selectedCompany?.id) // Filter departments based on selected company
+                .filter(department => department.companyId === selectedCompany?.id) 
                 .map((department, index) => (
                   <Typography
                     key={index}
@@ -263,14 +272,15 @@ export const InputContainer = ({
                   </Typography>
                 ))}
             </Popover>
-            {!selectedDepartment && (
+          {!selectedDepartment && selectedCompany && (
             <InputItem
-              label="New Department"
-              executeDispatch={executeDispatch('company department')}
-              value={state.company.department}
-              id="simple-popover"
-            />
+             label="New Department"
+             executeDispatch={executeDispatch('company department')}
+             value={state.company.department}
+             id="simple-popover"
+           />
           )}
+
           </>
         )}
       </Container>
@@ -283,7 +293,7 @@ export const InputContainer = ({
             fontSize: '22px',
           }}
         >
-          HR Consultant
+          Key Person
         </Typography>
         <InputItem
           label="Name"
@@ -301,7 +311,7 @@ export const InputContainer = ({
           executeDispatch={executeDispatch('consultant email')}
         />
         <InputItem
-          label="Sleep Science consultant:"
+          label="We-Di-Enable consultant:"
           value={state.consultant.sleepScienceConsultant.name}
           executeDispatch={executeDispatch('sleep-science-consultant')}
           textFieldProps={{
