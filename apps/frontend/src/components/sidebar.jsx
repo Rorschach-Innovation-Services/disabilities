@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMediaQuery, Typography, Container } from '@mui/material';
-import Logo from '../assets/logos/Sleep Science Logo NT RGB.png';
+import Logo from '../assets/logos/we DI enable Logo.png';
 import AssessmentIcon from '../assets/icons/clients.svg';
 import StartAssessmentIcon from '../assets/icons/Start-assessment.svg';
 import DashboardIcon from '../assets/icons/dashboard.svg';
@@ -145,18 +145,22 @@ export const SideBar = () => {
       <Container
         sx={{
           textAlign: 'center',
-          margin: '20px 0',
+         margin: '0',
         }}
       >
         <img
-          style={{
-            cursor: 'pointer',
-          }}
-          src={Logo}
-          alt="Sleep Science Logo"
-          height={'100px'}
+         style={{
+           cursor: 'pointer',
+           borderRadius: '50%', // This makes the image round
+           width: '130px', // Ensures the image keeps a square shape
+           height: '130px', // Ensures the image keeps a square shape
+           objectFit: 'cover', // Makes sure the image fits nicely within the round shape
+         }}
+         src={Logo}
+         alt="We-Di-Enable Logo"
         />
       </Container>
+
       {items.map((item) => (
         <SideBarListItem
           key={item.text}
