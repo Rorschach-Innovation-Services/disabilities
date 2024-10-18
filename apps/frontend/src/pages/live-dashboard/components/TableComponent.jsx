@@ -24,17 +24,16 @@ const ActionPlanTable = () => {
 
   const handleChange = (field, quarter, value) => {
     const newData = [...data];
-    newData[0][field][quarter] = value; // Update the first row
+    newData[0][field][quarter] = value; 
     setData(newData);
   };
 
   const handleSave = () => {
-    // Logic to save to database goes here
-    console.log("Saving data...", data);
+    // Logic to save to database will go here
   };
 
   const handlePrint = () => {
-    window.print(); // Simple print functionality
+    window.print(); // we can edit this to do more later
   };
 
   return (
