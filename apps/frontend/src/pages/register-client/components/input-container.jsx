@@ -264,12 +264,14 @@ export const InputContainer = ({
                   </Typography>
                 ))}
             </Popover>
+            {!selectedDepartment && (
             <InputItem
               label="New Department"
               executeDispatch={executeDispatch('company department')}
               value={state.company.department}
               id="simple-popover"
             />
+          )}
           </>
         )}
       </Container>
