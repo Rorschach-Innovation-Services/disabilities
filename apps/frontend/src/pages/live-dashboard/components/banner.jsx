@@ -3,7 +3,7 @@ import { Button, Grid } from '@mui/material';
 export const LiveDashboardBanner = ({ setStep, step }) => {
   return (
     <Grid container spacing={2}>
-      <Grid item xs={4}>
+      <Grid item xs={3}>
         <Button
           variant="text"
           onClick={() => setStep(0)}
@@ -19,7 +19,7 @@ export const LiveDashboardBanner = ({ setStep, step }) => {
           Current Status vs Important
         </Button>
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={3}>
         <Button
           variant="text"
           onClick={() => setStep(1)}
@@ -35,7 +35,7 @@ export const LiveDashboardBanner = ({ setStep, step }) => {
           Do-ability
         </Button>
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={3}>
         <Button
           variant="text"
           onClick={() => setStep(2)}
@@ -49,6 +49,22 @@ export const LiveDashboardBanner = ({ setStep, step }) => {
           }}
         >
           Matrix
+        </Button>
+      </Grid>
+      <Grid item xs={3}>
+        <Button
+          variant="text"
+          onClick={() => setStep(3)} 
+          sx={{
+            backgroundColor: step === 3 ? '#95B8DF' : 'transparent',
+            color: step === 3 ? 'white' : '#95B8DF',
+            width: '100%',
+            ':hover': {
+              backgroundColor: step === 3 ? '#95B8DF' : 'transparent',
+            },
+          }}
+        >
+          Action Plan
         </Button>
       </Grid>
     </Grid>

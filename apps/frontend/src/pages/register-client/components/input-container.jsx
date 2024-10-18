@@ -16,8 +16,10 @@ export const InputContainer = ({
   const [admins, setAdmins] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [departments, setDepartments] = useState([]);
-  const [error, setError] = useState(false);
-  const [selectedCompany, setSelectedCompany] = useState(null); // Stores the selected company
+  const [error, setError] = useState('');
+  const [selectedCompany, setSelectedCompany] = useState(null); 
+  const [selectedDepartment, setSelectedDepartment] = useState('');
+
 
   const adminsReq = useAxios({
     url: '/admin/all',
@@ -29,6 +31,7 @@ export const InputContainer = ({
     method: 'get',
   });
 
+
   useEffect(() => {
     adminsReq.execute({});
   }, []);
@@ -37,26 +40,20 @@ export const InputContainer = ({
     companiesReq.execute({});
   }, []);
 
- 
-useEffect(() => {
-  // Check if there's an error or no response
-  if (companiesReq.error || !companiesReq.response) return;
+  useEffect(() => {
+    if (companiesReq.error || !companiesReq.response) return;
 
-  // Extract companies from the response
-  const companies = companiesReq.response.companies;
+    // Extract companies from the response
+    const companies = companiesReq.response.companies;
 
-  // Create an array of departments by iterating over each company
-  const allDepartments = companies
-    .map(company => company.departments)  // Extract departments array from each company
-    .flat();                              // Flatten the array of arrays into a single array
+    // Create an array of departments by iterating over each company
+    const allDepartments = companies
+      .map(company => company.departments) // Extract departments array from each company
+      .flat(); // Flatten the array of arrays into a single array
 
-  // Set the departments in the state
-  setDepartments(allDepartments);
-}, [companiesReq.response, companiesReq.error]);
-
-
-
-
+    // Set the departments in the state
+    setDepartments(allDepartments);
+  }, [companiesReq.response, companiesReq.error]);
 
   useEffect(() => {
     if (adminsReq.error || !adminsReq.response) return;
@@ -70,15 +67,49 @@ useEffect(() => {
   const handleAnotherOpen = (event) => {
     setAnotherAnchorEl(event.currentTarget);
   };
+
   const handleAnotherOpen2 = (event) => {
     setAnotherAnchorE2(event.currentTarget);
   };
+
   const open = Boolean(anchorEl);
   const anotherOpen = Boolean(anotherAnchorEl);
   const anotherOpen2 = Boolean(anotherAnchorE2);
   const id = open ? 'simple-popover' : undefined;
   const anotherId = anotherOpen ? 'another-popover' : undefined;
   const anotherId2 = anotherOpen2 ? 'another-popover2' : undefined;
+
+  const handleCompanySelect = (company) => {
+    dispatch({
+      type: 'company name',
+      payload: company.name,
+    });
+    dispatch({
+      type: 'company sector',
+      payload: company.sector,
+    });
+    dispatch({
+      type: 'company id',
+      payload: company.id,
+    });
+    setSelectedCompany(company); 
+    setAnotherAnchorEl(null);
+    setError(''); 
+  };
+
+  const handleDepartmentSelect = (department) => {
+    if (!selectedCompany) {
+      setSelectedDepartment(department);
+      // must add error handling if the user has not selected a department
+      return;
+    }
+    dispatch({
+      type: 'Company departments',
+      payload: { name: department.name, id: department.id },
+    });
+    setSelectedDepartment(department.name); 
+    setAnotherAnchorE2(null);
+};
 
   return (
     <Container
@@ -121,8 +152,7 @@ useEffect(() => {
               executeDispatch={executeDispatch('company id')}
               onChange={(event) => setSelectedClient(event.target.value)}
               textFieldProps={{
-               // onMouseEnter: handleAnotherOpen,
-                onClick: handleAnotherOpen,  // Change from onMouseEnter to onClick
+                onClick: handleAnotherOpen,
                 disabled: true,
                 InputProps: {
                   endAdornment: <ArrowDropDownIcon />,
@@ -143,7 +173,6 @@ useEffect(() => {
                 horizontal: 'left',
               }}
               sx={{
-                // height:"200px",
                 overflowY: 'auto',
               }}
             >
@@ -156,21 +185,7 @@ useEffect(() => {
                     fontWeight: '500',
                     cursor: 'pointer',
                   }}
-                  onClick={(event) => {
-                    dispatch({
-                      type: 'company name',
-                      payload: company.name,
-                    });
-                    dispatch({
-                      type: 'company sector',
-                      payload: company.sector,
-                    });
-                    dispatch({
-                      type: 'company id',
-                      payload: company.id,
-                    });
-                    setAnotherAnchorEl(null);
-                  }}
+                  onClick={() => handleCompanySelect(company)}
                 >
                   {company.name}
                 </Typography>
@@ -193,76 +208,69 @@ useEffect(() => {
           executeDispatch={executeDispatch('company employee count')}
           value={state.company.employeeCount}
         />
-          {state.company.new && (
-        <InputItem
-          label="Department:"
-          executeDispatch={executeDispatch('company department')}
-          value={state.company.department}
-          id="simple-popover"
-        />
-        )}
-       {!state.company.new && (
-        <>
+        {state.company.new && (
           <InputItem
-          label="Select Department"
-          value={state.company.department}
-          executeDispatch={executeDispatch('company department')}
-          textFieldProps={{
-            onClick: handleAnotherOpen2, 
-           // onMouseEnter: handleOpen,
-            disabled: true,
-            InputProps: {
-              endAdornment: <ArrowDropDownIcon />,
-            },
-          }}
-          textStyles={{
-            cursor: 'pointer',
-          }}
-          id="simple-popover"
-        />
-        <Popover
-          id={anotherId2}
-          open={anotherOpen2}
-          anchorEl={anotherAnchorE2}
-          onClose={() => setAnotherAnchorE2(null)}
-          onChange={(event) => setSelectedClient(event.target.value)}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'left',
-          }}
-          sx={{
-            // height:"200px",
-            overflowY: 'auto',
-          }}
-        >
-          {departments.map((department, index) => (
-            <Typography
-              key={index}
-              sx={{
-                p: 2,
-                fontSize: '14px',
-                fontWeight: '500',
+            label="Department:"
+            executeDispatch={executeDispatch('company department')}
+            value={state.company.department}
+            id="simple-popover"
+          />
+        )}
+        {!state.company.new && (
+          <>
+            <InputItem
+              label="Select Department"
+              value={selectedDepartment} // Display the selected department's name
+              executeDispatch={executeDispatch('company department')}
+              textFieldProps={{
+                onClick: handleAnotherOpen2,
+                disabled: true,
+                InputProps: {
+                  endAdornment: <ArrowDropDownIcon />,
+                },
+              }}
+              textStyles={{
                 cursor: 'pointer',
               }}
-              onClick={(event) => {
-                dispatch({
-                  type: 'Company departments',
-                  payload: { name: department.name, id: department.id },
-                });
-                setAnotherAnchorE2(null);
+              id="simple-popover"
+            />
+            <Popover
+              id={anotherId2}
+              open={anotherOpen2}
+              anchorEl={anotherAnchorE2}
+              onClose={() => setAnotherAnchorE2(null)}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+              sx={{
+                overflowY: 'auto',
               }}
             >
-              {department.name}
-            </Typography>
-          ))}
-        </Popover>
-        <InputItem
-          label="New Department"
-          executeDispatch={executeDispatch('company department')}
-          value={state.company.department}
-          id="simple-popover"
-        />
-        </>
+              {departments
+                .filter(department => department.companyId === selectedCompany?.id) // Filter departments based on selected company
+                .map((department, index) => (
+                  <Typography
+                    key={index}
+                    sx={{
+                      p: 2,
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => handleDepartmentSelect(department)}
+                  >
+                    {department.name}
+                  </Typography>
+                ))}
+            </Popover>
+            <InputItem
+              label="New Department"
+              executeDispatch={executeDispatch('company department')}
+              value={state.company.department}
+              id="simple-popover"
+            />
+          </>
         )}
       </Container>
       <Container>
@@ -296,8 +304,7 @@ useEffect(() => {
           value={state.consultant.sleepScienceConsultant.name}
           executeDispatch={executeDispatch('sleep-science-consultant')}
           textFieldProps={{
-            onClick: handleOpen, 
-           // onMouseEnter: handleOpen,
+            onClick: handleOpen,
             disabled: true,
             InputProps: {
               endAdornment: <ArrowDropDownIcon />,
@@ -306,7 +313,7 @@ useEffect(() => {
           textStyles={{
             cursor: 'pointer',
           }}
-          id="simple-popover"
+          id={id}
         />
         <Popover
           id={id}
@@ -318,23 +325,22 @@ useEffect(() => {
             horizontal: 'left',
           }}
           sx={{
-            // height:"200px",
             overflowY: 'auto',
           }}
         >
           {admins.map((admin, index) => (
             <Typography
-              key={index}
+              key={admin.id + index}
               sx={{
                 p: 2,
                 fontSize: '14px',
                 fontWeight: '500',
                 cursor: 'pointer',
               }}
-              onClick={(event) => {
+              onClick={() => {
                 dispatch({
                   type: 'sleep-science-consultant',
-                  payload: { name: admin.name, id: admin.id },
+                  payload: admin,
                 });
                 setAnchorEl(null);
               }}

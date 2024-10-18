@@ -15,6 +15,8 @@ import { LiveDashboardBanner } from './components/banner';
 import { useEffect, useState } from 'react';
 import { useAxios } from '../../hooks/axios';
 import { Loading } from '../../components/loading';
+import TableComponent from './components/tablecomponent';
+
 
 const series = [
   {
@@ -181,6 +183,13 @@ export const LiveDashboard = () => {
               />
             </>
           )}
+          {step === 3 && (
+    
+          <Grid item xs={12}>
+            <TableComponent /> {/* Render the CustomTable here */}
+          </Grid>
+      
+      )}
           <Grid container spacing={2}></Grid>
         </>
       )}
