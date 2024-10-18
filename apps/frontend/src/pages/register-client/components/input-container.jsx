@@ -221,7 +221,6 @@ export const InputContainer = ({
             <InputItem
               label="Select Department"
               value={selectedDepartment} // Display the selected department's name
-              executeDispatch={executeDispatch('company department')}
               textFieldProps={{
                 onClick: handleAnotherOpen2,
                 disabled: true,

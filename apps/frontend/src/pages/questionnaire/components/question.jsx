@@ -75,15 +75,15 @@ export const Question = ({
       const getSliderStyle = (question) => {
         switch (question.category) {
           case 'Engage':
-            return { color: '#0074D9' };  
+            return { color: '##ff4560' };  
           case 'Nest':
-            return { color: '#2ECC40' };  
+            return { color: '##00e396' };  
           case 'Learn':
-            return { color: '#FFDC00' };  
+            return { color: '##feb019' };  
           case 'Back':
-            return { color: '#FF851B' };  
+            return { color: '##775dd0' };  
           case 'Attract':
-            return { color: '#B10DC9' };  
+            return { color: '##0070c0' };  
           default:
             return { color: '#ddd' };  
         }

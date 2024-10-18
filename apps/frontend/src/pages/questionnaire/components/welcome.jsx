@@ -28,7 +28,7 @@ export const Welcome = ({ state, dispatch, handleBegin }) => {
                     marginTop: "-3%",
                 }}
             >
-                Sleep Health Screen
+                WE-DI-Enable
             </Typography>
             <Paper
                 elevation={5}

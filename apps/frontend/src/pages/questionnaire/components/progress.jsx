@@ -39,9 +39,15 @@ export const Progress = ({
         label={getCaption().toLowerCase()}
       />
       <Box component="div" sx={{ marginTop: '5%' }}>
-        <Typography variant="h6" sx={{ fontSize: '24px', fontWeight: 'bold' }}>
-          Category: {getCategory()}
-        </Typography>
+       {getCategory() ? (
+      <Typography variant="h6" sx={{ fontSize: '24px', fontWeight: 'bold' }}>
+        Category: {getCategory()}
+      </Typography> ) : (
+      <Typography variant="h6" sx={{ fontSize: '24px', fontWeight: 'bold' }}>
+         Enter your Email
+       </Typography>)}
+  
+
         <Typography
           variant="h6"
           sx={{
