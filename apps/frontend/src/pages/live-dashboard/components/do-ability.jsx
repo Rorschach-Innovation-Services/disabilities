@@ -1,29 +1,18 @@
+import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 
 export const ScatterPlotComponent = ({ series }) => {
-  // Example series data with custom names and coordinates
-  // const series = [
-  //   {
-  //     name: 'Engage',
-  //     data: [[4.3, 4.1]],
-  //   },
-  //   {
-  //     name: 'Nest',
-  //     data: [[4.4, 4.0]],
-  //   },
-  //   {
-  //     name: 'Attract',
-  //     data: [[3.7, 3.9]],
-  //   },
-  //   {
-  //     name: 'Back',
-  //     data: [[4.4, 4.1]],
-  //   },
-  //   {
-  //     name: 'Learn',
-  //     data: [[4.0, 4.0]],
-  //   },
-  // ];
+ 
+  const jitterAmount = 0.1; 
+
+  const jitter = (value) => {
+    return value + (Math.random() * 2 - 1) * jitterAmount;
+  };
+
+  const jitteredSeries = series.map((entry) => ({
+    ...entry,
+    data: entry.data.map(([x, y]) => [jitter(x), jitter(y)]),
+  }));
 
   const options = {
     chart: {
@@ -42,6 +31,11 @@ export const ScatterPlotComponent = ({ series }) => {
       title: {
         text: 'Important to us',
       },
+      labels: {
+        formatter: function (val) {
+          return Number.isInteger(val) ? val : '';
+        },
+      },
     },
     yaxis: {
       tickAmount: 5,
@@ -51,9 +45,14 @@ export const ScatterPlotComponent = ({ series }) => {
       title: {
         text: 'Do-ability',
       },
+      labels: {
+        formatter: function (val) {
+          return Number.isInteger(val) ? val : ''; 
+        },
+      },
     },
     title: {
-      text: 'Aggregation Important to us/ do-ability',
+      text: 'Aggregation Important to us / Do-ability',
       align: 'center',
     },
     markers: {
@@ -63,7 +62,7 @@ export const ScatterPlotComponent = ({ series }) => {
       type: 'solid',
       opacity: 0.8,
     },
-    colors: ['#0074D9', '#2ECC40', '#B10DC9', '#FF851B', '#FFDC00'], 
+    colors: ['#0074D9', '#2ECC40', '#B10DC9', '#FF851B', '#FFDC00'],
     tooltip: {
       show: true,
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {
@@ -89,7 +88,7 @@ export const ScatterPlotComponent = ({ series }) => {
     <div className="scatter-chart">
       <ReactApexChart
         options={options}
-        series={series}
+        series={jitteredSeries} 
         type="scatter"
         height={350}
       />
