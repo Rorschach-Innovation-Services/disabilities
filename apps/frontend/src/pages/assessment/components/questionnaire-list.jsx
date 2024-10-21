@@ -21,15 +21,17 @@ export const QuestionnaireList = ({ questionnaires, state, dispatch }) => {
     >
       <QuestionnaireHeading headings={headings} />
       {questionnaires
-         .sort((a, b) => a.name.localeCompare(b.name))
-         .map((questionnaire, index) => (
-      <Questionnaire
-        key={questionnaire.id + index}
-        questionnaire={questionnaire}
-        state={state}
-         dispatch={dispatch}
-     />
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .slice(0, 1) // Select only the first questionnaire
+        .map((questionnaire, index) => (
+    <Questionnaire
+      key={questionnaire.id + index}
+      questionnaire={questionnaire}
+      state={state}
+      dispatch={dispatch}
+    />
   ))}
+
 
     </Container>
   );
