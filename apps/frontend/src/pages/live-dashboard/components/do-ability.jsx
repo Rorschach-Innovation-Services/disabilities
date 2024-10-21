@@ -3,7 +3,7 @@ import ReactApexChart from 'react-apexcharts';
 
 export const ScatterPlotComponent = ({ series }) => {
  
-  const jitterAmount = 0.025; 
+  const jitterAmount = 0.05; 
 
   const jitter = (value) => {
     return value + (Math.random() * 2 - 1) * jitterAmount;
