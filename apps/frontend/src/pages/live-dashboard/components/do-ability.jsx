@@ -73,10 +73,10 @@ export const ScatterPlotComponent = ({ series }) => {
           w.globals.seriesNames[seriesIndex] +
           '</h4><br>' +
           '<span>Important to us: ' +
-          data[0] +
+          data[0].toFixed(2) +  
           '</span><br>' +
           '<span>Do-ability: ' +
-          data[1] +
+          data[1].toFixed(2) + 
           '</span>' +
           '</div>'
         );
