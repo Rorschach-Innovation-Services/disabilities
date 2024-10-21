@@ -165,7 +165,7 @@ export const LiveDashboard = () => {
       ) : null}
       {renderGraphs() && (
         <>
-          <LiveDashboardBanner step={step} setStep={setStep} />
+        <LiveDashboardBanner step={step} setStep={setStep} doAbilityChart={doAbilityChart} />
           {step === 0 && (
             <RadarChart title="Current vs Important" series={radarChartData} />
           )}
