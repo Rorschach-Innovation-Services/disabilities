@@ -151,10 +151,10 @@ export const SideBar = () => {
         <img
          style={{
            cursor: 'pointer',
-           borderRadius: '50%', // This makes the image round
-           width: '130px', // Ensures the image keeps a square shape
-           height: '130px', // Ensures the image keeps a square shape
-           objectFit: 'cover', // Makes sure the image fits nicely within the round shape
+           borderRadius: '50%', 
+           width: '140px', 
+           height: '140px', 
+           objectFit: 'cover', 
          }}
          src={Logo}
          alt="We-Di-Enable Logo"
