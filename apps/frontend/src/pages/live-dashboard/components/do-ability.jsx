@@ -90,7 +90,7 @@ export const ScatterPlotComponent = ({ series }) => {
         options={options}
         series={jitteredSeries} 
         type="scatter"
-        height={350}
+        height={470}
       />
     </div>
   );

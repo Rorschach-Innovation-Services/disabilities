@@ -60,27 +60,30 @@ export const Welcome = ({ state, dispatch, handleBegin }) => {
                     <Typography>
                         <br />
                         <br />
-                        This is a brief questionnaire to check your sleep
-                        health, which will take less than 5 minutes. The
-                        questionnaire is specifically for people who usually
-                        work during the day (i.e. do not work night- or
-                        rotating-shifts).
+                        This questionnaire is divided into three parts, 
+                        aimed at supporting your efforts toward disability
+                        inclusion and ensuring that your organization or 
+                        department has effective policies and practices in 
+                        place to create productive, inclusive environments 
+                        for all. The goal is to foster systems that result 
+                        in mutual benefits, ensuring everyone can contribute 
+                        and thrive.
                         <br />
                         <br />
-                        Only you will be privy to your personal results, which
-                        you will receive via email. We will collate and
-                        aggregate all sleep health information for your company
-                        to provide them with group feedback. Please be assured
-                        that there will be no way for your employer to
-                        personally identify you or view your personal results.
+                        All responses are anonymous, and the results will be 
+                        aggregated to provide group feedback. Please be assured 
+                        that individual responses will not be identifiable. If 
+                        personalized reports or consultations are needed, feel 
+                        free to reach out to us.
+
+                        
                     </Typography>
                     <Typography
                         variant="subtitle1"
                         sx={{ marginTop: "4%", marginBottom: "10px" }}
                     >
-                        I have read and understood the information above and
-                        agree to complete this Sleep Health Screen as accurately
-                        as possible.
+                        By reading the above information, I acknowledge 
+                        and agree to proceed.
                     </Typography>
                 </Box>
             </Paper>

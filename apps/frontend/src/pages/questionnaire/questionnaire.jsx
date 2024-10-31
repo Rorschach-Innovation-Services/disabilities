@@ -2,7 +2,7 @@ import React, { useEffect, useReducer, useState } from 'react';
 import { Box, Button, useMediaQuery } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { Welcome } from './components/welcome';
-import Logo from '../../assets/logos/Sleep Science Logo NT RGB.png';
+import Logo from '../../assets/logos/we DI enable Logo.png';
 import { initialState, reducer, options } from './reducer';
 import { Question } from './components/question';
 import { useAxios } from '../../hooks/axios';
@@ -228,12 +228,15 @@ export const Questionnaire = () => {
             onClick={() => (window.location.href = '/')}
             alt="logo"
             src={Logo}
-            sx={{
-              width: '60px',
-              marginLeft: '65px',
-              cursor: 'pointer',
+         sx={{
+            width: '130px',
+            height: '130px', // Ensure height is the same as width for a perfect circle
+            marginLeft: '65px',
+            cursor: 'pointer',
+            borderRadius: '50%', // This makes the image round
             }}
-          />
+            />
+
           <Box
             sx={{
               margin: '0 auto',
