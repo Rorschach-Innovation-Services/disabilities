@@ -1,29 +1,23 @@
 import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 
-const colors = [
-  '#0070C0', '#00E396', '#FEB019', '#FF4560', '#775DD0', 
-  '#00D9E0', '#008FFB', '#D7263D', '#F9C80E', '#9F86FF', 
-  '#662E9B', '#2A2B2A', '#85FFC7', '#FF6F91', '#FF9671', 
-  '#FFC75F', '#F9F871', '#EA7317', '#3BB273', '#A62349', 
-  '#5C3C92', '#0F4C5C'
-];
+const colors = ['#0074D9', '#2ECC40', '#B10DC9', '#FF851B', '#FFDC00'];
 
 export const BubbleChart = ({ styles, title, series }) => {
-  // Jitter function to apply slight random variation to close points
-  const jitterAmount = 0.25; 
+  // Matching jitterAmount to ScatterPlotComponent
+  const jitterAmount = 0.075; 
 
   const jitter = (value) => {
     return value + (Math.random() * 2 - 1) * jitterAmount;
   };
 
-  // jitter to close points
+  // Apply jitter to close points
   const jitteredSeries = series.map((entry) => ({
     ...entry,
     data: entry.data.map(([x, y]) => [jitter(x), jitter(y)]),
   }));
 
-  // Calculate the average for both x (Important to us) and y (Do-ability)
+  // Calculate averages for both x (Important to us) and y (Do-ability)
   const allPoints = series.flatMap(entry => entry.data); 
   const avgX = allPoints.reduce((sum, [x]) => sum + x, 0) / allPoints.length;
   const avgY = allPoints.reduce((sum, [, y]) => sum + y, 0) / allPoints.length;
@@ -67,13 +61,14 @@ export const BubbleChart = ({ styles, title, series }) => {
     markers: {
       size: 12, 
       colors: colors,
-      opacity: 0.6, 
+      opacity: 0.8,
       strokeColors: '#fff', 
       strokeWidth: 2,
       shape: 'circle',
     },
     fill: {
       type: 'solid',
+      opacity: 0.8, 
     },
     colors: colors,
     title: {
@@ -86,9 +81,8 @@ export const BubbleChart = ({ styles, title, series }) => {
       show: true,
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {
         const data = w.globals.initialSeries[seriesIndex].data[dataPointIndex];
-        // Custom tooltip with data points rounded to 2 decimal places
-        const roundedX = data[0].toFixed(2); // x value
-        const roundedY = data[1].toFixed(2); // y value
+        const roundedX = data[0].toFixed(2); 
+        const roundedY = data[1].toFixed(2); 
         return (
           '<div class="p-2" style="padding:5px;">' +
           '<h4>' +
@@ -122,7 +116,7 @@ export const BubbleChart = ({ styles, title, series }) => {
     annotations: {
       xaxis: [
         {
-          x: avgX, // Average of "Important to us" values
+          x: avgX, 
           borderColor: '#000',
           strokeDashArray: 3,
           label: {
@@ -137,7 +131,7 @@ export const BubbleChart = ({ styles, title, series }) => {
       ],
       yaxis: [
         {
-          y: avgY, // Average of "Do-ability" values
+          y: avgY, 
           borderColor: '#000',
           strokeDashArray: 3,
           label: {
@@ -159,7 +153,7 @@ export const BubbleChart = ({ styles, title, series }) => {
         options={options}
         series={jitteredSeries}
         type="scatter"
-        height={350}
+        height={470}
       />
     </div>
   );

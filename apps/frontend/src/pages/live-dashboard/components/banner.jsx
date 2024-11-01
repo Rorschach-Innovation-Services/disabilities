@@ -62,25 +62,7 @@ export const LiveDashboardBanner = ({ setStep, step, doAbilityChart }) => {
           </Button>
         </Grid>
       )}
-      {/* Render Action Plan button only if isDoAbilityValid is true */}
-      {isDoAbilityValid && (
-        <Grid item xs={3}>
-          <Button
-            variant="text"
-            onClick={() => setStep(3)} 
-            sx={{
-              backgroundColor: step === 3 ? '#95B8DF' : 'transparent',
-              color: step === 3 ? 'white' : '#95B8DF',
-              width: '100%',
-              ':hover': {
-                backgroundColor: step === 3 ? '#95B8DF' : 'transparent',
-              },
-            }}
-          >
-            Action Plan
-          </Button>
-        </Grid>
-      )}
+      
     </Grid>
   );
 };

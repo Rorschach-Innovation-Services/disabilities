@@ -2,6 +2,7 @@ import { Shell } from '../../components/shell';
 import { RadarChart } from './components/radar';
 import { BubbleChart } from './components/matrix';
 import { ScatterPlotComponent } from './components/do-ability';
+import { Slideshow } from './components/slideshow'; 
 import {
   Grid,
   Stack,
@@ -10,34 +11,17 @@ import {
   MenuItem,
   InputLabel,
   Box,
+  Button,
 } from '@mui/material';
 import { LiveDashboardBanner } from './components/banner';
 import { useEffect, useState } from 'react';
 import { useAxios } from '../../hooks/axios';
 import { Loading } from '../../components/loading';
-import TableComponent from './components/tablecomponent';
-
-
-const series = [
-  {
-    name: 'Do-ability',
-    data: [2.9, 3.7, 4.5, 3.2, 2.2],
-    color: '#00FF00', // Green color
-  },
-  {
-    name: 'Current',
-    data: [4.4, 5, 3, 4, 1.2],
-    color: '#FF0000', // Red color
-  },
-  {
-    name: 'Important',
-    data: [4.4, 4.8, 3.6, 1.3, 4.3],
-    color: '#0000FF', // Blue color
-  },
-];
 
 export const LiveDashboard = () => {
   const [step, setStep] = useState(0);
+  const [isSlideshowOpen, setSlideshowOpen] = useState(false); 
+
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
@@ -47,11 +31,14 @@ export const LiveDashboard = () => {
   const [doAbilityChart, setDoAbilityChart] = useState([]);
   const [highMatrixData, setHighMatrixData] = useState([]);
   const [lowMatrixData, setLowMatrixData] = useState([]);
-  //Fetch All companies
+  const [refreshKey, setRefreshKey] = useState(0); 
+
+  // Fetch All companies
   const clientsRequest = useAxios({
     url: '/companies',
     method: 'get',
   });
+
   // Fetch assessments for selected department
   const assessmentsRequest = useAxios({
     url: '/assessments/departments/{departmentId}',
@@ -61,17 +48,17 @@ export const LiveDashboard = () => {
   useEffect(() => {
     clientsRequest.execute();
   }, []);
+
   useEffect(() => {
     setSelectedDepartment('');
     setDepartments([]);
     const client = clients.find((client) => client.id === selectedClient);
-    if (typeof client !== 'undefined') {
+    if (client) {
       setDepartments(client.departments);
-      if (client.departments.length > 0)
-        setSelectedDepartment(client.departments[0].id);
+      if (client.departments.length > 0) setSelectedDepartment(client.departments[0].id);
     }
   }, [selectedClient]);
-  
+
   useEffect(() => {
     if (selectedDepartment.length > 0)
       assessmentsRequest.executeWithParameters({
@@ -86,11 +73,11 @@ export const LiveDashboard = () => {
         setClients(companies || []);
         if (companies.length > 0) setSelectedClient(companies[0].id);
         setDepartments(companies[0].departments);
-        if (companies[0].departments.length > 0)
-          setSelectedDepartment(companies[0].departments[0].id);
+        if (companies[0].departments.length > 0) setSelectedDepartment(companies[0].departments[0].id);
       }
     }
   }, [clientsRequest.response, clientsRequest.error]);
+
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {
       if (assessmentsRequest.response.assessments) {
@@ -104,13 +91,14 @@ export const LiveDashboard = () => {
   }, [assessmentsRequest.response, assessmentsRequest.error]);
 
   const renderGraphs = () => {
-    if (
-      assessmentsRequest.loading ||
-      clientsRequest.loading ||
-      assessments.length === 0
-    )
-      return false;
+    if (assessmentsRequest.loading || clientsRequest.loading || assessments.length === 0) return false;
     return true;
+  };
+
+   
+  const handleSlideshowOpen = () => {
+    setSlideshowOpen(true);
+    setRefreshKey((prevKey) => prevKey + 1); 
   };
 
   return (
@@ -153,6 +141,7 @@ export const LiveDashboard = () => {
           </FormControl>
         </Box>
       </Stack>
+
       {assessmentsRequest.loading || clientsRequest.loading ? (
         <Loading
           textSx={{ fontSize: '25px' }}
@@ -163,12 +152,11 @@ export const LiveDashboard = () => {
           containerSx={{ margin: '10% 25%' }}
         />
       ) : null}
+
       {renderGraphs() && (
         <>
-        <LiveDashboardBanner step={step} setStep={setStep} doAbilityChart={doAbilityChart} />
-          {step === 0 && (
-            <RadarChart title="Current vs Important" series={radarChartData} />
-          )}
+          <LiveDashboardBanner step={step} setStep={setStep} doAbilityChart={doAbilityChart} />
+          {step === 0 && <RadarChart title="Current vs Important" series={radarChartData} />}
           {step === 1 && <ScatterPlotComponent series={doAbilityChart} />}
           {step === 2 && (
             <>
@@ -184,13 +172,27 @@ export const LiveDashboard = () => {
             </>
           )}
           {step === 3 && (
-    
-          <Grid item xs={12}>
-            <TableComponent /> 
-          </Grid>
-      
-      )}
+            <Grid item xs={12}>
+              <TableComponent />
+            </Grid>
+          )}
           <Grid container spacing={2}></Grid>
+
+          <Box sx={{ textAlign: 'center', marginTop: 3 }}>
+            <Button variant="contained" onClick={handleSlideshowOpen}>
+             Slideshow
+            </Button>
+          </Box>
+
+          <Slideshow
+            open={isSlideshowOpen}
+            onClose={() => setSlideshowOpen(false)}
+            scatterSeries={doAbilityChart}      
+            highBubbleSeries={highMatrixData} 
+            lowBubbleSeries={lowMatrixData}   
+            radarSeries={radarChartData}      
+       
+          />
         </>
       )}
     </Shell>
