@@ -4,10 +4,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
-
+// Importing custom components
 import { RadarChart } from './radar';
 import { ScatterPlotComponent } from './do-ability';
-import { BubbleChart } from './matrix'; 
+import { BubbleChart } from './matrix';
+import Logo from '../../../assets/logos/we DI enable Logo.png'
 
 export const Slideshow = ({ open, onClose, scatterSeries, highBubbleSeries, lowBubbleSeries, radarSeries }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -27,7 +28,6 @@ export const Slideshow = ({ open, onClose, scatterSeries, highBubbleSeries, lowB
     }
   }, [scatterSeries]);
 
-  
   useEffect(() => {
     const allYLessThanOne = scatterSeries?.every((entry) =>
       entry.data.every(([, y]) => y < 1)
@@ -68,6 +68,22 @@ export const Slideshow = ({ open, onClose, scatterSeries, highBubbleSeries, lowB
           height: '100vh',
         }}
       >
+        <Box
+          component="img"
+          onClick={() => (window.location.href = '/')}
+          alt="logo"
+          src={Logo}
+          sx={{
+            width: '130px',
+            height: '130px',
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            cursor: 'pointer',
+            borderRadius: '50%',
+          }}
+        />
+
         <IconButton onClick={onClose} sx={{ position: 'absolute', top: '20px', right: '20px', color: 'black' }}>
           <CloseIcon />
         </IconButton>
