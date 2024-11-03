@@ -171,11 +171,6 @@ export const LiveDashboard = () => {
               />
             </>
           )}
-          {step === 3 && (
-            <Grid item xs={12}>
-              <TableComponent />
-            </Grid>
-          )}
           <Grid container spacing={2}></Grid>
 
           <Box sx={{ textAlign: 'center', marginTop: 3 }}>

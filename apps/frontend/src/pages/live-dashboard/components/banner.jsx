@@ -62,7 +62,6 @@ export const LiveDashboardBanner = ({ setStep, step, doAbilityChart }) => {
           </Button>
         </Grid>
       )}
-      
     </Grid>
   );
 };
