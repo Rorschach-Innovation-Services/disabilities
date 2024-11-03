@@ -46,11 +46,11 @@ export const Slideshow = ({ open, onClose, scatterSeries, highBubbleSeries, lowB
     },
     {
       type: 'bubble',
-      component: <BubbleChart title="High Importance Bubble Chart" series={highBubbleSeries} />,
+      component: <BubbleChart title="High Importance, high do-ability" series={highBubbleSeries} />,
     },
     {
       type: 'bubble',
-      component: <BubbleChart title="Low Importance Bubble Chart" series={lowBubbleSeries} />,
+      component: <BubbleChart title="Low Importance, low do-ability" series={lowBubbleSeries} />,
     },
   ].filter(chart => chart.component); 
 
