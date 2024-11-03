@@ -153,7 +153,7 @@ export const BubbleChart = ({ styles, title, series }) => {
         options={options}
         series={jitteredSeries}
         type="scatter"
-        height={470}
+        height={500}
       />
     </div>
   );

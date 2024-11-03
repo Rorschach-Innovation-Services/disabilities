@@ -25,9 +25,8 @@ export const ScatterPlotComponent = ({ series }) => {
     },
     xaxis: {
       tickAmount: 5,
-      stepSize: 1,
       min: 0,
-      max: 5,
+      max: 5, // Adjust the x-axis range
       title: {
         text: 'Important to us',
       },
@@ -39,9 +38,8 @@ export const ScatterPlotComponent = ({ series }) => {
     },
     yaxis: {
       tickAmount: 5,
-      stepSize: 1,
       min: 0,
-      max: 5,
+      max: 5, // Ensure the y-axis matches the x-axis
       title: {
         text: 'Do-ability',
       },
@@ -90,7 +88,7 @@ export const ScatterPlotComponent = ({ series }) => {
         options={options}
         series={jitteredSeries} 
         type="scatter"
-        height={470}
+        height={500}
       />
     </div>
   );

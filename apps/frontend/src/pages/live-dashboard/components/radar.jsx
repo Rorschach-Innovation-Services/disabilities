@@ -47,7 +47,7 @@ export const RadarChart = ({ title, series }) => {
       options={options}
       series={series}
       type="radar"
-      height={470}
+      height={500}
     />
   );
 };
