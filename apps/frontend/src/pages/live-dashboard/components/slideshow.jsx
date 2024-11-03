@@ -21,36 +21,42 @@ export const Slideshow = ({
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [disableNext, setDisableNext] = useState(false);
+  const [disablePrev, setDisablePrev] = useState(false);
+  const [filteredCharts, setFilteredCharts] = useState([]);
 
   useEffect(() => {
     const allYLessThanOne = scatterSeries?.every((entry) =>
       entry.data.every(([, y]) => y < 1)
     );
+
+    const initialCharts = [
+      {
+        type: 'radar',
+        component: <RadarChart series={radarSeries} />,
+        title: "Current Status VS Important to us",
+      },
+      {
+        type: 'scatter',
+        component: <ScatterPlotComponent series={scatterSeries} />,
+      },
+      {
+        type: 'bubble',
+        component: <BubbleChart title="High Importance, high do-ability" series={highBubbleSeries} />,
+      },
+      {
+        type: 'bubble',
+        component: <BubbleChart title="Low Importance, low do-ability" series={lowBubbleSeries} />,
+      },
+    ];
+
+    // If all y-values are less than 1, only display the radar chart and disable navigation buttons
+    setFilteredCharts(allYLessThanOne ? initialCharts.slice(0, 1) : initialCharts);
     setDisableNext(allYLessThanOne);
-  }, [scatterSeries]);
+    setDisablePrev(allYLessThanOne);
+  }, [scatterSeries, radarSeries, highBubbleSeries, lowBubbleSeries]);
 
-  const charts = [
-    {
-      type: 'radar',
-      component: <RadarChart series={radarSeries} />,
-      title: "Current Status VS Important to us", // Title for radar chart
-    },
-    {
-      type: 'scatter',
-      component: <ScatterPlotComponent series={scatterSeries} />,
-    },
-    {
-      type: 'bubble',
-      component: <BubbleChart title="High Importance, high do-ability" series={highBubbleSeries} />,
-    },
-    {
-      type: 'bubble',
-      component: <BubbleChart title="Low Importance, low do-ability" series={lowBubbleSeries} />,
-    },
-  ].filter(chart => chart.component); 
-
-  const handleNext = () => setCurrentSlide((prev) => (prev + 1) % charts.length);
-  const handlePrev = () => setCurrentSlide((prev) => (prev - 1 + charts.length) % charts.length);
+  const handleNext = () => setCurrentSlide((prev) => (prev + 1) % filteredCharts.length);
+  const handlePrev = () => setCurrentSlide((prev) => (prev - 1 + filteredCharts.length) % filteredCharts.length);
 
   return (
     <Dialog fullScreen open={open} onClose={onClose}>
@@ -98,31 +104,31 @@ export const Slideshow = ({
           <CloseIcon />
         </IconButton>
 
-          {charts[currentSlide].type === 'radar' && (
-        <Box
-          sx={{
-          position: 'absolute',
-          top: '10%',
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          textAlign: 'center',
-          fontWeight: 'bold'
-        }}
-        >
-        <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
-        {charts[currentSlide].title}
-        </Typography>
-        </Box>
+        {filteredCharts[currentSlide]?.type === 'radar' && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '10%',
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              textAlign: 'center',
+              fontWeight: 'bold'
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
+              {filteredCharts[currentSlide].title}
+            </Typography>
+          </Box>
         )}
 
-        <IconButton onClick={handlePrev} sx={{ position: 'absolute', left: '20px', color: 'black' }}>
+        <IconButton onClick={handlePrev} disabled={disablePrev} sx={{ position: 'absolute', left: '20px', color: 'black' }}>
           <ArrowBackIosNewIcon />
         </IconButton>
 
         <Box sx={{ width: '80%', height: '80%' }}>
-          {charts.length > 0 ? (
-            charts[currentSlide].component
+          {filteredCharts.length > 0 ? (
+            filteredCharts[currentSlide].component
           ) : (
             <div>No charts to display</div>
           )}
