@@ -1,32 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, IconButton, Box } from '@mui/material';
+import { Dialog, DialogContent, IconButton, Box, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
-// Importing custom components
 import { RadarChart } from './radar';
 import { ScatterPlotComponent } from './do-ability';
 import { BubbleChart } from './matrix';
-import Logo from '../../../assets/logos/we DI enable Logo.png'
+import Logo from '../../../assets/logos/we DI enable Logo.png';
 
-export const Slideshow = ({ open, onClose, scatterSeries, highBubbleSeries, lowBubbleSeries, radarSeries }) => {
+export const Slideshow = ({
+  open,
+  onClose,
+  scatterSeries,
+  highBubbleSeries,
+  lowBubbleSeries,
+  radarSeries,
+  selectedCompany,
+  selectedDepartment,
+}) => {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [jitteredScatterSeries, setJitteredScatterSeries] = useState([]);
   const [disableNext, setDisableNext] = useState(false);
-
-  const jitterAmount = 0.075;
-  const jitter = (value) => value + (Math.random() * 2 - 1) * jitterAmount;
-
-  useEffect(() => {
-    if (scatterSeries) {
-      const jitteredData = scatterSeries.map((entry) => ({
-        ...entry,
-        data: entry.data.map(([x, y]) => [jitter(x), jitter(y)]),
-      }));
-      setJitteredScatterSeries(jitteredData);
-    }
-  }, [scatterSeries]);
 
   useEffect(() => {
     const allYLessThanOne = scatterSeries?.every((entry) =>
@@ -38,11 +32,12 @@ export const Slideshow = ({ open, onClose, scatterSeries, highBubbleSeries, lowB
   const charts = [
     {
       type: 'radar',
-      component: <RadarChart title="Radar Chart" series={radarSeries} />,
+      component: <RadarChart series={radarSeries} />,
+      title: "Current Status VS Important to us", // Title for radar chart
     },
     {
       type: 'scatter',
-      component: <ScatterPlotComponent series={jitteredScatterSeries} />,
+      component: <ScatterPlotComponent series={scatterSeries} />,
     },
     {
       type: 'bubble',
@@ -69,24 +64,57 @@ export const Slideshow = ({ open, onClose, scatterSeries, highBubbleSeries, lowB
         }}
       >
         <Box
-          component="img"
-          onClick={() => (window.location.href = '/')}
-          alt="logo"
-          src={Logo}
           sx={{
-            width: '130px',
-            height: '130px',
             position: 'absolute',
             top: '20px',
             left: '20px',
-            cursor: 'pointer',
-            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
           }}
-        />
+        >
+          <Box
+            component="img"
+            onClick={() => (window.location.href = '/')}
+            alt="logo"
+            src={Logo}
+            sx={{
+              width: '100px',
+              height: '100px',
+              cursor: 'pointer',
+              borderRadius: '50%',
+              marginRight: '16px', 
+            }}
+          />
+
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}> 
+              Company: {selectedCompany}
+            </Typography>
+            <Typography variant="subtitle1">Department: {selectedDepartment}</Typography>
+          </Box>
+        </Box>
 
         <IconButton onClick={onClose} sx={{ position: 'absolute', top: '20px', right: '20px', color: 'black' }}>
           <CloseIcon />
         </IconButton>
+
+          {charts[currentSlide].type === 'radar' && (
+        <Box
+          sx={{
+          position: 'absolute',
+          top: '10%',
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          textAlign: 'center',
+          fontWeight: 'bold'
+        }}
+        >
+        <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
+        {charts[currentSlide].title}
+        </Typography>
+        </Box>
+        )}
 
         <IconButton onClick={handlePrev} sx={{ position: 'absolute', left: '20px', color: 'black' }}>
           <ArrowBackIosNewIcon />
