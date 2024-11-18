@@ -101,6 +101,17 @@ export const LiveDashboard = () => {
     setRefreshKey((prevKey) => prevKey + 1); 
   };
 
+const getCompanyName = (selectedClient, clients) => {
+  const client = clients.find((client) => client.id === selectedClient);
+  return client ? client.name : "Unknown Company";
+};
+
+const getDepartmentName = (selectedDepartment, departments) => {
+  const department = departments.find((dept) => dept.id === selectedDepartment);
+  return department ? department.name : "Unknown Department";
+};
+
+
   return (
     <Shell heading="Live Dashboard">
       <Stack direction="row" spacing={3} sx={{ marginBottom: '50px' }}>
@@ -171,11 +182,6 @@ export const LiveDashboard = () => {
               />
             </>
           )}
-          {step === 3 && (
-            <Grid item xs={12}>
-              <TableComponent />
-            </Grid>
-          )}
           <Grid container spacing={2}></Grid>
 
           <Box sx={{ textAlign: 'center', marginTop: 3 }}>
@@ -190,7 +196,9 @@ export const LiveDashboard = () => {
             scatterSeries={doAbilityChart}      
             highBubbleSeries={highMatrixData} 
             lowBubbleSeries={lowMatrixData}   
-            radarSeries={radarChartData}      
+            radarSeries={radarChartData}  
+            selectedCompany={getCompanyName(selectedClient,clients)}
+            selectedDepartment={getDepartmentName(selectedDepartment, departments)}    
        
           />
         </>
