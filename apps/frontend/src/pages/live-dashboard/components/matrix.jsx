@@ -2,6 +2,16 @@ import React from 'react';
 import ReactApexChart from 'react-apexcharts';
 
 const colors = ['#0074D9', '#2ECC40', '#B10DC9', '#FF851B', '#FFDC00'];
+  // Helper function to calculate median
+  const calculateMedian = (numbers) => {
+    const sorted = [...numbers].sort((a, b) => a - b);
+    const middle = Math.floor(sorted.length / 2);
+
+    if (sorted.length % 2 === 0) {
+      return (sorted[middle - 1] + sorted[middle]) / 2;
+    }
+    return sorted[middle];
+  };
 
 export const BubbleChart = ({ styles, title, series }) => {
   // Matching jitterAmount to ScatterPlotComponent
@@ -17,10 +27,13 @@ export const BubbleChart = ({ styles, title, series }) => {
     data: entry.data.map(([x, y]) => [jitter(x), jitter(y)]),
   }));
 
-  // Calculate averages for both x (Important to us) and y (Do-ability)
-  const allPoints = series.flatMap(entry => entry.data); 
-  const avgX = allPoints.reduce((sum, [x]) => sum + x, 0) / allPoints.length;
-  const avgY = allPoints.reduce((sum, [, y]) => sum + y, 0) / allPoints.length;
+  // Extract all points and calculate medians
+  const allPoints = series.flatMap(entry => entry.data);
+  const allX = allPoints.map(([x]) => x);
+  const allY = allPoints.map(([, y]) => y);
+  
+  const medianX = calculateMedian(allX);
+  const medianY = calculateMedian(allY);
 
   const options = {
     chart: {
@@ -116,7 +129,7 @@ export const BubbleChart = ({ styles, title, series }) => {
     annotations: {
       xaxis: [
         {
-          x: avgX, 
+          x: medianX,
           borderColor: '#000',
           strokeDashArray: 3,
           label: {
@@ -125,13 +138,13 @@ export const BubbleChart = ({ styles, title, series }) => {
               color: '#000',
               background: '#fff',
             },
-            text: `Average Important to us: ${avgX.toFixed(2)}`,
+            text: `Median Important to us: ${medianX.toFixed(2)}`,
           },
         },
       ],
       yaxis: [
         {
-          y: avgY, 
+          y: medianY,
           borderColor: '#000',
           strokeDashArray: 3,
           label: {
@@ -140,7 +153,7 @@ export const BubbleChart = ({ styles, title, series }) => {
               color: '#000',
               background: '#fff',
             },
-            text: `Average Do-ability: ${avgY.toFixed(2)}`,
+            text: `Median Do-ability: ${medianY.toFixed(2)}`,
           },
         },
       ],
