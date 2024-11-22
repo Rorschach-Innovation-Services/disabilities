@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Grid,
   Stack,
   Select,
   FormControl,
@@ -35,51 +34,64 @@ export const ActionPlan = () => {
   // Fetch All Companies
   useEffect(() => {
     clientsRequest.execute();
-  }, [clientsRequest.execute]);
+  }, [clientsRequest]);
 
   // Set Initial Clients and Departments
   useEffect(() => {
     if (clientsRequest.response && !clientsRequest.error) {
-      const companies = clientsRequest.response.companies;
-      if (companies && companies.length > 0) {
+      const companies = clientsRequest.response.companies || [];
+      if (companies.length > 0) {
         const [firstCompany] = companies;
         setClients(companies);
         setSelectedClient(firstCompany.id);
         setDepartments(firstCompany.departments || []);
-        setSelectedDepartment(firstCompany.departments?.[0]?.id || '');
+        if (firstCompany.departments?.length > 0) {
+          setSelectedDepartment(firstCompany.departments[0].id);
+        } else {
+          setSelectedDepartment(''); // Reset if no departments are available
+        }
       }
     }
   }, [clientsRequest.response, clientsRequest.error]);
 
-  // Update Departments on Client Change
+  // Update Departments and Default Department when Client Changes
   useEffect(() => {
     const client = clients.find((client) => client.id === selectedClient);
     if (client) {
-      setDepartments(client.departments);
-      setSelectedDepartment(client.departments?.[0]?.id || '');
+      setDepartments(client.departments || []);
+      if (client.departments?.length > 0) {
+        setSelectedDepartment(client.departments[0].id); // Default to the first department
+      } else {
+        setSelectedDepartment(''); // Reset if no departments are available
+      }
     }
   }, [selectedClient]);
 
   // Fetch Assessments for Selected Department
   useEffect(() => {
     if (selectedDepartment) {
-      assessmentsRequest.executeWithParameters({ url: `/assessments/departments/${selectedDepartment}` });
+      assessmentsRequest.executeWithParameters({
+        url: `/assessments/departments/${selectedDepartment}`,
+      });
     }
-  }, [selectedDepartment, assessmentsRequest.executeWithParameters]);
+  }, [selectedDepartment, assessmentsRequest]);
 
   // Update HighMatrix Data and Filter Points
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {
       const { highMatrix } = assessmentsRequest.response;
-      if (highMatrix) {
+      if (highMatrix && Array.isArray(highMatrix)) {
         setHighMatrixData(highMatrix);
-        const uniqueNames = [...new Set(highMatrix.map((dp) => dp.name))];
+        const uniqueNames = [...new Set(highMatrix.map((dp) => dp.name || `Data Point ${dp.id || 'Unknown'}`))];
         setFilteredDataPoints(uniqueNames);
+      } else {
+        setHighMatrixData([]);
+        setFilteredDataPoints([]);
       }
     }
   }, [assessmentsRequest.response, assessmentsRequest.error]);
 
-  // Filter Data Points
+  // Filter Data Points for Table Display
   const filteredData = selectedDataPointName
     ? highMatrixData.filter((dp) => dp.name === selectedDataPointName)
     : highMatrixData;
@@ -106,7 +118,7 @@ export const ActionPlan = () => {
             </Select>
           </FormControl>
         </Box>
-        
+
         {/* Department Select */}
         <Box sx={{ minWidth: 200 }}>
           <FormControl fullWidth>
