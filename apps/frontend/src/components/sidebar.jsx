@@ -8,6 +8,7 @@ import StuffIcon from '../assets/icons/staff.svg';
 import SettingsIcon from '../assets/icons/settings.svg';
 import DatabaseIcon from '../assets/icons/database.svg';
 import RadarIcon from '../assets/icons/chart-radar.svg';
+import ActionPlan from '../assets/icons/action-Icon.svg';
 import { useHistory } from 'react-router-dom';
 import { Colours } from '../colours';
 
@@ -51,7 +52,7 @@ const items = [
   },
   {
     text: 'Action Plan',
-    icon: RadarIcon, 
+    icon:  ActionPlan, 
     route: '/action-plan',
     key: 'action-plan',
   },
