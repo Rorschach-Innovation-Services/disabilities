@@ -11,6 +11,7 @@ import RadarIcon from '../assets/icons/chart-radar.svg';
 import { useHistory } from 'react-router-dom';
 import { Colours } from '../colours';
 
+
 const items = [
   {
     text: 'Start New Assessment',
@@ -49,11 +50,18 @@ const items = [
     key: 'live-dashboard',
   },
   {
+    text: 'Action Plan',
+    icon: RadarIcon, 
+    route: '/action-plan',
+    key: 'action-plan',
+  },
+  {
     text: 'Settings',
     icon: SettingsIcon,
     route: '/settings',
     key: 'settings',
   },
+  
 ];
 
 const SideBarListItem = ({
