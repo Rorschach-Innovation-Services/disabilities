@@ -24,7 +24,6 @@ export const ActionPlan = () => {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
   const [highMatrixData, setHighMatrixData] = useState([]);
-  const [filteredDataPoints, setFilteredDataPoints] = useState([]);
   const [selectedDataPointName, setSelectedDataPointName] = useState('');
 
   // Axios Hooks
@@ -45,11 +44,7 @@ export const ActionPlan = () => {
         setClients(companies);
         setSelectedClient(firstCompany.id);
         setDepartments(firstCompany.departments || []);
-        if (firstCompany.departments?.length > 0) {
-          setSelectedDepartment(firstCompany.departments[0].id);
-        } else {
-          setSelectedDepartment('');
-        }
+        setSelectedDepartment(firstCompany.departments?.[0]?.id || '');
       }
     }
   }, [clientsRequest.response, clientsRequest.error]);
@@ -59,11 +54,7 @@ export const ActionPlan = () => {
     const client = clients.find((client) => client.id === selectedClient);
     if (client) {
       setDepartments(client.departments || []);
-      if (client.departments?.length > 0) {
-        setSelectedDepartment(client.departments[0].id);
-      } else {
-        setSelectedDepartment('');
-      }
+      setSelectedDepartment(client.departments?.[0]?.id || '');
     }
   }, [selectedClient, clients]);
 
@@ -76,22 +67,19 @@ export const ActionPlan = () => {
     }
   }, [selectedDepartment, assessmentsRequest]);
 
-  // Update HighMatrix Data and Filter Points
+  // Update HighMatrix Data
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {
       const { highMatrix } = assessmentsRequest.response;
       if (Array.isArray(highMatrix)) {
         setHighMatrixData(highMatrix);
-        const uniqueNames = [...new Set(highMatrix.map((dp) => dp.name || `Data Point ${dp.id || 'Unknown'}`))];
-        setFilteredDataPoints(uniqueNames);
       } else {
         setHighMatrixData([]);
-        setFilteredDataPoints([]);
       }
     }
   }, [assessmentsRequest.response, assessmentsRequest.error]);
 
-  // Filter Data Points for Table Display
+  // Filter Data for Display
   const filteredData = selectedDataPointName
     ? highMatrixData.filter((dp) => dp.name === selectedDataPointName)
     : highMatrixData;
@@ -153,9 +141,9 @@ export const ActionPlan = () => {
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>
-              {filteredDataPoints.map((name, index) => (
-                <MenuItem key={index} value={name}>
-                  {name}
+              {highMatrixData.map((dp, index) => (
+                <MenuItem key={index} value={dp.name || `Data Point ${index + 1}`}>
+                  {dp.name || `Data Point ${index + 1}`}
                 </MenuItem>
               ))}
             </Select>
