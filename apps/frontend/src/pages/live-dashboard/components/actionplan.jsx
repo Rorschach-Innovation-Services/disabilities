@@ -179,14 +179,22 @@ export const ActionPlan = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredData.map((dataPoint, index) => (
-                <TableRow key={index}>
-                  <TableCell>{dataPoint.outcome || 'N/A'}</TableCell>
-                  <TableCell>{dataPoint.role || 'N/A'}</TableCell>
-                  <TableCell>{dataPoint.dependency || 'N/A'}</TableCell>
-                  <TableCell>{dataPoint.funding || 'N/A'}</TableCell>
+              {filteredData.length > 0 ? (
+                filteredData.map((dataPoint, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{dataPoint.outcome || 'N/A'}</TableCell>
+                    <TableCell>{dataPoint.role || 'N/A'}</TableCell>
+                    <TableCell>{dataPoint.dependency || 'N/A'}</TableCell>
+                    <TableCell>{dataPoint.funding || 'N/A'}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} align="center">
+                    No data available
+                  </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </TableContainer>
