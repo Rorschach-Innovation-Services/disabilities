@@ -29,7 +29,7 @@ export const ActionPlan = () => {
 
   // Axios Hooks
   const clientsRequest = useAxios({ url: '/companies', method: 'get' });
-  const assessmentsRequest = useAxios({ url: `/assessments/departments/{departmentId}`, method: 'get' });
+  const assessmentsRequest = useAxios({ url: '/assessments/departments/{departmentId}', method: 'get' });
 
   // Fetch All Companies
   useEffect(() => {
@@ -48,7 +48,7 @@ export const ActionPlan = () => {
         if (firstCompany.departments?.length > 0) {
           setSelectedDepartment(firstCompany.departments[0].id);
         } else {
-          setSelectedDepartment(''); // Reset if no departments are available
+          setSelectedDepartment('');
         }
       }
     }
@@ -60,12 +60,12 @@ export const ActionPlan = () => {
     if (client) {
       setDepartments(client.departments || []);
       if (client.departments?.length > 0) {
-        setSelectedDepartment(client.departments[0].id); // Default to the first department
+        setSelectedDepartment(client.departments[0].id);
       } else {
-        setSelectedDepartment(''); // Reset if no departments are available
+        setSelectedDepartment('');
       }
     }
-  }, [selectedClient]);
+  }, [selectedClient, clients]);
 
   // Fetch Assessments for Selected Department
   useEffect(() => {
@@ -80,9 +80,8 @@ export const ActionPlan = () => {
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {
       const { highMatrix } = assessmentsRequest.response;
-      if (highMatrix && Array.isArray(highMatrix)) {
+      if (Array.isArray(highMatrix)) {
         setHighMatrixData(highMatrix);
-        // Extract and set unique names for dropdown
         const uniqueNames = [...new Set(highMatrix.map((dp) => dp.name || `Data Point ${dp.id || 'Unknown'}`))];
         setFilteredDataPoints(uniqueNames);
       } else {
