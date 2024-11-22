@@ -82,6 +82,7 @@ export const ActionPlan = () => {
       const { highMatrix } = assessmentsRequest.response;
       if (highMatrix && Array.isArray(highMatrix)) {
         setHighMatrixData(highMatrix);
+        // Extract and set unique names for dropdown
         const uniqueNames = [...new Set(highMatrix.map((dp) => dp.name || `Data Point ${dp.id || 'Unknown'}`))];
         setFilteredDataPoints(uniqueNames);
       } else {
@@ -97,7 +98,7 @@ export const ActionPlan = () => {
     : highMatrixData;
 
   return (
-    <Shell heading="Live Dashboard">
+    <Shell heading="Action Plan">
       <Stack direction="row" spacing={3} sx={{ marginBottom: '50px' }}>
         {/* Client Select */}
         <Box sx={{ minWidth: 200 }}>
