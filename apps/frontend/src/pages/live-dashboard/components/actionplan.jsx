@@ -6,13 +6,6 @@ import {
   MenuItem,
   InputLabel,
   Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
 } from '@mui/material';
 import { Shell } from '../../../components/shell';
 import { useAxios } from '../../../hooks/axios';
@@ -23,12 +16,30 @@ export const ActionPlan = () => {
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
-  const [highMatrixData, setHighMatrixData] = useState([]);
-  const [selectedDataPointName, setSelectedDataPointName] = useState('');
+  const [highMatrix, setHighMatrix] = useState([]);
+  const [dropdownOptions, setDropdownOptions] = useState([]); // Dropdown options
+  const [selectedDataPoint, setSelectedDataPoint] = useState('');
 
   // Axios Hooks
   const clientsRequest = useAxios({ url: '/companies', method: 'get' });
   const assessmentsRequest = useAxios({ url: '/assessments/departments/{departmentId}', method: 'get' });
+
+  // Function to transform highMatrix into dropdown options
+  const transformHighMatrixForDropdown = (matrix) => {
+    if (!Array.isArray(matrix)) return []; // Ensure input is an array
+
+    return matrix.flatMap((series, seriesIndex) =>
+      series.data.map((point, pointIndex) => {
+        const x = point[0]?.toFixed(2) || 'N/A'; // Format x-axis value
+        const y = point[1]?.toFixed(2) || 'N/A'; // Format y-axis value
+        const name = series.name || `Series ${seriesIndex + 1}`; // Use series name or fallback
+        return {
+          label: `${name} - Point ${pointIndex + 1} (x: ${x}, y: ${y})`,
+          value: `${seriesIndex}-${pointIndex}`, // Ensure unique value
+        };
+      })
+    );
+  };
 
   // Fetch All Companies
   useEffect(() => {
@@ -67,22 +78,23 @@ export const ActionPlan = () => {
     }
   }, [selectedDepartment, assessmentsRequest]);
 
-  // Update HighMatrix Data
+  // Update HighMatrix Data and Populate Dropdown
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {
-      const { highMatrix } = assessmentsRequest.response;
-      if (Array.isArray(highMatrix)) {
-        setHighMatrixData(highMatrix);
+      const { highMatrix: matrix } = assessmentsRequest.response;
+
+      if (Array.isArray(matrix)) {
+        setHighMatrix(matrix);
+
+        // Generate dropdown options
+        const options = transformHighMatrixForDropdown(matrix);
+        setDropdownOptions(options);
       } else {
-        setHighMatrixData([]);
+        setHighMatrix([]);
+        setDropdownOptions([]);
       }
     }
   }, [assessmentsRequest.response, assessmentsRequest.error]);
-
-  // Filter Data for Display
-  const filteredData = selectedDataPointName
-    ? highMatrixData.filter((dp) => dp.name === selectedDataPointName)
-    : highMatrixData;
 
   return (
     <Shell heading="Action Plan">
@@ -128,22 +140,22 @@ export const ActionPlan = () => {
         </Box>
 
         {/* Data Point Select */}
-        <Box sx={{ minWidth: 200 }}>
+        <Box sx={{ minWidth: 300 }}>
           <FormControl fullWidth>
             <InputLabel id="data-point-label">Data Point</InputLabel>
             <Select
               labelId="data-point-label"
               id="data-point-select"
-              value={selectedDataPointName}
+              value={selectedDataPoint}
               label="Data Point"
-              onChange={(e) => setSelectedDataPointName(e.target.value)}
+              onChange={(e) => setSelectedDataPoint(e.target.value)}
             >
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>
-              {highMatrixData.map((dp, index) => (
-                <MenuItem key={index} value={dp.name || `Data Point ${index + 1}`}>
-                  {dp.name || `Data Point ${index + 1}`}
+              {dropdownOptions.map((option, index) => (
+                <MenuItem key={index} value={option.value}>
+                  {option.label}
                 </MenuItem>
               ))}
             </Select>
@@ -151,40 +163,23 @@ export const ActionPlan = () => {
         </Box>
       </Stack>
 
-      {/* Loading and Table */}
+      {/* Loading Indicator */}
       {clientsRequest.loading || assessmentsRequest.loading ? (
-        <Loading textSx={{ fontSize: '25px' }} />
+        <Loading
+          textSx={{ fontSize: '25px' }}
+          loadingSx={{
+            width: '250px !important',
+            height: '250px !important',
+          }}
+          containerSx={{
+            margin: '10% auto',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        />
       ) : (
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="filtered data table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Outcome</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Dependency</TableCell>
-                <TableCell>Funding</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredData.length > 0 ? (
-                filteredData.map((dataPoint, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{dataPoint.outcome || 'N/A'}</TableCell>
-                    <TableCell>{dataPoint.role || 'N/A'}</TableCell>
-                    <TableCell>{dataPoint.dependency || 'N/A'}</TableCell>
-                    <TableCell>{dataPoint.funding || 'N/A'}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} align="center">
-                    No data available
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <Box>No data available</Box>
       )}
     </Shell>
   );
