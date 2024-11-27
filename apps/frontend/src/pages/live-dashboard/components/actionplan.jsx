@@ -17,34 +17,28 @@ export const ActionPlan = () => {
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
   const [highMatrix, setHighMatrix] = useState([]);
-  const [dropdownOptions, setDropdownOptions] = useState([]); // Dropdown options
+  const [lowMatrix, setLowMatrix] = useState([]);
+  const [selectedMatrixType, setSelectedMatrixType] = useState('highMatrix'); // Default to highMatrix
+  const [dataPointOptions, setDataPointOptions] = useState([]); // Dropdown options
   const [selectedDataPoint, setSelectedDataPoint] = useState('');
 
   // Axios Hooks
   const clientsRequest = useAxios({ url: '/companies', method: 'get' });
-  const assessmentsRequest = useAxios({ url: '/assessments/departments/{departmentId}', method: 'get' });
+  const assessmentsRequest = useAxios({ url: `/assessments/departments/${selectedDepartment}`, method: 'get' });
 
-  // Function to transform highMatrix into dropdown options
-  const transformHighMatrixForDropdown = (matrix) => {
-    if (!Array.isArray(matrix)) return []; // Ensure input is an array
-
-    return matrix.flatMap((series, seriesIndex) =>
-      series.data.map((point, pointIndex) => {
-        const x = point[0]?.toFixed(2) || 'N/A'; // Format x-axis value
-        const y = point[1]?.toFixed(2) || 'N/A'; // Format y-axis value
-        const name = series.name || `Series ${seriesIndex + 1}`; // Use series name or fallback
-        return {
-          label: `${name} - Point ${pointIndex + 1} (x: ${x}, y: ${y})`,
-          value: `${seriesIndex}-${pointIndex}`, // Ensure unique value
-        };
-      })
-    );
+  // Function to transform a matrix into dropdown options
+  const transformMatrixForDropdown = (matrix) => {
+    if (!Array.isArray(matrix)) return [];
+    return matrix.map((entry, index) => ({
+      label: entry.name || `Data Point ${index + 1}`,
+      value: entry.name || `Data Point ${index + 1}`,
+    }));
   };
 
   // Fetch All Companies
   useEffect(() => {
     clientsRequest.execute();
-  }, [clientsRequest]);
+  }, []); // Run once on component mount
 
   // Set Initial Clients and Departments
   useEffect(() => {
@@ -58,43 +52,44 @@ export const ActionPlan = () => {
         setSelectedDepartment(firstCompany.departments?.[0]?.id || '');
       }
     }
-  }, [clientsRequest.response, clientsRequest.error]);
+  }, [clientsRequest.response]);
 
   // Update Departments and Default Department when Client Changes
   useEffect(() => {
-    const client = clients.find((client) => client.id === selectedClient);
-    if (client) {
-      setDepartments(client.departments || []);
-      setSelectedDepartment(client.departments?.[0]?.id || '');
+    if (selectedClient) {
+      const client = clients.find((client) => client.id === selectedClient);
+      if (client) {
+        setDepartments(client.departments || []);
+        setSelectedDepartment(client.departments?.[0]?.id || '');
+      }
     }
-  }, [selectedClient, clients]);
+  }, [selectedClient]);
 
   // Fetch Assessments for Selected Department
   useEffect(() => {
     if (selectedDepartment) {
-      assessmentsRequest.executeWithParameters({
-        url: `/assessments/departments/${selectedDepartment}`,
-      });
+      assessmentsRequest.execute();
     }
-  }, [selectedDepartment, assessmentsRequest]);
+  }, [selectedDepartment]);
 
-  // Update HighMatrix Data and Populate Dropdown
+  // Update HighMatrix and LowMatrix Data
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {
-      const { highMatrix: matrix } = assessmentsRequest.response;
-
-      if (Array.isArray(matrix)) {
-        setHighMatrix(matrix);
-
-        // Generate dropdown options
-        const options = transformHighMatrixForDropdown(matrix);
-        setDropdownOptions(options);
-      } else {
-        setHighMatrix([]);
-        setDropdownOptions([]);
-      }
+      const { highMatrix, lowMatrix } = assessmentsRequest.response;
+      setHighMatrix(Array.isArray(highMatrix) ? highMatrix : []);
+      setLowMatrix(Array.isArray(lowMatrix) ? lowMatrix : []);
     }
-  }, [assessmentsRequest.response, assessmentsRequest.error]);
+  }, [assessmentsRequest.response]);
+
+  // Update Data Point Options Based on Selected Matrix Type
+  useEffect(() => {
+    const matrix = selectedMatrixType === 'highMatrix' ? highMatrix : lowMatrix;
+    const options = transformMatrixForDropdown(matrix);
+    setDataPointOptions(options);
+
+    // Clear selected data point when matrix type changes
+    setSelectedDataPoint('');
+  }, [selectedMatrixType, highMatrix, lowMatrix]); // Recalculate when matrix type or matrix data changes
 
   return (
     <Shell heading="Action Plan">
@@ -139,6 +134,23 @@ export const ActionPlan = () => {
           </FormControl>
         </Box>
 
+        {/* Matrix Type Select */}
+        <Box sx={{ minWidth: 200 }}>
+          <FormControl fullWidth>
+            <InputLabel id="matrix-type-label">Matrix Type</InputLabel>
+            <Select
+              labelId="matrix-type-label"
+              id="matrix-type-select"
+              value={selectedMatrixType}
+              label="Matrix Type"
+              onChange={(e) => setSelectedMatrixType(e.target.value)}
+            >
+              <MenuItem value="highMatrix">High Matrix</MenuItem>
+              <MenuItem value="lowMatrix">Low Matrix</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
         {/* Data Point Select */}
         <Box sx={{ minWidth: 300 }}>
           <FormControl fullWidth>
@@ -149,11 +161,10 @@ export const ActionPlan = () => {
               value={selectedDataPoint}
               label="Data Point"
               onChange={(e) => setSelectedDataPoint(e.target.value)}
+              displayEmpty
             >
-              <MenuItem value="">
-                <em>All</em>
-              </MenuItem>
-              {dropdownOptions.map((option, index) => (
+              
+              {dataPointOptions.map((option, index) => (
                 <MenuItem key={index} value={option.value}>
                   {option.label}
                 </MenuItem>
@@ -178,9 +189,7 @@ export const ActionPlan = () => {
             alignItems: 'center',
           }}
         />
-      ) : (
-        <Box>No data available</Box>
-      )}
+      ) : null}
     </Shell>
   );
 };
