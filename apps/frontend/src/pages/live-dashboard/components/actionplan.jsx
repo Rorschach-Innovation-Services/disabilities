@@ -101,7 +101,7 @@ export const ActionPlan = () => {
 
   const handleSave = () => {
     console.log('Saved Data:', tableData);
-    // Add save logic here
+    // save logic will be here
   };
 
   return (
