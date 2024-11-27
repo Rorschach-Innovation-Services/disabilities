@@ -12,28 +12,42 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
   TextField,
   Button,
+  Paper,
 } from '@mui/material';
 import { Shell } from '../../../components/shell';
 import { useAxios } from '../../../hooks/axios';
+import { Loading } from '../../../components/loading';
 
 export const ActionPlan = () => {
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
-  const [matrixType, setMatrixType] = useState('highMatrix'); // Default matrix type
-  const [dropdownOptions, setDropdownOptions] = useState([]);
+  const [highMatrix, setHighMatrix] = useState([]);
+  const [lowMatrix, setLowMatrix] = useState([]);
+  const [selectedMatrixType, setSelectedMatrixType] = useState('highMatrix');
+  const [dataPointOptions, setDataPointOptions] = useState([]);
   const [selectedDataPoint, setSelectedDataPoint] = useState('');
+  const [tableData, setTableData] = useState([
+    { outcome: '', role: '', dependency: '', funding: '' },
+  ]);
 
   const clientsRequest = useAxios({ url: '/companies', method: 'get' });
-  const assessmentsRequest = useAxios({ url: `/assessments/departments/{departmentId}`, method: 'get' });
+  const assessmentsRequest = useAxios({ url: `/assessments/departments/${selectedDepartment}`, method: 'get' });
+
+  const transformMatrixForDropdown = (matrix) => {
+    if (!Array.isArray(matrix)) return [];
+    return matrix.map((entry, index) => ({
+      label: entry.name || `Data Point ${index + 1}`,
+      value: entry.name || `Data Point ${index + 1}`,
+    }));
+  };
 
   useEffect(() => {
     clientsRequest.execute();
-  }, [clientsRequest]);
+  }, []);
 
   useEffect(() => {
     if (clientsRequest.response && !clientsRequest.error) {
@@ -46,55 +60,61 @@ export const ActionPlan = () => {
         setSelectedDepartment(firstCompany.departments?.[0]?.id || '');
       }
     }
-  }, [clientsRequest.response, clientsRequest.error]);
+  }, [clientsRequest.response]);
 
   useEffect(() => {
-    const client = clients.find((client) => client.id === selectedClient);
-    if (client) {
-      setDepartments(client.departments || []);
-      setSelectedDepartment(client.departments?.[0]?.id || '');
+    if (selectedClient) {
+      const client = clients.find((client) => client.id === selectedClient);
+      if (client) {
+        setDepartments(client.departments || []);
+        setSelectedDepartment(client.departments?.[0]?.id || '');
+      }
     }
-  }, [selectedClient, clients]);
+  }, [selectedClient]);
 
   useEffect(() => {
     if (selectedDepartment) {
-      assessmentsRequest.executeWithParameters({
-        url: `/assessments/departments/${selectedDepartment}`,
-      });
+      assessmentsRequest.execute();
     }
-  }, [selectedDepartment, assessmentsRequest]);
+  }, [selectedDepartment]);
 
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {
-      const { highMatrix = [], lowMatrix = [] } = assessmentsRequest.response;
-
-      const matrix = matrixType === 'highMatrix' ? highMatrix : lowMatrix;
-
-      const options = matrix.map((dataPoint, index) => ({
-        label: dataPoint.name || `Point ${index + 1}`,
-        value: index,
-      }));
-
-      setDropdownOptions(options);
-      setSelectedDataPoint('');
+      const { highMatrix, lowMatrix } = assessmentsRequest.response;
+      setHighMatrix(Array.isArray(highMatrix) ? highMatrix : []);
+      setLowMatrix(Array.isArray(lowMatrix) ? lowMatrix : []);
     }
-  }, [assessmentsRequest.response, assessmentsRequest.error, matrixType]);
+  }, [assessmentsRequest.response]);
+
+  useEffect(() => {
+    const matrix = selectedMatrixType === 'highMatrix' ? highMatrix : lowMatrix;
+    const options = transformMatrixForDropdown(matrix);
+    setDataPointOptions(options);
+    setSelectedDataPoint('');
+  }, [selectedMatrixType, highMatrix, lowMatrix]);
+
+  const handleCellChange = (index, field, value) => {
+    const updatedTableData = [...tableData];
+    updatedTableData[index][field] = value;
+    setTableData(updatedTableData);
+  };
 
   const handleSave = () => {
-    // Add your save logic here
-    console.log('Save button clicked');
+    console.log('Saved Data:', tableData);
+    // Add save logic here
   };
 
   return (
     <Shell heading="Action Plan">
       <Stack direction="row" spacing={3} sx={{ marginBottom: '50px' }}>
-        {/* Client Select */}
         <Box sx={{ minWidth: 200 }}>
           <FormControl fullWidth>
             <InputLabel id="company-label">Company</InputLabel>
             <Select
               labelId="company-label"
+              id="company-select"
               value={selectedClient}
+              label="Company"
               onChange={(e) => setSelectedClient(e.target.value)}
             >
               {clients.map((client) => (
@@ -106,13 +126,14 @@ export const ActionPlan = () => {
           </FormControl>
         </Box>
 
-        {/* Department Select */}
         <Box sx={{ minWidth: 200 }}>
           <FormControl fullWidth>
             <InputLabel id="department-label">Department</InputLabel>
             <Select
               labelId="department-label"
+              id="department-select"
               value={selectedDepartment}
+              label="Department"
               onChange={(e) => setSelectedDepartment(e.target.value)}
             >
               {departments.map((department) => (
@@ -124,14 +145,15 @@ export const ActionPlan = () => {
           </FormControl>
         </Box>
 
-        {/* Matrix Type Select */}
         <Box sx={{ minWidth: 200 }}>
           <FormControl fullWidth>
             <InputLabel id="matrix-type-label">Matrix Type</InputLabel>
             <Select
               labelId="matrix-type-label"
-              value={matrixType}
-              onChange={(e) => setMatrixType(e.target.value)}
+              id="matrix-type-select"
+              value={selectedMatrixType}
+              label="Matrix Type"
+              onChange={(e) => setSelectedMatrixType(e.target.value)}
             >
               <MenuItem value="highMatrix">High Matrix</MenuItem>
               <MenuItem value="lowMatrix">Low Matrix</MenuItem>
@@ -139,20 +161,19 @@ export const ActionPlan = () => {
           </FormControl>
         </Box>
 
-        {/* Data Point Select */}
-        <Box sx={{ minWidth: 200 }}>
+        <Box sx={{ minWidth: 300 }}>
           <FormControl fullWidth>
             <InputLabel id="data-point-label">Data Point</InputLabel>
             <Select
               labelId="data-point-label"
+              id="data-point-select"
               value={selectedDataPoint}
+              label="Data Point"
               onChange={(e) => setSelectedDataPoint(e.target.value)}
+              displayEmpty
             >
-              <MenuItem value="">
-                <em>Choose Point</em>
-              </MenuItem>
-              {dropdownOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
+              {dataPointOptions.map((option, index) => (
+                <MenuItem key={index} value={option.value}>
                   {option.label}
                 </MenuItem>
               ))}
@@ -161,63 +182,65 @@ export const ActionPlan = () => {
         </Box>
       </Stack>
 
-      {/* Empty Table with 4 Rows */}
-      <TableContainer component={Paper} sx={{ marginTop: 3 }}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Outcome</TableCell>
-              <TableCell>Role</TableCell>
-              <TableCell>Dependency</TableCell>
-              <TableCell>Funding</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {Array.from({ length: 1 }).map((_, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <TextField
-                    variant="outlined"
-                    fullWidth
-                    multiline
-                    rows={2} // Initial rows
-                    placeholder="Enter outcome"
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    variant="outlined"
-                    fullWidth
-                    multiline
-                    rows={2}
-                    placeholder="Enter role"
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    variant="outlined"
-                    fullWidth
-                    multiline
-                    rows={2}
-                    placeholder="Enter dependency"
-                  />
-                </TableCell>
-                <TableCell>
-                  <TextField
-                    variant="outlined"
-                    fullWidth
-                    multiline
-                    rows={2}
-                    placeholder="Enter funding"
-                  />
-                </TableCell>
+      {clientsRequest.loading || assessmentsRequest.loading ? (
+        <Loading />
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Outcome</TableCell>
+                <TableCell>Role</TableCell>
+                <TableCell>Dependency</TableCell>
+                <TableCell>Funding</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {tableData.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <TextField
+                      fullWidth
+                      multiline
+                      value={row.outcome}
+                      onChange={(e) => handleCellChange(index, 'outcome', e.target.value)}
+                      placeholder="Enter outcome"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      fullWidth
+                      multiline
+                      value={row.role}
+                      onChange={(e) => handleCellChange(index, 'role', e.target.value)}
+                      placeholder="Enter role"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      fullWidth
+                      multiline
+                      value={row.dependency}
+                      onChange={(e) => handleCellChange(index, 'dependency', e.target.value)}
+                      placeholder="Enter dependency"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <TextField
+                      fullWidth
+                      multiline
+                      value={row.funding}
+                      onChange={(e) => handleCellChange(index, 'funding', e.target.value)}
+                      placeholder="Enter funding"
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
-      {/* Save Button */}
       <Box sx={{ textAlign: 'center', marginTop: 3 }}>
         <Button variant="contained" onClick={handleSave}>
           Save
