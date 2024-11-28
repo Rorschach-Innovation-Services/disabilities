@@ -8,8 +8,10 @@ import StuffIcon from '../assets/icons/staff.svg';
 import SettingsIcon from '../assets/icons/settings.svg';
 import DatabaseIcon from '../assets/icons/database.svg';
 import RadarIcon from '../assets/icons/chart-radar.svg';
+import ActionPlan from '../assets/icons/action-Icon.svg';
 import { useHistory } from 'react-router-dom';
 import { Colours } from '../colours';
+
 
 const items = [
   {
@@ -49,11 +51,18 @@ const items = [
     key: 'live-dashboard',
   },
   {
+    text: 'Action Plan',
+    icon:  ActionPlan, 
+    route: '/action-plan',
+    key: 'action-plan',
+  },
+  {
     text: 'Settings',
     icon: SettingsIcon,
     route: '/settings',
     key: 'settings',
   },
+  
 ];
 
 const SideBarListItem = ({
