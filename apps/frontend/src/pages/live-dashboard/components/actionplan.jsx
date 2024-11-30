@@ -15,35 +15,35 @@ import {
   TextField,
   Button,
   Paper,
+  Typography,
+  IconButton,
 } from '@mui/material';
 import { Shell } from '../../../components/shell';
 import { useAxios } from '../../../hooks/axios';
 import { Loading } from '../../../components/loading';
+import { Add, Delete } from '@mui/icons-material';
 
 export const ActionPlan = () => {
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
-  const [departments, setDepartments] = useState([]);
-  const [highMatrix, setHighMatrix] = useState([]);
-  const [lowMatrix, setLowMatrix] = useState([]);
-  const [selectedMatrixType, setSelectedMatrixType] = useState('highMatrix');
-  const [dataPointOptions, setDataPointOptions] = useState([]);
+  const [selectedMatrixType, setSelectedMatrixType] = useState('');
   const [selectedDataPoint, setSelectedDataPoint] = useState('');
-  const [tableData, setTableData] = useState([
-    { outcome: '', role: '', dependency: '', funding: '' },
-  ]);
+  const [departments, setDepartments] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [quarters] = useState(['Q1', 'Q2', 'Q3', 'Q4']);
+  const [actionPlanName, setActionPlanName] = useState('');
+  const [dataPoints, setDataPoints] = useState([]);
+  const [dataPointOptions, setDataPointOptions] = useState([]);
+  const [tableData, setTableData] = useState({
+    Outcome: { Q1: '', Q2: '', Q3: '', Q4: '' },
+    Role: { Q1: '', Q2: '', Q3: '', Q4: '' },
+    Dependency: { Q1: '', Q2: '', Q3: '', Q4: '' },
+    Funding: { Q1: '', Q2: '', Q3: '', Q4: '' },
+  });
 
   const clientsRequest = useAxios({ url: '/companies', method: 'get' });
   const assessmentsRequest = useAxios({ url: `/assessments/departments/${selectedDepartment}`, method: 'get' });
-
-  const transformMatrixForDropdown = (matrix) => {
-    if (!Array.isArray(matrix)) return [];
-    return matrix.map((entry, index) => ({
-      label: entry.name || `Data Point ${index + 1}`,
-      value: entry.name || `Data Point ${index + 1}`,
-    }));
-  };
 
   useEffect(() => {
     clientsRequest.execute();
@@ -81,107 +81,192 @@ export const ActionPlan = () => {
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {
       const { highMatrix, lowMatrix } = assessmentsRequest.response;
-      setHighMatrix(Array.isArray(highMatrix) ? highMatrix : []);
-      setLowMatrix(Array.isArray(lowMatrix) ? lowMatrix : []);
+      const matrix = selectedMatrixType === 'highMatrix' ? highMatrix : lowMatrix;
+      const options = matrix?.map((entry, index) => ({
+        label: entry.name || `Data Point ${index + 1}`,
+        value: entry.name || `Data Point ${index + 1}`,
+      })) || [];
+      setDataPointOptions(options);
     }
-  }, [assessmentsRequest.response]);
+  }, [assessmentsRequest.response, selectedMatrixType]);
 
-  useEffect(() => {
-    const matrix = selectedMatrixType === 'highMatrix' ? highMatrix : lowMatrix;
-    const options = transformMatrixForDropdown(matrix);
-    setDataPointOptions(options);
+  const handleAddDataPoint = () => {
+    const selectedOption = dataPointOptions.find((option) => option.value === selectedDataPoint);
+    if (selectedOption && !dataPoints.includes(selectedOption.value)) {
+      setDataPoints([...dataPoints, selectedOption.value]);
+    }
     setSelectedDataPoint('');
-  }, [selectedMatrixType, highMatrix, lowMatrix]);
+  };
 
-  const handleCellChange = (index, field, value) => {
-    const updatedTableData = [...tableData];
-    updatedTableData[index][field] = value;
-    setTableData(updatedTableData);
+  const handleRemoveDataPoint = (index) => {
+    setDataPoints(dataPoints.filter((_, i) => i !== index));
+  };
+
+  const handleCellChange = (category, quarter, value) => {
+    setTableData({
+      ...tableData,
+      [category]: { ...tableData[category], [quarter]: value },
+    });
   };
 
   const handleSave = () => {
-    console.log('Saved Data:', tableData);
-    // save logic will be here
+    if (!actionPlanName.trim() || !selectedMatrixType || dataPoints.length === 0) {
+      alert('Please complete all required fields.');
+      return;
+    }
+    console.log('Action Plan:', {
+      name: actionPlanName,
+      client: selectedClient,
+      department: selectedDepartment,
+      year: selectedYear,
+      matrixType: selectedMatrixType,
+      dataPoints,
+      tableData,
+    });
+    // Add save logic here
   };
 
   return (
     <Shell heading="Action Plan">
-      <Stack direction="row" spacing={3} sx={{ marginBottom: '50px' }}>
-        <Box sx={{ minWidth: 200 }}>
-          <FormControl fullWidth>
-            <InputLabel id="company-label">Company</InputLabel>
-            <Select
-              labelId="company-label"
-              id="company-select"
-              value={selectedClient}
-              label="Company"
-              onChange={(e) => setSelectedClient(e.target.value)}
-            >
-              {clients.map((client) => (
-                <MenuItem key={client.id} value={client.id}>
-                  {client.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
+      <Stack spacing={3} sx={{ marginBottom: '50px' }}>
+        {/* Action Plan Name */}
+        <TextField
+          fullWidth
+          label="Action Plan Name"
+          value={actionPlanName}
+          onChange={(e) => setActionPlanName(e.target.value)}
+          placeholder="Enter Action Plan Name"
+        />
 
-        <Box sx={{ minWidth: 200 }}>
-          <FormControl fullWidth>
-            <InputLabel id="department-label">Department</InputLabel>
-            <Select
-              labelId="department-label"
-              id="department-select"
-              value={selectedDepartment}
-              label="Department"
-              onChange={(e) => setSelectedDepartment(e.target.value)}
-            >
-              {departments.map((department) => (
-                <MenuItem key={department.id} value={department.id}>
-                  {department.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
+        {/* Selectors */}
+        <Stack direction="row" spacing={3}>
+          <Box sx={{ minWidth: 200 }}>
+            <FormControl fullWidth>
+              <InputLabel id="company-label">Company</InputLabel>
+              <Select
+                labelId="company-label"
+                id="company-select"
+                value={selectedClient}
+                label="Company"
+                onChange={(e) => setSelectedClient(e.target.value)}
+              >
+                {clients.map((client) => (
+                  <MenuItem key={client.id} value={client.id}>
+                    {client.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
 
-        <Box sx={{ minWidth: 200 }}>
-          <FormControl fullWidth>
-            <InputLabel id="matrix-type-label">Matrix Type</InputLabel>
-            <Select
-              labelId="matrix-type-label"
-              id="matrix-type-select"
-              value={selectedMatrixType}
-              label="Matrix Type"
-              onChange={(e) => setSelectedMatrixType(e.target.value)}
-            >
-              <MenuItem value="highMatrix">High Matrix</MenuItem>
-              <MenuItem value="lowMatrix">Low Matrix</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+          <Box sx={{ minWidth: 200 }}>
+            <FormControl fullWidth>
+              <InputLabel id="department-label">Department</InputLabel>
+              <Select
+                labelId="department-label"
+                id="department-select"
+                value={selectedDepartment}
+                label="Department"
+                onChange={(e) => setSelectedDepartment(e.target.value)}
+              >
+                {departments.map((department) => (
+                  <MenuItem key={department.id} value={department.id}>
+                    {department.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
 
-        <Box sx={{ minWidth: 300 }}>
-          <FormControl fullWidth>
-            <InputLabel id="data-point-label">Data Point</InputLabel>
-            <Select
-              labelId="data-point-label"
-              id="data-point-select"
-              value={selectedDataPoint}
-              label="Data Point"
-              onChange={(e) => setSelectedDataPoint(e.target.value)}
-              displayEmpty
+          <Box sx={{ minWidth: 200 }}>
+            <FormControl fullWidth>
+              <InputLabel id="year-label">Year</InputLabel>
+              <Select
+                labelId="year-label"
+                id="year-select"
+                value={selectedYear}
+                label="Year"
+                onChange={(e) => setSelectedYear(e.target.value)}
+              >
+                {[2023, 2024, 2025].map((year) => (
+                  <MenuItem key={year} value={year}>
+                    {year}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
+        </Stack>
+
+        {/* Matrix Type and Data Points */}
+        <Stack direction="row" spacing={3}>
+          <Box sx={{ minWidth: 200 }}>
+            <FormControl fullWidth>
+              <InputLabel id="matrix-type-label">Matrix Type</InputLabel>
+              <Select
+                labelId="matrix-type-label"
+                id="matrix-type-select"
+                value={selectedMatrixType}
+                label="Matrix Type"
+                onChange={(e) => setSelectedMatrixType(e.target.value)}
+              >
+                <MenuItem value="highMatrix">High Matrix</MenuItem>
+                <MenuItem value="lowMatrix">Low Matrix</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Box sx={{ minWidth: 300 }}>
+            <FormControl fullWidth>
+              <InputLabel id="data-point-label">Data Point</InputLabel>
+              <Select
+                labelId="data-point-label"
+                id="data-point-select"
+                value={selectedDataPoint}
+                label="Data Point"
+                onChange={(e) => setSelectedDataPoint(e.target.value)}
+               >
+               <MenuItem value="" disabled>Select Data Point</MenuItem>
+                {dataPointOptions.map((option, index) => (
+                <MenuItem key={index} value={option.value}>{option.label}</MenuItem>))}
+             </Select>
+             </FormControl>
+             </Box>
+
+          <Button
+            variant="outlined"
+            onClick={handleAddDataPoint}
+            startIcon={<Add />}
+            disabled={!selectedDataPoint}
+          >
+            Add Data Point
+          </Button>
+        </Stack>
+
+        {/* Selected Data Points (Horizontal List) */}
+        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" mt={2}>
+          {dataPoints.map((dataPoint, index) => (
+            <Box
+              key={index}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                border: '1px solid #ccc',
+                borderRadius: '5px',
+                padding: '5px 10px',
+                margin: '5px',
+              }}
             >
-              {dataPointOptions.map((option, index) => (
-                <MenuItem key={index} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
+              <Typography>{dataPoint}</Typography>
+              <IconButton onClick={() => handleRemoveDataPoint(index)} size="small" sx={{ ml: 1 }}>
+                <Delete />
+              </IconButton>
+            </Box>
+          ))}
+        </Stack>
       </Stack>
 
+      {/* Table */}
       {clientsRequest.loading || assessmentsRequest.loading ? (
         <Loading />
       ) : (
@@ -189,51 +274,29 @@ export const ActionPlan = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Outcome</TableCell>
-                <TableCell>Role</TableCell>
-                <TableCell>Dependency</TableCell>
-                <TableCell>Funding</TableCell>
+                <TableCell />
+                {quarters.map((quarter) => (
+                  <TableCell key={quarter} align="center">
+                    {quarter}
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody>
-              {tableData.map((row, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <TextField
-                      fullWidth
-                      multiline
-                      value={row.outcome}
-                      onChange={(e) => handleCellChange(index, 'outcome', e.target.value)}
-                      placeholder="Enter outcome"
-                    />
+              {Object.keys(tableData).map((category) => (
+                <TableRow key={category}>
+                  <TableCell component="th" scope="row">
+                    {category}
                   </TableCell>
-                  <TableCell>
-                    <TextField
-                      fullWidth
-                      multiline
-                      value={row.role}
-                      onChange={(e) => handleCellChange(index, 'role', e.target.value)}
-                      placeholder="Enter role"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <TextField
-                      fullWidth
-                      multiline
-                      value={row.dependency}
-                      onChange={(e) => handleCellChange(index, 'dependency', e.target.value)}
-                      placeholder="Enter dependency"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <TextField
-                      fullWidth
-                      multiline
-                      value={row.funding}
-                      onChange={(e) => handleCellChange(index, 'funding', e.target.value)}
-                      placeholder="Enter funding"
-                    />
-                  </TableCell>
+                  {quarters.map((quarter) => (
+                    <TableCell key={quarter} align="center">
+                      <TextField
+                        value={tableData[category][quarter]}
+                        onChange={(e) => handleCellChange(category, quarter, e.target.value)}
+                        placeholder={`Enter ${category} for ${quarter}`}
+                      />
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))}
             </TableBody>
