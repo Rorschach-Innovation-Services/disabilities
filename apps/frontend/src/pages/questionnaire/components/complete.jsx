@@ -38,17 +38,7 @@ export const Complete = () => {
                             fontSize: "28px",
                         }}
                     >
-                        Thank you for completing your sleep health screen.
-                    </Typography>
-                    <Typography
-                        variant="h4"
-                        sx={{
-                            textAlign: "center",
-                            fontWeight: "bold",
-                            fontSize: "28px",
-                        }}
-                    >
-                        Your personal results will be emailed to you.
+                        Thank you for completing the questionnaire.
                     </Typography>
                 </Box>
                 <Box

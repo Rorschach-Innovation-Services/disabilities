@@ -93,13 +93,6 @@ export const getDepartmentAssessments = async (
       highMatrix,
       lowMatrix,
     });
-    // return {
-    //   assessments,
-    //   radarChart,
-    //   doAbilityMatrix,
-    //   highMatrix,
-    //   lowMatrix,
-    // };
   } catch (error) {
     return response.status(500).json({ message: 'Internal Server Error' });
     // return { message: 'Internal Server Error' };

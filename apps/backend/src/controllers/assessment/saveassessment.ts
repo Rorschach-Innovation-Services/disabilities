@@ -94,11 +94,6 @@ export const saveAssessment = async (request: Request, response: Response) => {
         message: 'Cannot Submit Assessment. Limit Exceeded!',
         employee: employeeEmail,
       });
-      // return {
-      //   statusCode: 400,
-      //   message: 'Cannot Submit Assessment. Limit Exceeded!',
-      //   employee: employeeEmail,
-      // };
     }
 
     if (!employeeExists) {
@@ -133,23 +128,15 @@ export const saveAssessment = async (request: Request, response: Response) => {
         { id: departmentDocument.id },
         { completedQuestionnaires },
       );
-      // const reportRes = await generateReport(assessment);
-      // if (typeof reportRes !== 'undefined' && 'error' in reportRes) {
-      //   return {
-      //     message: 'Something Went Wrong While generating report!',
-      //     error: reportRes.error,
-      //   };
-      // }
-      // return { message: 'Successful', data: reportRes };
+      return response.status(200).json({
+        message: 'Assessment has been saved',
+      });
+    }
       return response.status(400).json({
         message: 'Error employee not found',
       });
-      // return { message: 'Error employee not found' };
-    }
-    return { statusCode: 400, message: 'Successful' };
   } catch (error) {
     console.log('error', error);
     return response.status(500).json({ message: 'Internal Server Error' });
-    // return { message: 'Internal Server Error', error };
   }
 };
