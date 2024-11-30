@@ -123,13 +123,12 @@ export const ActionPlan = () => {
       dataPoints,
       tableData,
     });
-    // Add save logic here
   };
 
   return (
     <Shell heading="Action Plan">
       <Stack spacing={3} sx={{ marginBottom: '50px' }}>
-        {/* Action Plan Name */}
+  
         <TextField
           fullWidth
           label="Action Plan Name"
@@ -198,7 +197,6 @@ export const ActionPlan = () => {
           </Box>
         </Stack>
 
-        {/* Matrix Type and Data Points */}
         <Stack direction="row" spacing={3}>
           <Box sx={{ minWidth: 200 }}>
             <FormControl fullWidth>
@@ -243,7 +241,6 @@ export const ActionPlan = () => {
           </Button>
         </Stack>
 
-        {/* Selected Data Points (Horizontal List) */}
         <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" mt={2}>
           {dataPoints.map((dataPoint, index) => (
             <Box
@@ -266,43 +263,46 @@ export const ActionPlan = () => {
         </Stack>
       </Stack>
 
-      {/* Table */}
-      {clientsRequest.loading || assessmentsRequest.loading ? (
-        <Loading />
-      ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell />
-                {quarters.map((quarter) => (
-                  <TableCell key={quarter} align="center">
-                    {quarter}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Object.keys(tableData).map((category) => (
-                <TableRow key={category}>
-                  <TableCell component="th" scope="row">
-                    {category}
-                  </TableCell>
-                  {quarters.map((quarter) => (
-                    <TableCell key={quarter} align="center">
-                      <TextField
-                        value={tableData[category][quarter]}
-                        onChange={(e) => handleCellChange(category, quarter, e.target.value)}
-                        placeholder={`Enter ${category} for ${quarter}`}
-                      />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+     {/* Table */}
+{clientsRequest.loading || assessmentsRequest.loading ? (
+  <Loading />
+) : (
+  <TableContainer component={Paper}>
+    <Table>
+      <TableHead>
+        <TableRow>
+          <TableCell />
+          {quarters.map((quarter) => (
+            <TableCell key={quarter} align="center">
+              {quarter}
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {Object.keys(tableData).map((category) => (
+          <TableRow key={category}>
+            <TableCell component="th" scope="row">
+              {category}
+            </TableCell>
+            {quarters.map((quarter) => (
+              <TableCell key={quarter} align="center">
+                <TextField
+                  multiline // Enables multiple lines of text
+                  rows={2} // Sets the initial visible row count
+                  value={tableData[category][quarter]}
+                  onChange={(e) => handleCellChange(category, quarter, e.target.value)}
+                  placeholder={`Enter ${category} for ${quarter}`}
+                  fullWidth // Ensures the text field takes up full cell width
+                />
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </TableContainer>
+)}
 
       <Box sx={{ textAlign: 'center', marginTop: 3 }}>
         <Button variant="contained" onClick={handleSave}>
