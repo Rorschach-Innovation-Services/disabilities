@@ -141,6 +141,7 @@ export type EntityNames =
   | 'administrator'
   | 'assessment'
   | 'company'
+  | 'action-plan'
   | 'department'
   | 'employee'
   | 'question'

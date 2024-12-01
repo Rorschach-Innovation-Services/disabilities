@@ -22,6 +22,7 @@ import { Shell } from '../../../components/shell';
 import { useAxios } from '../../../hooks/axios';
 import { Loading } from '../../../components/loading';
 import { Add, Delete } from '@mui/icons-material';
+import { useSnackbar } from 'notistack';
 
 export const ActionPlan = () => {
   const [clients, setClients] = useState([]);
@@ -44,10 +45,31 @@ export const ActionPlan = () => {
 
   const clientsRequest = useAxios({ url: '/companies', method: 'get' });
   const assessmentsRequest = useAxios({ url: `/assessments/departments/${selectedDepartment}`, method: 'get' });
+  const savePlanRequest = useAxios({ url: '/action-plans/create', method: 'post' });
 
   useEffect(() => {
     clientsRequest.execute();
   }, []);
+  
+    useEffect(() => {
+    if (savePlanRequest.error || !savePlanRequest.response) {
+      console.log(savePlanRequest.error);
+      return;
+    }
+    enqueueSnackbar('Success! Action Plan Created.', { variant: 'success' });
+      setTableData({
+    Outcome: { Q1: '', Q2: '', Q3: '', Q4: '' },
+    Role: { Q1: '', Q2: '', Q3: '', Q4: '' },
+    Dependency: { Q1: '', Q2: '', Q3: '', Q4: '' },
+    Funding: { Q1: '', Q2: '', Q3: '', Q4: '' },
+  })
+setActionPlanName("");
+setDataPointOptions([]);
+setSelectedDataPoint("");
+setSelectedMatrixType("")
+  }, [savePlanRequest.response, savePlanRequest.error]);
+
+
 
   useEffect(() => {
     if (clientsRequest.response && !clientsRequest.error) {
@@ -114,9 +136,19 @@ export const ActionPlan = () => {
       alert('Please complete all required fields.');
       return;
     }
+    const data = {
+      name: actionPlanName,
+      company: selectedClient,
+      department: selectedDepartment,
+      year: selectedYear,
+      matrixType: selectedMatrixType,
+      dataPoints,
+      tableData,
+    }
+    savePlanRequest.executeWithData(data)
     console.log('Action Plan:', {
       name: actionPlanName,
-      client: selectedClient,
+      company: selectedClient,
       department: selectedDepartment,
       year: selectedYear,
       matrixType: selectedMatrixType,

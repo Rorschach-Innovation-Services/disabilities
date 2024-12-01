@@ -48,6 +48,7 @@ app.use('/api/questionnaires', router.questionnaire);
 app.use('/api/assessments', router.assessment);
 app.use('/api/tasks', router.tasks);
 app.use('/api/departments', router.department);
+app.use('/api/action-plans', router.actionPlan);
 app.post('/api/contact', contactUs);
 
 // Send the react static build file to the rest of the routes

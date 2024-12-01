@@ -6,6 +6,7 @@ import { Company } from './company.model';
 import { Task } from './tasks.model';
 import { Department } from './department.model';
 import { Questionnaire } from './questionnaire.model';
+import { ActionPlan } from './action.model';
 
 // Export A list of Models
 export {
@@ -17,4 +18,5 @@ export {
   Department,
   Task,
   Questionnaire,
+  ActionPlan
 };
