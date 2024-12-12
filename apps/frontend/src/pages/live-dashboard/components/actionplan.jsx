@@ -37,6 +37,7 @@ export const ActionPlan = () => {
   const [actionPlanName, setActionPlanName] = useState('');
   const [dataPoints, setDataPoints] = useState([]);
   const [dataPointOptions, setDataPointOptions] = useState([]);
+  const [actionPlans, setActionPlans] = useState({});
   const [tableData, setTableData] = useState({
     Outcome: { Q1: '', Q2: '', Q3: '', Q4: '' },
     Role: { Q1: '', Q2: '', Q3: '', Q4: '' },
@@ -64,10 +65,10 @@ export const ActionPlan = () => {
     Dependency: { Q1: '', Q2: '', Q3: '', Q4: '' },
     Funding: { Q1: '', Q2: '', Q3: '', Q4: '' },
   })
-setActionPlanName("");
-setDataPointOptions([]);
-setSelectedDataPoint("");
-setSelectedMatrixType("")
+    setActionPlanName("");
+    setDataPointOptions([]);
+    setSelectedDataPoint("");
+    setSelectedMatrixType("")
   }, [savePlanRequest.response, savePlanRequest.error]);
 
 
@@ -113,6 +114,55 @@ setSelectedMatrixType("")
     }
   }, [assessmentsRequest.response, selectedMatrixType]);
 
+  useEffect(() => {
+  setSelectedDataPoint('');
+
+  if (selectedMatrixType && assessmentsRequest.response && !assessmentsRequest.error) {
+    const { highMatrix, lowMatrix } = assessmentsRequest.response;
+    const matrix = selectedMatrixType === 'highMatrix' ? highMatrix : lowMatrix;
+
+    const options = matrix?.map((entry, index) => ({
+      label: entry.name || `Data Point ${index + 1}`,
+      value: entry.name || `Data Point ${index + 1}`,
+    })) || [];
+
+    setDataPointOptions(options);
+  } else {
+    setDataPointOptions([]); 
+  }
+  }, [selectedMatrixType, assessmentsRequest.response]);
+
+
+  useEffect(() => {
+    // Load Action Plan for selected department
+    if (selectedDepartment && actionPlans[selectedDepartment]) {
+      const { name, matrixType, dataPoints, tableData } = actionPlans[selectedDepartment];
+  
+      setActionPlanName(name || '');
+      setSelectedMatrixType(matrixType || '');
+      setDataPoints(dataPoints || []);
+      setTableData(tableData || {
+        Outcome: { Q1: '', Q2: '', Q3: '', Q4: '' },
+        Role: { Q1: '', Q2: '', Q3: '', Q4: '' },
+        Dependency: { Q1: '', Q2: '', Q3: '', Q4: '' },
+        Funding: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      });
+    } else {
+      // Reset form if no data exists for the selected department
+      setActionPlanName('');
+      setSelectedMatrixType('');
+      setDataPoints([]);
+      setTableData({
+        Outcome: { Q1: '', Q2: '', Q3: '', Q4: '' },
+        Role: { Q1: '', Q2: '', Q3: '', Q4: '' },
+        Dependency: { Q1: '', Q2: '', Q3: '', Q4: '' },
+        Funding: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      });
+    } 
+    }, [selectedDepartment, actionPlans]);
+  
+
+  
   const handleAddDataPoint = () => {
     const selectedOption = dataPointOptions.find((option) => option.value === selectedDataPoint);
     if (selectedOption && !dataPoints.includes(selectedOption.value)) {
@@ -132,31 +182,79 @@ setSelectedMatrixType("")
     });
   };
 
-  const handleSave = () => {
+  // Save function
+  const handleSave = async () => {
+  try {
     if (!actionPlanName.trim() || !selectedMatrixType || dataPoints.length === 0) {
-      alert('Please complete all required fields.');
+      enqueueSnackbar('Please complete all required fields.', { variant: 'warning' });
       return;
-    }
+    }   
+  
     const data = {
       name: actionPlanName,
-      company: selectedClient,
-      department: selectedDepartment,
-      year: selectedYear,
       matrixType: selectedMatrixType,
       dataPoints,
       tableData,
-    }
-    savePlanRequest.executeWithData(data)
-    console.log('Action Plan:', {
-      name: actionPlanName,
+    };
+
+    setActionPlans((prevPlans) => ({
+      ...prevPlans,
+      [selectedDepartment]: data,
+    }));
+
+    await savePlanRequest.executeWithData({
+      ...data,
       company: selectedClient,
       department: selectedDepartment,
       year: selectedYear,
-      matrixType: selectedMatrixType,
-      dataPoints,
-      tableData,
     });
-  };
+
+    setActionPlanName('');
+    setSelectedMatrixType('');
+    setDataPoints([]);
+    setTableData({
+      Outcome: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      Role: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      Dependency: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      Funding: { Q1: '', Q2: '', Q3: '', Q4: '' },
+    });
+
+    enqueueSnackbar('Action Plan saved successfully.', { variant: 'success' });
+  } catch (error) {
+    console.error("Error saving action plan:", error);
+    enqueueSnackbar('Failed to save Action Plan.', { variant: 'error' });
+  }
+};
+
+// Load on department change
+useEffect(() => {
+  if (selectedDepartment && actionPlans[selectedDepartment]) {
+    const { name, matrixType, dataPoints, tableData } = actionPlans[selectedDepartment];
+
+    setActionPlanName(name || '');
+    setSelectedMatrixType(matrixType || '');
+    setDataPoints(dataPoints || []);
+    setTableData(tableData || {
+      Outcome: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      Role: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      Dependency: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      Funding: { Q1: '', Q2: '', Q3: '', Q4: '' },
+    });
+  } else {
+    setActionPlanName('');
+    setSelectedMatrixType('');
+    setDataPoints([]);
+    setTableData({
+      Outcome: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      Role: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      Dependency: { Q1: '', Q2: '', Q3: '', Q4: '' },
+      Funding: { Q1: '', Q2: '', Q3: '', Q4: '' },
+    });
+  }
+}, [selectedDepartment, actionPlans]);
+
+  
+  
 
   return (
     <Shell heading="Action Plan">
