@@ -22,9 +22,10 @@ import { Shell } from '../../../components/shell';
 import { useAxios } from '../../../hooks/axios';
 import { Loading } from '../../../components/loading';
 import { Add, Delete } from '@mui/icons-material';
-import { useSnackbar } from 'notistack';
+import { useSnackbar,  } from 'notistack';
 
 export const ActionPlan = () => {
+  const {enqueueSnackbar} = useSnackbar();
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
