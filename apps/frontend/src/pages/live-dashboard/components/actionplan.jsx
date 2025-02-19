@@ -48,6 +48,49 @@ export const ActionPlan = () => {
   const clientsRequest = useAxios({ url: '/companies', method: 'get' });
   const assessmentsRequest = useAxios({ url: `/assessments/departments/${selectedDepartment}`, method: 'get' });
   const savePlanRequest = useAxios({ url: '/action-plans/create', method: 'post' });
+  const fetchActionPlan = useAxios({ url: '/action-plans/All', method: 'get' });
+
+  useEffect(() => {
+    if (selectedClient && selectedDepartment && selectedYear) {
+        // Fetching action plans when filters change
+        fetchActionPlan.execute({
+            params: {
+                companyId: selectedClient,
+                departmentId: selectedDepartment,
+                year: selectedYear,
+            },
+        });
+    }
+  }, [selectedClient, selectedDepartment, selectedYear]);
+
+   // Handling the response when fetchActionPlan updates
+   useEffect(() => {
+    if (fetchActionPlan.response && !fetchActionPlan.error) {
+        // When saving the action plan we do not save the company ID and Department
+        const filteredPlan = fetchActionPlan.response.plans.find(plan => 
+            plan.year === selectedYear && 
+            plan.companyId === selectedClient &&
+            plan.departmentId === selectedDepartment
+        );
+
+        if (filteredPlan) {
+            enqueueSnackbar("Action Plan found!", { variant: "success" });
+
+            setActionPlanName(filteredPlan.name || "");
+            setSelectedMatrixType(filteredPlan.matrixType || "");
+            setDataPoints(filteredPlan.dataPoints || []);
+            setTableData(filteredPlan.tableData || {
+                Outcome: { Q1: "", Q2: "", Q3: "", Q4: "" },
+                Role: { Q1: "", Q2: "", Q3: "", Q4: "" },
+                Dependency: { Q1: "", Q2: "", Q3: "", Q4: "" },
+                Funding: { Q1: "", Q2: "", Q3: "", Q4: "" },
+            });
+        } else {
+            enqueueSnackbar("No Action Plan Found", { variant: "warning" });
+        }
+    }
+    }, [fetchActionPlan.response, fetchActionPlan.error]);
+
 
   useEffect(() => {
     clientsRequest.execute();
