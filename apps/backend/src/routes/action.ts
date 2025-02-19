@@ -5,9 +5,8 @@ import { createActionPlan } from '../controllers/action-plan/create';
 
 const router = Router();
 
-router
-.get("/all",getActionPlans)
+router.get("/All",getActionPlans)
 // .get("/all",verifyToken,getActionPlans)
-.post("/create",verifyToken,createActionPlan);
+router.post("/create",verifyToken,createActionPlan);
 
 export default router;
