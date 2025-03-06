@@ -1,47 +1,38 @@
 import { ActionPlan, Company, Department } from '../../models';
 import { Request, Response } from 'express';
 
-
 export const createActionPlan = async (request: Request, response: Response) => {
   try {
-    const { name, companyId, departmentId, year, matrixType, tableData, dataPoints } = request.body;
-
-    if (!name || !companyId || !departmentId || !year || !matrixType || !tableData || !dataPoints) {
-      return response.status(400).json({ message: 'Missing required fields' });
-    }
-
+    // const requestBody = getRequestBody(event);
+    // if (!requestBody)
+    //   return { statusCode: 400, message: 'Request Body is required!' };
+    // const { email, name } = requestBody;
+    const { name, companyId, departmentId,year, matrixType,tableData, dataPoints } = request.body;
     const company = await Company.get({ id: companyId });
-    if (!company) {
-      return response.status(400).json({ message: 'Company not found' });
-    }
-
-    const department = await Department.get({ id: departmentId }); 
-    if (!department) {
-      return response.status(400).json({ message: 'Department not found' });
-    }
-
+    if(!company) return response.status(400).send({ message: 'Company not found' });
+    const department = await Department.get({ id: departmentId });
+    if(!department) return response.status(400).send({ message: 'Department not found' });
+    
     const actionPlan = await ActionPlan.create({
       name,
-      companyName: company.name,  // Store company name
-      companyId: company.id,  // Store company ID
-      departmentName: department.name, // Store department name
-      departmentId: department.id, // Store department ID
+      companyName: company.name,
+      companyId,  // ✅ Ensure this is included
+      departmentName: department.name,
+      departmentId,  // ✅ Ensure this is included
       year,
       matrixType,
       tableData,
       dataPoints,
-      adminName: 'Admin', 
+      adminName: 'Admin',
       adminId: 'Admin',
       deleted: false,
-    });
-
-    return response.status(200).json({
-      message: 'Action plan has been successfully created',
-      actionPlan: actionPlan 
-    });
-
+    });    
+   return response
+      .status(200)
+      .json({ message: 'Action plan has been successfully created',});
   } catch (error) {
-    console.error("Error creating action plan:", error);
-    return response.status(500).json({ message: 'Internal Server Error' });
+      console.error(error);
+    return response.status(500).send({ message: 'Internal Server Error' });
+    // return { message: 'Internal Server Error' };
   }
 };

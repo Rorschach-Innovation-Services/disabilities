@@ -15,9 +15,24 @@ export const getActionPlans = async (request: Request, response: Response) => {
     
     const actionPlans = await ActionPlan.query({departmentId,companyId},{fetchAll:true});
     
-   return response
-      .status(200)
-      .json({ message: 'Action plans have been retrieved',plans:actionPlans.items.filter((item => !item.deleted))});
+    return response.status(200).json({
+      message: 'Action plans have been retrieved',
+      plans: actionPlans.items
+        .filter(item => !item.deleted)
+        .map(plan => ({
+          id: plan.id,
+          name: plan.name,
+          companyId: plan.companyId ?? 'MISSING',  
+          departmentId: plan.departmentId ?? 'MISSING',  
+          year: plan.year,
+          matrixType: plan.matrixType,
+          tableData: plan.tableData,
+          dataPoints: plan.dataPoints,
+          adminName: plan.adminName,
+          adminId: plan.adminId,
+        })),
+    });
+    
   } catch (error) {
       console.error(error);
     return response.status(500).send({ message: 'Internal Server Error' });

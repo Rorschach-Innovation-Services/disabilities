@@ -55,22 +55,22 @@ export const ActionPlan = () => {
         // Fetching action plans when filters change
         fetchActionPlan.execute({
             params: {
-                companyId: selectedClient,
-                departmentId: selectedDepartment,
+                companyId: selectedClient.companyId,
+                departmentId: selectedDepartment.departmentId,
                 year: selectedYear,
             },
         });
     }
-  }, [selectedClient, selectedDepartment, selectedYear]);
+    }, [selectedClient, selectedDepartment, selectedYear]);
 
    // Handling the response when fetchActionPlan updates
    useEffect(() => {
     if (fetchActionPlan.response && !fetchActionPlan.error) {
-        // When saving the action plan we do not save the company ID and Department
+
         const filteredPlan = fetchActionPlan.response.plans.find(plan => 
             plan.year === selectedYear && 
-            plan.companyId === selectedClient &&
-            plan.departmentId === selectedDepartment
+            plan.companyId === selectedClient.companyId &&
+            plan.departmentId === selectedDepartment.departmentId
         );
 
         if (filteredPlan) {
@@ -232,13 +232,15 @@ export const ActionPlan = () => {
       enqueueSnackbar('Please complete all required fields.', { variant: 'warning' });
       return;
     }   
-  
-    const data = {
-      name: actionPlanName,
-      matrixType: selectedMatrixType,
-      dataPoints,
-      tableData,
-    };
+      const data = {
+        name: actionPlanName,
+        matrixType: selectedMatrixType,
+        dataPoints: dataPoints,
+        tableData: tableData,
+        companyId: selectedClient, // Include companyId
+        departmentId: selectedDepartment, // Include departmentId
+        year: selectedYear,         // Include the year
+      };
 
     setActionPlans((prevPlans) => ({
       ...prevPlans,
