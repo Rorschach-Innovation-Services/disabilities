@@ -2,7 +2,7 @@ import React, { useEffect, useReducer, useState } from 'react';
 import { Box, Button, useMediaQuery } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import { Welcome } from './components/welcome';
-import Logo from '../../assets/logos/we DI enable Logo.png';
+import Logo from '../../assets/logos/Pivot-Logo-6.png';
 import { initialState, reducer, options } from './reducer';
 import { Question } from './components/question';
 import { useAxios } from '../../hooks/axios';

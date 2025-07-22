@@ -202,7 +202,7 @@ export const InputContainer = ({
           executeDispatch={executeDispatch('consultant email')}
         />
         <InputItem
-          label="We-Di-Enable consultant:"
+          label="Pivot consultant:"
           value={state.consultant.sleepScienceConsultant.name}
           executeDispatch={executeDispatch('sleep-science-consultant')}
           textFieldProps={{
@@ -241,7 +241,7 @@ export const InputContainer = ({
               }}
               onClick={() => {
                 dispatch({
-                  type: 'sleep-science-consultant',
+                  type: 'Pivot-consultant',
                   payload: admin,
                 });
                 setAnchorEl(null);

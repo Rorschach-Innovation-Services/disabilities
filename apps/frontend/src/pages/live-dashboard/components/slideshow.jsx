@@ -7,7 +7,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { RadarChart } from './radar';
 import { ScatterPlotComponent } from './do-ability';
 import { BubbleChart } from './matrix';
-import Logo from '../../../assets/logos/we DI enable Logo.png';
+import Logo from '../../../assets/logos/Pivot-Logo-6.png';
 
 export const Slideshow = ({
   open,

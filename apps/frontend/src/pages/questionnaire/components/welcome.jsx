@@ -28,7 +28,7 @@ export const Welcome = ({ state, dispatch, handleBegin }) => {
                     marginTop: "-3%",
                 }}
             >
-                WE-DI-Enable
+                Pivot
             </Typography>
             <Paper
                 elevation={5}

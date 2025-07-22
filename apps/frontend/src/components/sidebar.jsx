@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMediaQuery, Typography, Container } from '@mui/material';
-import Logo from '../assets/logos/we DI enable Logo.png';
+import Logo from '../assets/logos/Pivot-Logo-6.png';
 import AssessmentIcon from '../assets/icons/clients.svg';
 import StartAssessmentIcon from '../assets/icons/Start-assessment.svg';
 import DashboardIcon from '../assets/icons/dashboard.svg';
@@ -166,7 +166,7 @@ export const SideBar = () => {
            objectFit: 'cover', 
          }}
          src={Logo}
-         alt="We-Di-Enable Logo"
+         alt="Pivot Logo"
         />
       </Container>
 
