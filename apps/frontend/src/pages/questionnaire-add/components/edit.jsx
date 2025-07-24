@@ -98,11 +98,11 @@ export const EditQuestion = ({
               sx={{ marginBottom: '20px !important' }}
             >
               <Typography sx={{ marginTop: '11px !important' }}>
-                Label:
+                Variable Key:
               </Typography>
               <TextField
                 variant="outlined"
-                label="E.g. Current Status"
+                label="E.g. S = Structure/Space; C = Culture;"   
                 value={label}
                 onChange={(event) => setLabel(event.target.value)}
                 sx={{
@@ -127,7 +127,7 @@ export const EditQuestion = ({
                 Category:
               </Typography>
               <TextField
-                label="E.g. Engage"
+                label="E.g. Plan/Prepare"
                 variant="outlined"
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}

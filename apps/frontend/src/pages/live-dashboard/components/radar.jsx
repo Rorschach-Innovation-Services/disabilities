@@ -33,7 +33,7 @@ export const RadarChart = ({ title, series }) => {
       size: 0,
     },
     xaxis: {
-      categories: ['Engage', 'Nest', 'Attract', 'Back', 'Learn'],
+      categories: ['Plan/Prepare', 'Integrate', 'Value-Add', 'Opportunities', 'Transfer'],
     },
     yaxis: {
       show: true,
