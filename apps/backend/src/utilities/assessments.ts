@@ -70,7 +70,7 @@ export const getRadarChartValues = async (
     data: [],
     color: '#FF0000', // Green color
   };
-  const metricNames = ['Plan/Prepare', 'Integrate', 'Value-Add', 'Opportunities', 'Transfer'];
+  const metricNames = ['Plan/Prepare', 'Integrate', 'Value-Add', 'Optimise', 'Transfer'];
   metricNames.forEach((name) => {
     const value = data[name];
     Object.keys(value).forEach((label) => {
@@ -93,7 +93,7 @@ export const getDoAbilityMatrix = async (
   assessments: AssessmentAttributes[],
 ) => {
   const data = await getCurrentAgainstImportance(assessments);
-  const metricNames = ['Plan/Prepare', 'Integrate', 'Value-Add', 'Opportunities', 'Transfer'];
+  const metricNames = ['Plan/Prepare', 'Integrate', 'Value-Add', 'Optimise', 'Transfer'];
   const result: DoAbilityMatrixSeries = [];
   metricNames.forEach((name) => {
     const value = data[name];
@@ -127,7 +127,7 @@ const getQuestionColor = (label: string) => {
       return { color: '#2ECC40' };  
     case 'Value-Add':
       return { color: '#FFDC00' };  
-    case 'Opportunities':
+    case 'Optimise':
       return { color: '#FF851B' };  
     case 'Transfer':
       return { color: '#B10DC9' };  

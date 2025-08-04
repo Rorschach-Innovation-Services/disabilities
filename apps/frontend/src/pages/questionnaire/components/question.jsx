@@ -80,7 +80,7 @@ export const Question = ({
             return { color: '#2ECC40' };  
           case 'Value-Add':
             return { color: '#FFDC00' };  
-          case 'Opportunities':
+          case 'Optimise':
             return { color: '#FF851B' };  
           case 'Transfer':
             return { color: '#B10DC9' };  
