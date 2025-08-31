@@ -51,7 +51,7 @@ export const Complete = () => {
                 >
                     <Button
                         variant="contained"
-                        onClick={() => push("/")}
+                        onClick={() => push("/dashboard")}
                         sx={{
                             ...styles.button,
                             mb: stackButtons ? "10px" : "",

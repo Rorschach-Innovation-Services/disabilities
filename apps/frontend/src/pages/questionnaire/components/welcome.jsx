@@ -60,8 +60,7 @@ export const Welcome = ({ state, dispatch, handleBegin }) => {
                     <Typography>
                         <br />
                         <br />
-                        This questionnaire is divided into three parts, 
-                        aimed at supporting your efforts toward disability
+                        This questionnaire is aimed at supporting your efforts toward disability
                         inclusion and ensuring that your organization or 
                         department has effective policies and practices in 
                         place to create productive, inclusive environments 

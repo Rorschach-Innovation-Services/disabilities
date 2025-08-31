@@ -74,7 +74,7 @@ export const Question = ({
       // Function to get slider style based on question category
       const getSliderStyle = (question) => {
         switch (question.category) {
-          case 'Plan/Prepare':
+          case 'Prepare':
             return { color: '#0074D9' };  
           case 'Integrate':
             return { color: '#2ECC40' };  

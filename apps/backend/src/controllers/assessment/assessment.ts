@@ -1,16 +1,9 @@
-import {
-  getCurrentAgainstImportance,
-  getDoAbilityMatrix,
-  getHighMatrix,
-  getRadarChartValues,
-} from '../../utilities/assessments';
 import { Assessment, Company, Department } from '../../models/';
-import {
-  getRequestBody,
-  APIGatewayEvent,
-  getQueryStringParameters,
-} from '../../utilities/api';
 import { Request, Response } from 'express';
+
+
+import { getSpiderSeries } from '../../utilities/assessments';
+
 
 /**
  * Retrieve all assessments
@@ -27,7 +20,7 @@ export const getAssessments = async (request: Request, response: Response) => {
     const assessments = assessmentsResponse.items || [];
     if (!assessments) {
       return response.status(400).json({ message: 'Assessments Not Found' });
-      // return { message: 'Assessments Not Found' };
+       // return { message: 'Assessments Not Found' };
     }
     return response.status(200).json({ assessments });
     // return { assessments };
@@ -39,9 +32,9 @@ export const getAssessments = async (request: Request, response: Response) => {
 
 export const getAssessment = async (request: Request, response: Response) => {
   try {
-    // const requestBody = getRequestBody(event);
+     // const requestBody = getRequestBody(event);
     const requestBody = request.body;
-    // if (!requestBody)
+        // if (!requestBody)
     //   return { statusCode: 400, message: 'Request Body is required!' };
     const assessmentResponse = await Assessment.query(
       { _en: 'assessment' },
@@ -72,8 +65,14 @@ export const getDepartmentAssessments = async (
     // if (!parameters?.departmentId)
     //   return { statusCode: 400, message: 'Department id is required!' };
     const { departmentId } = parameters;
-    const department = await Department.get({ id: departmentId });
 
+    // Validate & load department to get companyId
+    const department = await Department.get({ id: departmentId });
+    if (!department) {
+      return response.status(404).json({ message: 'Department Not Found' });
+    }
+
+    // Load all assessments for that department
     const assessmentRequest = await Assessment.query(
       { companyId: department.companyId },
       { beginsWith: departmentId, fetchAll: true },
@@ -81,20 +80,23 @@ export const getDepartmentAssessments = async (
 
     const assessments =
       assessmentRequest.items.filter((item) => item._en === 'assessment') || [];
-    const radarChart = await getRadarChartValues(assessments);
-    const doAbilityMatrix = await getDoAbilityMatrix(assessments);
-    const highMatrix = await getHighMatrix(assessments, 'high');
-    const lowMatrix = await getHighMatrix(assessments, 'low');
 
+    // Remove (no matrix/radar) Build spider data 
+    const spider = await getSpiderSeries(assessments, {
+      questionnaireOrders: [3], 
+      maxScore: 5,              
+    });
+
+    // Return a focused payload for the front-end spider chart
     return response.status(200).json({
       assessments,
-      radarChart,
-      doAbilityMatrix,
-      highMatrix,
-      lowMatrix,
+      spiderChart: {
+        axes: spider.axes,   // ["Plan/Prepare - Space", ..., "Transfer - Culture"]
+        dataPct: spider.pct, // normalized 0–100
+        dataRaw: spider.raw, // raw 0–5 (or your scale)
+      },
     });
-  } catch (error) {
+  } catch {
     return response.status(500).json({ message: 'Internal Server Error' });
-    // return { message: 'Internal Server Error' };
   }
 };

@@ -1,8 +1,5 @@
 import { Shell } from '../../components/shell';
-import { RadarChart } from './components/radar';
-import { BubbleChart } from './components/matrix';
-import { ScatterPlotComponent } from './components/do-ability';
-import { Slideshow } from './components/slideshow'; 
+import { useEffect, useState } from 'react';
 import {
   Grid,
   Stack,
@@ -13,25 +10,25 @@ import {
   Box,
   Button,
 } from '@mui/material';
-import { LiveDashboardBanner } from './components/banner';
-import { useEffect, useState } from 'react';
 import { useAxios } from '../../hooks/axios';
 import { Loading } from '../../components/loading';
 
+// Polar wheel component 
+import PolarBalanceWheel from './components/PolarBalanceWheel';
+
+// slideshow to show the spider
+import { Slideshow } from './components/slideshow';
+
 export const LiveDashboard = () => {
-  const [step, setStep] = useState(0);
-  const [isSlideshowOpen, setSlideshowOpen] = useState(false); 
+  const [isSlideshowOpen, setSlideshowOpen] = useState(false);
 
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
-  const [assessments, setAssessments] = useState([]);
-  const [radarChartData, setRadarChartData] = useState([]);
-  const [doAbilityChart, setDoAbilityChart] = useState([]);
-  const [highMatrixData, setHighMatrixData] = useState([]);
-  const [lowMatrixData, setLowMatrixData] = useState([]);
-  const [refreshKey, setRefreshKey] = useState(0); 
+
+  // chart payload
+  const [spiderChart, setSpiderChart] = useState(null);
 
   // Fetch All companies
   const clientsRequest = useAxios({
@@ -39,7 +36,7 @@ export const LiveDashboard = () => {
     method: 'get',
   });
 
-  // Fetch assessments for selected department
+ // Fetch assessments for selected department
   const assessmentsRequest = useAxios({
     url: '/assessments/departments/{departmentId}',
     method: 'get',
@@ -52,65 +49,56 @@ export const LiveDashboard = () => {
   useEffect(() => {
     setSelectedDepartment('');
     setDepartments([]);
-    const client = clients.find((client) => client.id === selectedClient);
+    const client = clients.find((c) => c.id === selectedClient);
     if (client) {
-      setDepartments(client.departments);
-      if (client.departments.length > 0) setSelectedDepartment(client.departments[0].id);
+      setDepartments(client.departments || []);
+      if ((client.departments || []).length > 0) {
+        setSelectedDepartment(client.departments[0].id);
+      }
     }
-  }, [selectedClient]);
+  }, [selectedClient, clients]);
 
   useEffect(() => {
-    if (selectedDepartment.length > 0)
+    if (selectedDepartment) {
       assessmentsRequest.executeWithParameters({
         url: `/assessments/departments/${selectedDepartment}`,
       })();
+    }
   }, [selectedDepartment]);
 
   useEffect(() => {
     if (clientsRequest.response && !clientsRequest.error) {
-      const companies = clientsRequest.response.companies;
-      if (companies) {
-        setClients(companies || []);
-        if (companies.length > 0) setSelectedClient(companies[0].id);
-        setDepartments(companies[0].departments);
-        if (companies[0].departments.length > 0) setSelectedDepartment(companies[0].departments[0].id);
+      const companies = clientsRequest.response.companies || [];
+      setClients(companies);
+      if (companies.length > 0) {
+        setSelectedClient(companies[0].id);
+        setDepartments(companies[0].departments || []);
+        if ((companies[0].departments || []).length > 0) {
+          setSelectedDepartment(companies[0].departments[0].id);
+        }
       }
     }
   }, [clientsRequest.response, clientsRequest.error]);
 
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {
-      if (assessmentsRequest.response.assessments) {
-        setAssessments(assessmentsRequest.response.assessments);
-        setRadarChartData(assessmentsRequest.response.radarChart);
-        setDoAbilityChart(assessmentsRequest.response.doAbilityMatrix);
-        setLowMatrixData(assessmentsRequest.response.lowMatrix);
-        setHighMatrixData(assessmentsRequest.response.highMatrix);
-      }
+      // Fetch spider chart payload from the backend
+      setSpiderChart(assessmentsRequest.response.spiderChart || null);
     }
   }, [assessmentsRequest.response, assessmentsRequest.error]);
 
-  const renderGraphs = () => {
-    if (assessmentsRequest.loading || clientsRequest.loading || assessments.length === 0) return false;
-    return true;
+  const loading =
+    assessmentsRequest.loading || clientsRequest.loading;
+
+  const getCompanyName = (selectedClient, clients) => {
+    const client = clients.find((c) => c.id === selectedClient);
+    return client ? client.name : 'Unknown Company';
   };
 
-   
-  const handleSlideshowOpen = () => {
-    setSlideshowOpen(true);
-    setRefreshKey((prevKey) => prevKey + 1); 
+  const getDepartmentName = (selectedDepartment, departments) => {
+    const dept = departments.find((d) => d.id === selectedDepartment);
+    return dept ? dept.name : 'Unknown Department';
   };
-
-const getCompanyName = (selectedClient, clients) => {
-  const client = clients.find((client) => client.id === selectedClient);
-  return client ? client.name : "Unknown Company";
-};
-
-const getDepartmentName = (selectedDepartment, departments) => {
-  const department = departments.find((dept) => dept.id === selectedDepartment);
-  return department ? department.name : "Unknown Department";
-};
-
 
   return (
     <Shell heading="Live Dashboard">
@@ -133,6 +121,7 @@ const getDepartmentName = (selectedDepartment, departments) => {
             </Select>
           </FormControl>
         </Box>
+
         <Box sx={{ minWidth: 200 }}>
           <FormControl fullWidth>
             <InputLabel id="department-label">Department</InputLabel>
@@ -153,53 +142,33 @@ const getDepartmentName = (selectedDepartment, departments) => {
         </Box>
       </Stack>
 
-      {assessmentsRequest.loading || clientsRequest.loading ? (
+      {loading && (
         <Loading
           textSx={{ fontSize: '25px' }}
-          loadingSx={{
-            width: '250px !important',
-            height: '250px !important',
-          }}
+          loadingSx={{ width: '250px !important', height: '250px !important' }}
           containerSx={{ margin: '10% 25%' }}
         />
-      ) : null}
+      )}
 
-      {renderGraphs() && (
+      {!loading && spiderChart && (
         <>
-          <LiveDashboardBanner step={step} setStep={setStep} doAbilityChart={doAbilityChart} />
-          {step === 0 && <RadarChart title="Current vs Important" series={radarChartData} />}
-          {step === 1 && <ScatterPlotComponent series={doAbilityChart} />}
-          {step === 2 && (
-            <>
-              <BubbleChart
-                title="Priorities: High Importance to us, high do-ability"
-                series={highMatrixData}
-              />
-              <BubbleChart
-                title="Priorities: High Importance to us, low do-ability"
-                styles={{ marginTop: '20px' }}
-                series={lowMatrixData}
-              />
-            </>
-          )}
-          <Grid container spacing={2}></Grid>
+          {/* Spider chrart */}
+          <PolarBalanceWheel spiderChart={spiderChart} mode="percent" />
+
+          <Grid container spacing={2} />
 
           <Box sx={{ textAlign: 'center', marginTop: 3 }}>
-            <Button variant="contained" onClick={handleSlideshowOpen}>
-             Slideshow
+            <Button variant="contained" onClick={() => setSlideshowOpen(true)}>
+              Slideshow
             </Button>
           </Box>
 
           <Slideshow
             open={isSlideshowOpen}
             onClose={() => setSlideshowOpen(false)}
-            scatterSeries={doAbilityChart}      
-            highBubbleSeries={highMatrixData} 
-            lowBubbleSeries={lowMatrixData}   
-            radarSeries={radarChartData}  
-            selectedCompany={getCompanyName(selectedClient,clients)}
-            selectedDepartment={getDepartmentName(selectedDepartment, departments)}    
-       
+            spiderChart={spiderChart}
+            selectedCompany={getCompanyName(selectedClient, clients)}
+            selectedDepartment={getDepartmentName(selectedDepartment, departments)}
           />
         </>
       )}

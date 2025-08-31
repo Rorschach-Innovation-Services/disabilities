@@ -53,13 +53,13 @@ export const Input = () => {
           marginBottom: 0,
         }}
       >
-        <Typography fontSize={10}>SLEEP SCIENCE PLATFORM</Typography>
+        <Typography fontSize={10}>Pivot PLATFORM</Typography>
         <Typography
           fontSize={26}
           sx={{
             fontWeight: 600,
             fontSize: '26px',
-            marginBottom: '70px',
+            marginBottom: '30px',
           }}
         >
           Welcome Back!

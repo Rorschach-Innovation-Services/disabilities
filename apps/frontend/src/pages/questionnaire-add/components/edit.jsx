@@ -127,7 +127,7 @@ export const EditQuestion = ({
                 Category:
               </Typography>
               <TextField
-                label="E.g. Plan/Prepare"
+                label="E.g. Prepare"
                 variant="outlined"
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}

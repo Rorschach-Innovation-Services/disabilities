@@ -72,7 +72,7 @@ export const Progress = ({
             },
           }}
         />
-        <Stack direction="row" spacing={2}>
+        {/* <Stack direction="row" spacing={2}>
           <Typography sx={{ fontWeight: 'bold' }}>
           Question - {getCaption()}
           </Typography>
@@ -96,7 +96,7 @@ export const Progress = ({
               <HelpOutline />
             </IconButton>
           )}
-        </Stack>
+        </Stack> */}
         <Box
           component="div"
           sx={{
