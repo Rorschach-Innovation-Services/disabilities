@@ -91,9 +91,11 @@ export const getDepartmentAssessments = async (
     return response.status(200).json({
       assessments,
       spiderChart: {
-        axes: spider.axes,   // ["Plan/Prepare - Space", ..., "Transfer - Culture"]
-        dataPct: spider.pct, // normalized 0–100
-        dataRaw: spider.raw, // raw 0–5 (or your scale)
+        axes: spider.axes, 
+        dataPct: spider.pct,
+        dataRaw: spider.raw, 
+        sectorSummary: spider.sectorSummary, 
+        subSummary: spider.subSummary,        
       },
     });
   } catch {

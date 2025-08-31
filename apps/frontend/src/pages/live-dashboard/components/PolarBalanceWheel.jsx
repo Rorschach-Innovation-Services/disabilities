@@ -1,4 +1,3 @@
-// PolarBalanceWheel.jsx
 import React, { useMemo } from 'react';
 import { PolarArea } from 'react-chartjs-2';
 import {
@@ -7,48 +6,52 @@ import {
   ArcElement,
   Tooltip,
   Legend,
+  Title,
 } from 'chart.js';
 
-ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend);
+ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend, Title);
 
-const SECTORS = ['Plan/Prepare', 'Integrate', 'Value-Add', 'Optimise', 'Transfer'];
+// Backend categories 
+const SECTORS = ['Prepare', 'Integrate', 'Value-Add', 'Optimise', 'Transfer'];
 const SUBS = ['Space', 'Person', 'Culture'];
 
-// 15 canonical axis labels (stable order)
+// 15 canonical axis labels (stable order, matches backend payload)
 const AXES = SECTORS.flatMap(s => SUBS.map(sub => `${s} - ${sub}`));
 
-// 5 sector color families (3 tones each so every sector’s 3 wedges look related)
+// Colors for each sector (5 sectors × 3 tones for their subs)
 const SECTOR_FILLS = [
-  ['rgba(37, 99, 235, 0.85)', 'rgba(37, 99, 235, 0.55)', 'rgba(37, 99, 235, 0.35)'], // Plan/Prepare
+  ['rgba(37, 99, 235, 0.85)', 'rgba(37, 99, 235, 0.55)', 'rgba(37, 99, 235, 0.35)'], // Prepare
   ['rgba(16, 185, 129, 0.85)', 'rgba(16, 185, 129, 0.55)', 'rgba(16, 185, 129, 0.35)'], // Integrate
   ['rgba(234, 179, 8, 0.85)',  'rgba(234, 179, 8, 0.55)',  'rgba(234, 179, 8, 0.35)'],  // Value-Add
   ['rgba(249, 115, 22, 0.85)', 'rgba(249, 115, 22, 0.55)', 'rgba(249, 115, 22, 0.35)'], // Optimise
   ['rgba(139, 92, 246, 0.85)', 'rgba(139, 92, 246, 0.55)', 'rgba(139, 92, 246, 0.35)'], // Transfer
 ];
 
-const SECTOR_BORDERS = ['#1d4ed8', '#059669', '#b45309', '#c2410c', '#6d28d9'];
+const SECTOR_BORDERS = ['#1d4ed8', '#059669', '#ca8a04', '#ea580c', '#6d28d9'];
 
-const PolarBalanceWheel = ({ spiderChart, mode = 'percent', title = 'Disability Inclusion — Balance Wheel (5×3)' }) => {
+const PolarBalanceWheel = ({
+  spiderChart,
+  mode = 'raw',
+  title = 'Disability Inclusion: Balance Wheel (15 axes)',
+}) => {
   const axes = spiderChart?.axes || [];
   const pct = spiderChart?.dataPct || [];
   const raw = spiderChart?.dataRaw || [];
   const maxScore = Number(spiderChart?.meta?.maxScore) || 5;
 
-  // pick vector
-  const values = (mode === 'percent' ? pct : raw).slice(0, axes.length);
+  // pick values (percent or raw)
+  const values = (mode === 'raw' ? pct : raw).slice(0, axes.length);
 
-  // Guarantee order & length; if back-end axes match AXES already, this will be identical.
+  // Map values to canonical AXES order
   const { labels, data, fills, borders } = useMemo(() => {
+    const numbers = [];
     const fillColors = [];
     const borderColors = [];
-    const numbers = [];
 
     AXES.forEach((axis, i) => {
-      // map i → sector index and spoke index within sector
-      const sectorIdx = Math.floor(i / 3); // 0..4
-      const spokeIdx = i % 3;              // 0..2
+      const sectorIdx = Math.floor(i / 3); // which sector
+      const spokeIdx = i % 3;              // which sub inside sector
 
-      // look up the incoming value at this axis position
       const incomingIndex = axes.indexOf(axis);
       const v = incomingIndex >= 0 ? (values[incomingIndex] ?? 0) : 0;
 
@@ -68,7 +71,7 @@ const PolarBalanceWheel = ({ spiderChart, mode = 'percent', title = 'Disability 
     labels,
     datasets: [
       {
-        label: mode === 'percent' ? 'Average (%)' : `Average (0–${maxScore})`,
+        label: mode === 'raw' ? 'Average (%)' : `Average (0–${maxScore})`,
         data,
         backgroundColor: fills,
         borderColor: borders,
@@ -83,12 +86,12 @@ const PolarBalanceWheel = ({ spiderChart, mode = 'percent', title = 'Disability 
     aspectRatio: 1,
     plugins: {
       title: { display: true, text: title, font: { size: 16, weight: '600' } },
-      legend: { display: false }, // optional: build your own sector legend
+      legend: { display: false },
       tooltip: {
         callbacks: {
           label: ctx => {
             const value = ctx.parsed;
-            return mode === 'percent'
+            return mode === 'raw'
               ? `${ctx.label}: ${value.toFixed(1)}%`
               : `${ctx.label}: ${value.toFixed(2)} / ${maxScore}`;
           },
@@ -98,10 +101,9 @@ const PolarBalanceWheel = ({ spiderChart, mode = 'percent', title = 'Disability 
     scales: {
       r: {
         beginAtZero: true,
-        max: mode === 'percent' ? 100 : maxScore,
+        max: mode === 'raw' ? 100 : maxScore,
         ticks: {
-          showLabelBackdrop: false,
-          stepSize: mode === 'percent' ? 20 : 1,
+          stepSize: mode === 'raw' ? 20 : 1,
           color: '#475569',
         },
         grid: { color: 'rgba(148,163,184,0.25)' },
@@ -109,8 +111,7 @@ const PolarBalanceWheel = ({ spiderChart, mode = 'percent', title = 'Disability 
         pointLabels: {
           display: true,
           font: { size: 11 },
-          // make labels two-line "Sector\nSub"
-          callback: (val, i) => (labels[i] || '').replace(' - ', '\n'),
+          callback: (val, i) => (labels[i] || '').replace(' - ', '\n'), // split sector/sub
           color: '#334155',
         },
       },

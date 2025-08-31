@@ -1,18 +1,54 @@
-import React from 'react';
-import { Dialog, DialogContent, IconButton, Box, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  IconButton,
+  Box,
+  Typography,
+  Button,
+} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import Logo from '../../../assets/logos/Pivot-Logo-6.png';
 
-// import  spider chart
+// Chart components
 import PolarBalanceWheel from './PolarBalanceWheel';
+import PolarSectorWheel from './PolarSectorWheel';
+import PolarSubWheel from './PolarSubWheel';
 
 export const Slideshow = ({
   open,
   onClose,
-  spiderChart,          //  backend spider payload 
+  spiderChart, // backend spider payload
   selectedCompany,
   selectedDepartment,
 }) => {
+  const [chartStep, setChartStep] = useState('sector'); // "sector" | "sub" | "full"
+
+  const handleNext = () => {
+    setChartStep((prev) =>
+      prev === 'sector' ? 'sub' : prev === 'sub' ? 'full' : 'sector'
+    );
+  };
+
+  const handlePrev = () => {
+    setChartStep((prev) =>
+      prev === 'sector' ? 'full' : prev === 'sub' ? 'sector' : 'sub'
+    );
+  };
+
+  const getChartTitle = () => {
+    switch (chartStep) {
+      case 'sector':
+        return 'Disability Inclusion: Category Averages (5 sectors)';
+      case 'sub':
+        return 'Disability Inclusion: Sub-Dimension Averages (3 subs)';
+      case 'full':
+        return 'Disability Inclusion: Balance Wheel (15 axes)';
+      default:
+        return '';
+    }
+  };
+
   return (
     <Dialog fullScreen open={open} onClose={onClose}>
       <DialogContent
@@ -55,7 +91,9 @@ export const Slideshow = ({
               </Typography>
             )}
             {selectedDepartment && (
-              <Typography variant="subtitle1">Department: {selectedDepartment}</Typography>
+              <Typography variant="subtitle1">
+                Department: {selectedDepartment}
+              </Typography>
             )}
           </Box>
         </Box>
@@ -80,14 +118,58 @@ export const Slideshow = ({
           }}
         >
           <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
-            Disability Inclusion Wagon Wheel
+            {getChartTitle()}
           </Typography>
         </Box>
 
-        {/* Wagon wheel */}
+        {/* Chart area */}
         <Box sx={{ width: '80%', height: '80%' }}>
-          <PolarBalanceWheel spiderChart={spiderChart} mode="percent" />
+          {chartStep === 'sector' && (
+            <PolarSectorWheel sectorSummary={spiderChart?.sectorSummary} mode="percent" />
+          )}
+          {chartStep === 'sub' && (
+            <PolarSubWheel subSummary={spiderChart?.subSummary} mode="percent" />
+          )}
+          {chartStep === 'full' && (
+            <PolarBalanceWheel spiderChart={spiderChart} mode="percent" />
+          )}
+        </Box>
 
+        {/* Navigation buttons */}
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: '40px',
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 4,
+          }}
+        >
+          <Button
+            onClick={handlePrev}
+            sx={{
+              background: '#95B8DF',
+              color: 'white',
+              fontWeight: 'bold',
+              px: 3,
+              '&:hover': { background: '#6a9cc7' },
+            }}
+          >
+            ‹ Prev
+          </Button>
+          <Button
+            onClick={handleNext}
+            sx={{
+              background: '#95B8DF',
+              color: 'white',
+              fontWeight: 'bold',
+              px: 3,
+              '&:hover': { background: '#6a9cc7' },
+            }}
+          >
+            Next ›
+          </Button>
         </Box>
       </DialogContent>
     </Dialog>

@@ -75,7 +75,7 @@ export type SpiderSeries = {
 export const getSpiderSeries = async (
   assessments: AssessmentAttributes[],
   options?: { questionnaireOrders?: number[]; maxScore?: number },
-): Promise<SpiderSeries> => {
+): Promise<SpiderSeries & { subSummary: { sub: string; raw: number; pct: number; count: number }[] }> => {
   const defs = await fetchQuestionnaireDefs();
   const orders = options?.questionnaireOrders ?? [3];
   const qIds: string[] = (defs?.items || [])
@@ -84,7 +84,6 @@ export const getSpiderSeries = async (
 
   const relevant = (assessments || []).filter((a) => qIds.includes(a.questionnaireId));
 
-  // Group: sector -> sub -> values
   const grouped: Record<string, Record<string, number[]>> = {};
   relevant.forEach((a) => {
     (a.questionnaire || []).forEach((q) => {
@@ -103,7 +102,6 @@ export const getSpiderSeries = async (
   const counts: number[] = [];
   const maxScore = options?.maxScore ?? DEFAULT_MAX_SCORE;
 
-  // Per-sector accumulation for summary
   const sectorAccum: Record<string, { rawSum: number; spokeCount: number; respCount: number }> = {};
 
   axes.forEach((axis) => {
@@ -116,15 +114,32 @@ export const getSpiderSeries = async (
 
     if (!sectorAccum[sector]) sectorAccum[sector] = { rawSum: 0, spokeCount: 0, respCount: 0 };
     sectorAccum[sector].rawSum += a;
-    sectorAccum[sector].spokeCount += 1; // 3 spokes per sector
+    sectorAccum[sector].spokeCount += 1;
     sectorAccum[sector].respCount += values.length;
   });
 
+  // 👉 5 categories
   const sectorSummary: SpiderSectorSummary[] = SECTORS.map((sector) => {
     const acc = sectorAccum[sector] || { rawSum: 0, spokeCount: 0, respCount: 0 };
     const sectorRaw = acc.spokeCount > 0 ? parseFloat((acc.rawSum / acc.spokeCount).toFixed(2)) : 0;
     const sectorPct = parseFloat(((sectorRaw / maxScore) * 100).toFixed(1));
     return { sector, raw: sectorRaw, pct: sectorPct, count: acc.respCount };
+  });
+
+  // 👉 3 subs
+  const subAccum: Record<string, { rawSum: number; count: number }> = {};
+  axes.forEach((axis, i) => {
+    const [, sub] = axis.split(' - ');
+    if (!subAccum[sub]) subAccum[sub] = { rawSum: 0, count: 0 };
+    subAccum[sub].rawSum += raw[i];
+    subAccum[sub].count += 1;
+  });
+
+  const subSummary = SUBS.map(sub => {
+    const acc = subAccum[sub] || { rawSum: 0, count: 0 };
+    const subRaw = acc.count > 0 ? parseFloat((acc.rawSum / acc.count).toFixed(2)) : 0;
+    const subPct = parseFloat(((subRaw / maxScore) * 100).toFixed(1));
+    return { sub, raw: subRaw, pct: subPct, count: acc.count };
   });
 
   return {
@@ -133,6 +148,7 @@ export const getSpiderSeries = async (
     pct,
     counts,
     sectorSummary,
+    subSummary,   // 👈 added
     meta: {
       maxScore,
       ordersUsed: orders,
@@ -140,6 +156,7 @@ export const getSpiderSeries = async (
     },
   };
 };
+
 
 
 export default {

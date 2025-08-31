@@ -15,9 +15,12 @@ import { Loading } from '../../components/loading';
 
 // Polar wheel component 
 import PolarBalanceWheel from './components/PolarBalanceWheel';
+import PolarSectorWheel from './components/PolarSectorWheel';
+import PolarSubWheel from './components/PolarSubWheel';
 
 // slideshow to show the spider
 import { Slideshow } from './components/slideshow';
+import ChartSwitcherBanner from "./components/ChartSwitcherBanner";
 
 export const LiveDashboard = () => {
   const [isSlideshowOpen, setSlideshowOpen] = useState(false);
@@ -29,6 +32,9 @@ export const LiveDashboard = () => {
 
   // chart payload
   const [spiderChart, setSpiderChart] = useState(null);
+  const [chartView, setChartView] = useState("sector"); 
+// "sector" | "sub" | "full"
+
 
   // Fetch All companies
   const clientsRequest = useAxios({
@@ -150,28 +156,37 @@ export const LiveDashboard = () => {
         />
       )}
 
-      {!loading && spiderChart && (
+     {!loading && spiderChart && (
         <>
-          {/* Spider chrart */}
-          <PolarBalanceWheel spiderChart={spiderChart} mode="percent" />
+          <ChartSwitcherBanner chartView={chartView} setChartView={setChartView} />
 
-          <Grid container spacing={2} />
+          {chartView === "sector" && (
+          <PolarSectorWheel sectorSummary={spiderChart?.sectorSummary} mode="percent" />
+          )}
 
-          <Box sx={{ textAlign: 'center', marginTop: 3 }}>
-            <Button variant="contained" onClick={() => setSlideshowOpen(true)}>
+          {chartView === "sub" && (
+          <PolarSubWheel subSummary={spiderChart?.subSummary} mode="percent" />
+          )}
+
+          {chartView === "full" && (
+           <PolarBalanceWheel spiderChart={spiderChart} mode="percent" />
+          )}
+
+          <Box sx={{ textAlign: "center", marginTop: 3 }}>
+          <Button variant="contained" onClick={() => setSlideshowOpen(true)}>
               Slideshow
-            </Button>
+          </Button>
           </Box>
 
-          <Slideshow
-            open={isSlideshowOpen}
-            onClose={() => setSlideshowOpen(false)}
-            spiderChart={spiderChart}
-            selectedCompany={getCompanyName(selectedClient, clients)}
-            selectedDepartment={getDepartmentName(selectedDepartment, departments)}
-          />
-        </>
-      )}
+         <Slideshow
+           open={isSlideshowOpen}
+           onClose={() => setSlideshowOpen(false)}
+           spiderChart={spiderChart}
+           selectedCompany={getCompanyName(selectedClient, clients)}
+           selectedDepartment={getDepartmentName(selectedDepartment, departments)}
+         />
+     </>
+)}
     </Shell>
   );
 };
