@@ -1,9 +1,10 @@
-import React, { Fragment, useMemo } from "react";
+import React, { Fragment, useEffect, useMemo } from "react";
 import { Typography, TextField, Button, Container, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { Save } from "@mui/icons-material";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useHistory } from "react-router-dom";
+import { useLocalStorage } from "../../../hooks/storage";
 
 const styles = {
   inputs: {
@@ -18,6 +19,7 @@ const styles = {
 
 export const RegisterContent = ({ formik, loading, companies = [] }) => {
   const { push } = useHistory();
+  const { role: myRole, companyId: myCompanyId, departmentId: myDepartmentId } = useLocalStorage();
   const role = (formik.values.role || '').toLowerCase();
   const isClientRole = ['client_super', 'client_user'].includes(role);
 
@@ -27,18 +29,44 @@ export const RegisterContent = ({ formik, loading, companies = [] }) => {
     [companies, formik.values.company],
   );
   const companyDepartments = selectedCompany?.departments || [];
+  // Limit selectable roles based on actor role
+  const actorRole = (myRole || '').toLowerCase();
+  const roleOptions = (() => {
+    if (actorRole === 'pivot') return ['client_super', 'client_user'];
+    if (actorRole === 'client_super') return ['client_user'];
+    if (actorRole === 'administrator' || actorRole === 'admin') return ['administrator', 'pivot', 'client_super', 'client_user'];
+    return ['client_user'];
+  })();
+
+  useEffect(() => {
+    // Ensure form role stays within allowed options
+    const current = (formik.values.role || '').toLowerCase();
+    if (!roleOptions.includes(current)) {
+      formik.setFieldValue('role', roleOptions[0]);
+    }
+  }, [actorRole]);
+
+  useEffect(() => {
+    // Client Super: lock company to own company
+    if ((actorRole === 'client_super') && myCompanyId) {
+      formik.setFieldValue('company', myCompanyId);
+      // And lock department to own department if available
+      if (myDepartmentId) {
+        formik.setFieldValue('department', myDepartmentId);
+      }
+    }
+  }, [actorRole, myCompanyId, myDepartmentId]);
   const setDisabled = () => {
-    if (
-      formik.errors.name ||
-      formik.errors.email ||
-      formik.values.name === "" ||
-      formik.values.email === "" ||
-      formik.errors.password ||
-      formik.values.password === "" ||
-      (isClientRole && (!formik.values.company || !formik.values.department))
-    )
-      return true;
-    return false;
+    const currentRole = String(formik.values.role || '').toLowerCase();
+    const roleAllowed = roleOptions.includes(currentRole);
+    const baseFilled = Boolean(
+      (formik.values.name || '').trim() &&
+      (formik.values.email || '').trim() &&
+      (formik.values.password || '').trim()
+    );
+    const baseValid = !formik.errors.name && !formik.errors.email && !formik.errors.password;
+    const clientFieldsOk = !isClientRole || Boolean(formik.values.company && formik.values.department);
+    return !(roleAllowed && baseFilled && baseValid && clientFieldsOk);
   };
   return (
     <Container
@@ -89,10 +117,18 @@ export const RegisterContent = ({ formik, loading, companies = [] }) => {
           }}
           size="small"
         >
-          <MenuItem value={'administrator'}>Administrator</MenuItem>
-          <MenuItem value={'pivot'}>Pivot</MenuItem>
-          <MenuItem value={'client_super'}>Client Super</MenuItem>
-          <MenuItem value={'client_user'}>Client Normal</MenuItem>
+          {roleOptions.includes('administrator') && (
+            <MenuItem value={'administrator'}>Administrator</MenuItem>
+          )}
+          {roleOptions.includes('pivot') && (
+            <MenuItem value={'pivot'}>Pivot</MenuItem>
+          )}
+          {roleOptions.includes('client_super') && (
+            <MenuItem value={'client_super'}>Client Super</MenuItem>
+          )}
+          {roleOptions.includes('client_user') && (
+            <MenuItem value={'client_user'}>Client Normal</MenuItem>
+          )}
         </Select>
       </FormControl>
       {/* Company selector for client roles */}
@@ -110,6 +146,12 @@ export const RegisterContent = ({ formik, loading, companies = [] }) => {
               formik.setFieldValue('department', '');
             }}
             size="small"
+            disabled={actorRole === 'client_super'}
+            displayEmpty
+            renderValue={(val) => {
+              const c = companies.find((x) => (x._id || x.id) === val);
+              return c ? c.name : '';
+            }}
           >
             {companies.map((c) => (
               <MenuItem value={c._id || c.id} key={c._id || c.id}>
@@ -130,6 +172,12 @@ export const RegisterContent = ({ formik, loading, companies = [] }) => {
             value={formik.values.department || ''}
             onChange={(e) => formik.setFieldValue('department', e.target.value)}
             size="small"
+            disabled={actorRole === 'client_super'}
+            displayEmpty
+            renderValue={(val) => {
+              const d = companyDepartments.find((x) => (x._id || x.id) === val);
+              return d ? d.name : '';
+            }}
           >
             {companyDepartments.length === 0 ? (
               <MenuItem value="" disabled>

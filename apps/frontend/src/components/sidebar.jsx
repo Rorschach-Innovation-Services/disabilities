@@ -165,7 +165,7 @@ export const SideBar = () => {
   const canStartAssessment = r === 'client_super' || r === 'client_user';
   const canSeeQuestionnaireBank = r === 'administrator' || r === 'admin' || r === 'pivot';
   const canSeeClients = r === 'administrator' || r === 'admin' || r === 'pivot';
-  const canSeeStaff = r === 'administrator' || r === 'admin';
+  const canSeeStaff = r === 'administrator' || r === 'admin' || r === 'pivot' || r === 'client_super';
   const visibleItems = items.filter((item) => {
     switch (item.key) {
       case 'questions':

@@ -28,20 +28,63 @@ export const register = async (request: Request, response: Response) => {
 
     // Normalise and validate role
     const allowedRoles = ['administrator', 'pivot', 'client_super', 'client_user'];
-    const role = String(rawRole || 'administrator').toLowerCase();
-    if (!allowedRoles.includes(role))
+    const role = String(rawRole || '').toLowerCase();
+    if (!role || !allowedRoles.includes(role))
       return response.status(400).json({ message: 'Invalid role' });
+
+    // Enforce creator permissions
+    const actor = (request as any).user as any;
+    const actorRole = String(actor?.role || '').toLowerCase();
+    const actorCompanyId = String(actor?.companyId || '');
+
+    const isActorAdmin = actorRole === 'administrator' || actorRole === 'admin';
+    if (!isActorAdmin) {
+      if (actorRole === 'pivot') {
+        // Pivot may only create client roles
+        if (!(role === 'client_super' || role === 'client_user'))
+          return response.status(403).json({ message: 'Forbidden - Pivot can only create client users' });
+      } else if (actorRole === 'client_super') {
+        // Client Super may only create client normal within own company
+        if (role !== 'client_user')
+          return response.status(403).json({ message: 'Forbidden - Client Super can only create Client Normal users' });
+      } else {
+        return response.status(403).json({ message: 'Forbidden - Insufficient access' });
+      }
+    }
 
     // If creating a client user, company is required
     const isClientRole = role === 'client_super' || role === 'client_user' || role === 'client';
-    const companyId = isClientRole ? String(company || '') : '';
+    let companyId = isClientRole ? String(company || '') : '';
+    // Client Super forced to own company and department
+    if (!isActorAdmin && actorRole === 'client_super') {
+      if (!actorCompanyId)
+        return response.status(400).json({ message: 'Missing actor company' });
+      if (companyId && companyId !== actorCompanyId)
+        return response.status(403).json({ message: 'Forbidden - Must create users in own company' });
+      companyId = actorCompanyId;
+    }
     if (isClientRole && !companyId)
       return response.status(400).json({ message: 'Company is required for client roles' });
 
     // If client role, department is also required. Accept either department or departmentId
-    const departmentId = isClientRole ? String(deptIdFromBody || deptFromBody || '') : '';
+    let departmentId = isClientRole ? String(deptIdFromBody || deptFromBody || '') : '';
     if (isClientRole && !departmentId)
       return response.status(400).json({ message: 'Department is required for client roles' });
+
+    // If client_super is creating, lock department to actor's own department
+    if (!isActorAdmin && actorRole === 'client_super') {
+      try {
+        const actorRecord = await Administrator.get({ id: actor?.id });
+        const actorDept = String(actorRecord?.departmentId || '');
+        if (!actorDept)
+          return response.status(400).json({ message: 'Missing actor department' });
+        if (departmentId && departmentId !== actorDept)
+          return response.status(403).json({ message: 'Forbidden - Must create users in own department' });
+        departmentId = actorDept;
+      } catch (_) {
+        return response.status(400).json({ message: 'Missing actor department' });
+      }
+    }
 
     // Optionally validate department belongs to company
     if (departmentId) {

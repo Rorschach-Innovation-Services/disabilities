@@ -241,13 +241,13 @@ export const Routes = () => {
         <ProtectedRoute exact path="/action-plan" component={ActionPlan} />
         
         <RoleRoute allowed={["administrator", "admin", "pivot"]} exact path="/clients" component={ClientsPage} />
-        <RoleRoute allowed={["administrator", "admin"]} exact path="/staff" component={Staff} />
-        <RoleRoute allowed={["administrator", "admin"]} exact path="/staff/:id/edit" component={StaffEdit} />
+        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super"]} exact path="/staff" component={Staff} />
+        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super"]} exact path="/staff/:id/edit" component={StaffEdit} />
         <RoleRoute
           exact
           path="/register-admin"
           component={RegisterAdmin}
-          allowed={["administrator", "admin"]}
+          allowed={["administrator", "admin", "pivot", "client_super"]}
         />
         <RoleRoute allowed={["administrator", "admin", "pivot", "client_super", "client_user"]} exact path="/generate-link" component={GenerateLink} />
         <RoleRoute

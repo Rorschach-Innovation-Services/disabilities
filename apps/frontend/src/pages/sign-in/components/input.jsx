@@ -22,7 +22,7 @@ export const Input = () => {
     method: 'post',
   });
   console.log('env', import.meta.env);
-  const { writeID, writeToken, writeName, writeEmail, writeRole, writeCompanyId } = useLocalStorage();
+  const { writeID, writeToken, writeName, writeEmail, writeRole, writeCompanyId, writeDepartmentId } = useLocalStorage();
   const { push } = useHistory();
 
   useEffect(() => {
@@ -36,6 +36,7 @@ export const Input = () => {
     writeToken(response.token);
     if (response.admin?.role) writeRole(String(response.admin.role).toLowerCase());
     if (response.admin?.companyId) writeCompanyId(response.admin.companyId);
+    if (response.admin?.departmentId) writeDepartmentId(response.admin.departmentId);
     writeEmail(response.admin.email);
     push('/dashboard');
   }, [response]);
