@@ -17,7 +17,7 @@ import { Shell } from '../../components/shell.jsx';
 import { Container } from '@mui/system';
 // import banner from "../../assets/images/Sleep-science-banner.png"
 // import banner from "../../assets/images/Sleep-science-banner001.jpeg"
-import banner from '../../assets/images/Sleep-science-banner-half-2.png';
+import banner from '../../assets/images/UCT_Logo.png';
 import { Colours } from '../../colours.js';
 import { StatsList } from './components/stats-list';
 import { Tasks } from './components/Tasks';
@@ -44,6 +44,10 @@ export const Dashboard = () => {
     method: 'get',
   });
   console.log('Api', import.meta.env);
+  const { role } = useLocalStorage();
+  const r = (role || '').toLowerCase();
+  const isAdmin = r === 'administrator' || r === 'admin';
+  const canStartAssessmentCTA = r === 'client_super' || r === 'client_user';
 
   // Execute network requests to fetch data
   useEffect(() => {
@@ -170,16 +174,18 @@ export const Dashboard = () => {
                 >
                   Lets get our day started with some sleep assessments?
                 </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    fontSize: '12px',
-                    backgroundColor: `${Colours.yellow} !important`,
-                  }}
-                  onClick={() => push('/assessment/new-department')}
-                >
-                  Let's get started
-                </Button>
+                {canStartAssessmentCTA && (
+                  <Button
+                    variant="contained"
+                    sx={{
+                      fontSize: '12px',
+                      backgroundColor: `${Colours.yellow} !important`,
+                    }}
+                    onClick={() => push('/assessment/new-department')}
+                  >
+                    Let's get started
+                  </Button>
+                )}
               </Container>
               <img
                 src={banner}
@@ -193,22 +199,26 @@ export const Dashboard = () => {
               />
             </Container>
             {/* <StatsList state={state} /> */}
-            {getClientDepartmentsForSecondQuestionnaire(state.clients)
-              .length === 0 && (
-              <Box>
-                <Typography
-                  sx={{
-                    fontSize: '20px',
-                    textAlign: 'center',
-                    marginTop: '80px',
-                  }}
-                >
-                  There are no companies ready for the second questionnaire
-                </Typography>
-              </Box>
+            {!isAdmin &&
+              getClientDepartmentsForSecondQuestionnaire(state.clients)
+                .length === 0 && (
+                <Box>
+                  <Typography
+                    sx={{
+                      fontSize: '20px',
+                      textAlign: 'center',
+                      marginTop: '80px',
+                    }}
+                  >
+                    There are no companies ready for the second questionnaire
+                  </Typography>
+                </Box>
+              )}
+            {(isAdmin ||
+              getClientDepartmentsForSecondQuestionnaire(state.clients).length >
+                0) && (
+              <Clients state={state} dispatch={dispatch} links={links} />
             )}
-            {getClientDepartmentsForSecondQuestionnaire(state.clients).length >
-              0 && <Clients state={state} dispatch={dispatch} links={links} />}
           </Container>
           <Container
             sx={{

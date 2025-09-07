@@ -10,6 +10,7 @@ import tasks from './tasks';
 import department from './department';
 import questionnaire from './questionnaire';
 import actionPlan from './action';
+import media from './media';
 
 export default {
   admin,
@@ -21,4 +22,5 @@ export default {
   tasks,
   questionnaire,
   actionPlan
+  , media
 };

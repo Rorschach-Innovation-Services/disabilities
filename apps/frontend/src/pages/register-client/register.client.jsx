@@ -11,15 +11,15 @@ import {
 } from '@mui/material';
 import { InputItem } from './components/input';
 import { Upload } from './components/upload';
-import { getEmployees } from './utils';
 import { useAxios } from '../../hooks/axios';
-import { useMediaStorage, BUCKET } from '../../hooks/media';
 import { useSnackbar } from 'notistack';
 import { useHistory, useLocation } from 'react-router-dom';
 import { assessmentInitialState, assessmentReducer } from './reducer';
 import { Shell } from '../../components/shell';
 import { Loading } from '../../components/loading';
 import { InputContainer } from './components/input-container';
+import { config } from '../../config';
+import { useLocalStorage } from '../../hooks/storage';
 
 export const RegisterCompanyDepartment = () => {
   const [state, dispatch] = useReducer(
@@ -31,8 +31,7 @@ export const RegisterCompanyDepartment = () => {
   const [companyID, setCompanyID] = useState(
     location.state ? location.state.companyID : null
   );
-  const separateUploads = useMediaQuery('(max-width:850px)');
-  const { store } = useMediaStorage();
+  // CSV functionality removed; only logo upload remains
   const { enqueueSnackbar } = useSnackbar();
   const { push } = useHistory();
   const companiesReq = useAxios({
@@ -47,6 +46,8 @@ export const RegisterCompanyDepartment = () => {
     url: '/companies/register',
     method: 'post',
   });
+  const updateCompanyReq = useAxios({ url: '', method: 'post' });
+  const { token } = useLocalStorage();
   const executeDispatch = (type) => (payload) => {
     dispatch({ type, payload });
   };
@@ -87,72 +88,80 @@ export const RegisterCompanyDepartment = () => {
       type: 'company sector',
       payload: clientReq.response.company.sector,
     });
-    dispatch({
-      type: 'consultant name',
-      payload: clientReq.response.company.hrConsultantName,
-    });
-    dispatch({
-      type: 'consultant phone',
-      payload: clientReq.response.company.phone,
-    });
-    dispatch({
-      type: 'consultant email',
-      payload: clientReq.response.company.hrConsultantEmail,
-    });
-    dispatch({
-      type: 'sleep-science-consultant',
-      payload: {
-        name: clientReq.response.admin ? clientReq.response.admin : '',
-        _id: clientReq.response.company.admin
-          ? clientReq.response.company.admin
-          : '',
-      },
-    });
+    
   }, [clientReq.response, clientReq.error]);
 
   useEffect(() => {
-    if (error || !response) {
-      console.log(error);
-      return;
-    }
-    enqueueSnackbar('Success! Company added.', { variant: 'success' });
-    setTimeout(() => {
-      if (!state.csv || !state.csv.filename) {
-        push(`/generate-link`, [
-          {
-            companyID: response.company,
-            departmentID: response.department,
-            questionnaireId: response.questionnaireId,
-          },
-        ]);
-      } else {
+    const runPostCreate = async () => {
+      try {
+        const newCompanyId = response?.company;
+        if (!newCompanyId) return;
+
+        // If a new logo was selected, upload under a company-scoped key and update the company
+        if (state.logo && state.logo.filename && state.logo.data) {
+          try {
+            const contentType = state.logo.contentType || 'application/octet-stream';
+            // Request presigned PUT URL from backend
+            const presignRes = await fetch(`${config.apiUrl}/media/company-logo-upload-url`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                companyId: newCompanyId,
+                filename: state.logo.filename,
+                contentType,
+              }),
+            });
+            if (!presignRes.ok) throw new Error('Failed to get presigned URL');
+            const { uploadUrl, publicUrl } = await presignRes.json();
+            if (!uploadUrl) throw new Error('Failed to get upload URL');
+            // Upload file bytes directly to S3 via presigned URL
+            await fetch(uploadUrl, {
+              method: 'PUT',
+              headers: { 'Content-Type': contentType },
+              body: state.logo.data,
+            });
+            // Persist the URL on the company record
+            const doUpdate = updateCompanyReq.createRequest({
+              url: `/companies/${newCompanyId}/update`,
+              method: 'post',
+              data: { logo: publicUrl },
+            });
+            await doUpdate();
+          } catch (uploadErr) {
+            console.error('Logo upload failed', uploadErr);
+            enqueueSnackbar('Logo upload failed; company saved without logo', {
+              variant: 'warning',
+            });
+          }
+        }
+
+        enqueueSnackbar('Success! Company added.', { variant: 'success' });
         push('/dashboard');
+      } catch (e) {
+        console.error(e);
       }
-    }, 2000);
+    };
+
+    if (!error && response) runPostCreate();
   }, [response, error]);
 
   const handleSubmit = async () => {
-    if (state.logo) store(state.logo.filename, state.logo.data);
-    const employees = await getEmployees(state);
-    setTimeout(() => {
-      executeWithData({
-        name: state.company.name,
-        logo:
-          state.logo && state.logo.filename
-            ? `https://${BUCKET}.s3.af-south-1.amazonaws.com/${state.logo.filename}`
-            : state.company.logo,
-        employeeSize: state.company.employeeCount,
-        sector: state.company.sector,
-        department: state.company.department,
-        employees,
-        hrConsultantName: state.consultant.name,
-        hrConsultantEmail: state.consultant.email,
-        phone: state.consultant.phone,
-        id: companyID || state.company.id,
-        admin: state.consultant.sleepScienceConsultant.id,
-        questionnaireId: state.questionnaire.id,
-      });
-    }, 1000);
+    const employees = [];
+    // Create the company/department first to get a stable companyId
+    executeWithData({
+      name: state.company.name,
+      // Logo will be uploaded post-create under the company path
+      logo: state.company.logo,
+      employeeSize: state.company.employeeCount,
+      sector: state.company.sector,
+      department: state.company.department,
+      employees,
+      id: companyID || state.company.id,
+      questionnaireId: state.questionnaire.id,
+    });
   };
 
   if (loading)
@@ -205,17 +214,6 @@ export const RegisterCompanyDepartment = () => {
             name="logo"
             accept=".png, .jpg, .jpeg"
             executeDispatch={executeDispatch('logo')}
-          />
-          <Upload
-            support="csv, xlsx,xls"
-            title="Upload Employee CSV File"
-            name="csv"
-            paperSx={{
-              marginLeft: separateUploads ? '' : '3%',
-              marginTop: separateUploads ? '20px' : '',
-            }}
-            accept=".csv, .xlsx, .xls"
-            executeDispatch={executeDispatch('csv')}
           />
         </Container>
         <Container
@@ -290,7 +288,7 @@ export const RegisterCompanyDepartment = () => {
             }}
             onClick={handleSubmit}
           >
-            {state.csv.filename ? 'Submit' : 'Generate Link'}
+            Save
           </Button>
         </Container>
       </Container>
