@@ -1,8 +1,7 @@
 import { Container, Popover, Typography } from '@mui/material';
 import { InputItem, RadioInputItem } from './input';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { useEffect, useState } from 'react';
-import { useAxios } from '../../../hooks/axios';
+import { useState } from 'react';
 
 export const InputContainer = ({
   state,
@@ -10,37 +9,12 @@ export const InputContainer = ({
   dispatch,
   companies,
 }) => {
-  const [anchorEl, setAnchorEl] = useState(null);
   const [anotherAnchorEl, setAnotherAnchorEl] = useState(null);
-  const [admins, setAdmins] = useState([]);
-  const [error, setError] = useState('');
-
-  const adminsReq = useAxios({
-    url: '/admin/all',
-    method: 'get',
-  });
-
-  useEffect(() => {
-    adminsReq.execute({});
-  }, []);
-
-
-  useEffect(() => {
-    if (adminsReq.error || !adminsReq.response) return;
-    setAdmins(adminsReq.response.admins);
-  }, [adminsReq.response, adminsReq.error]);
-
-  const handleOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
   const handleAnotherOpen = (event) => {
     setAnotherAnchorEl(event.currentTarget);
   };
 
-  const open = Boolean(anchorEl);
   const anotherOpen = Boolean(anotherAnchorEl);
-  const id = open ? 'simple-popover' : undefined;
   const anotherId = anotherOpen ? 'another-popover' : undefined;
 
   const handleCompanySelect = (company) => {
@@ -57,7 +31,6 @@ export const InputContainer = ({
       payload: company.id,
     });
     setAnotherAnchorEl(null);
-    setError(''); 
   };
 
   return (
@@ -174,83 +147,6 @@ export const InputContainer = ({
            />
           </>
         )}
-      </Container>
-      <Container>
-        <Typography
-          variant="h5"
-          sx={{
-            marginBottom: '5%',
-            fontWeight: 'bold',
-            fontSize: '22px',
-          }}
-        >
-          Key Person
-        </Typography>
-        <InputItem
-          label="Name"
-          value={state.consultant.name}
-          executeDispatch={executeDispatch('consultant name')}
-        />
-        <InputItem
-          label="Phone"
-          value={state.consultant.phone}
-          executeDispatch={executeDispatch('consultant phone')}
-        />
-        <InputItem
-          label="Email"
-          value={state.consultant.email}
-          executeDispatch={executeDispatch('consultant email')}
-        />
-        <InputItem
-          label="Pivot consultant:"
-          value={state.consultant.sleepScienceConsultant.name}
-          executeDispatch={executeDispatch('sleep-science-consultant')}
-          textFieldProps={{
-            onClick: handleOpen,
-            disabled: true,
-            InputProps: {
-              endAdornment: <ArrowDropDownIcon />,
-            },
-          }}
-          textStyles={{
-            cursor: 'pointer',
-          }}
-          id={id}
-        />
-        <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'left',
-          }}
-          sx={{
-            overflowY: 'auto',
-          }}
-        >
-          {admins.map((admin, index) => (
-            <Typography
-              key={admin.id + index}
-              sx={{
-                p: 2,
-                fontSize: '14px',
-                fontWeight: '500',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                dispatch({
-                  type: 'Pivot-consultant',
-                  payload: admin,
-                });
-                setAnchorEl(null);
-              }}
-            >
-              {admin.name}
-            </Typography>
-          ))}
-        </Popover>
       </Container>
     </Container>
   );

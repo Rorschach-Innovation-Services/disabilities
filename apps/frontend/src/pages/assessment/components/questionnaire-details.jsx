@@ -66,7 +66,7 @@ export const QuestionnaireDetails = ({ state, dispatch }) => {
               borderRadius: '10px',
             }}
             onClick={() => {
-              push('/assessment/new-department', {
+              push('/assessment/respondent', {
                 companyID: location.state ? location.state.id : null,
                 questionnaire: state.selected,
               });

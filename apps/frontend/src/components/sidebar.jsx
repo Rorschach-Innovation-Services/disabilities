@@ -11,6 +11,7 @@ import RadarIcon from '../assets/icons/chart-radar.svg';
 import ActionPlan from '../assets/icons/action-Icon.svg';
 import { useHistory } from 'react-router-dom';
 import { Colours } from '../colours';
+import { useLocalStorage } from '../hooks/storage';
 
 
 const items = [
@@ -33,7 +34,7 @@ const items = [
     key: 'clients',
   },
   {
-    text: 'Staff',
+    text: 'Manage Users',
     icon: StuffIcon,
     route: '/staff',
     key: 'staff',
@@ -52,7 +53,7 @@ const items = [
   },
   {
     text: 'Action Plan',
-    icon:  ActionPlan, 
+    icon:  ActionPlan,
     route: '/action-plan',
     key: 'action-plan',
   },
@@ -62,7 +63,6 @@ const items = [
     route: '/settings',
     key: 'settings',
   },
-  
 ];
 
 const SideBarListItem = ({
@@ -127,18 +127,65 @@ const SideBarListItem = ({
 // Used for navigation for authenticated sleep scientist
 export const SideBar = () => {
   const { push, location } = useHistory();
+  const { role } = useLocalStorage();
   const pathnameList = location.pathname.split('/');
   const [selected, setSelected] = useState(
     pathnameList[pathnameList.length - 1]
   );
 
+  // Determine if the current session has a respondent who filled the form
+  const hasRespondentContext = (() => {
+    try {
+      const eid = localStorage.getItem('respondentEmployeeId');
+      const email = localStorage.getItem('respondentEmail');
+      return Boolean((eid && eid.trim()) || (email && email.trim()));
+    } catch {
+      return false;
+    }
+  })();
+
   const isSelected = (item) => {
     const route = item.route.toLowerCase();
     const key = item.key.toLowerCase();
     const lastRouteName = pathnameList[route.split('/').length - 1];
+
+    // Highlight Clients when on New Department flow
+    const currentPath = location.pathname.toLowerCase();
+    if (currentPath.startsWith('/assessment/new-department')) {
+      return key === 'clients';
+    }
+
     if (key === lastRouteName) return true;
     return false;
   };
+
+  // Filter by role but keep original order/layout
+  const r = (role || '').toLowerCase();
+  // Only client roles can start assessments
+  const canStartAssessment = r === 'client_super' || r === 'client_user';
+  const canSeeQuestionnaireBank = r === 'administrator' || r === 'admin' || r === 'pivot';
+  const canSeeClients = r === 'administrator' || r === 'admin' || r === 'pivot';
+  const canSeeStaff = r === 'administrator' || r === 'admin';
+  const visibleItems = items.filter((item) => {
+    switch (item.key) {
+      case 'questions':
+        return canStartAssessment;
+      case 'live-dashboard': {
+        // Hide Live Dashboard for normal client roles until form is filled
+        const isClientNormal = r === 'client_user' || r === 'client';
+        if (isClientNormal) return hasRespondentContext;
+        return true;
+      }
+      case 'questionnaire-bank':
+        return canSeeQuestionnaireBank;
+      case 'clients':
+        return canSeeClients;
+      case 'staff':
+        return canSeeStaff;
+      default:
+        return true; // dashboard, live-dashboard, action-plan, settings
+    }
+  });
 
   return (
     <Container
@@ -170,7 +217,7 @@ export const SideBar = () => {
         />
       </Container>
 
-      {items.map((item) => (
+      {visibleItems.map((item) => (
         <SideBarListItem
           key={item.text}
           icon={item.icon}

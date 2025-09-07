@@ -10,8 +10,8 @@ import { ClientInfo } from './components/client-info';
 import { useLocalStorage } from '../../hooks/storage';
 import { useAxios } from '../../hooks/axios';
 import { ChartArea } from './components/chart-area';
-import { useMediaStorage } from '../../hooks/media';
-import { getKey } from '../../utils/get-key';
+// import { useMediaStorage } from '../../hooks/media';
+// import { getKey } from '../../utils/get-key';
 import { Loading } from '../../components/loading';
 import { Shell } from '../../components/shell.jsx';
 import { Container } from '@mui/system';
@@ -30,7 +30,7 @@ export const Dashboard = () => {
   const { push } = useHistory();
   const [name, setName] = useState('Admin');
   const [linksLoaded, setLinksLoaded] = useState(false);
-  const media = useMediaStorage();
+  // const media = useMediaStorage();
   const averagesRequest = useAxios({
     url: '/assessments/averages',
     method: 'get',
@@ -73,20 +73,13 @@ export const Dashboard = () => {
   }, [averagesRequest.response]);
 
   useEffect(() => {
-    if (!clientRequest.response || !media.response || linksLoaded) return;
-    const getLinks = async () => {
-      const list = clientRequest.response.companies;
-      for (let i = 0; i < list.length; i++) {
-        if (!list[i].logo) setLinks((prev) => [...prev, '']);
-        else {
-          const url = await media.retrieve(getKey(list[i].logo));
-          setLinks((prev) => [...prev, url]);
-        }
-      }
-    };
-    getLinks();
+    if (!clientRequest.response || linksLoaded) return;
+    const list = clientRequest.response.companies;
+    for (let i = 0; i < list.length; i++) {
+      setLinks((prev) => [...prev, list[i].logo || '']);
+    }
     setLinksLoaded(true);
-  }, [media.response, clientRequest.response]);
+  }, [clientRequest.response, linksLoaded]);
 
   useEffect(() => {
     if (tasksRequest.error || !tasksRequest.response) return;

@@ -21,6 +21,13 @@ export const StaffReducer = (state, action) => {
                 ...state,
                 adminClients: action.payload
             }
+        case "remove-staff-member":
+            return {
+                ...state,
+                staffMembers: (state.staffMembers || []).filter((m) => (m?.id || m?._id) !== action.payload),
+                viewedStaffMember: {},
+                adminClients: [],
+            }
         default:
             return state;
     }

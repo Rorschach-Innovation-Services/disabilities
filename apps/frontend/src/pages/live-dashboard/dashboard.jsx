@@ -1,5 +1,6 @@
 import { Shell } from '../../components/shell';
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Grid,
   Stack,
@@ -11,6 +12,7 @@ import {
   Button,
 } from '@mui/material';
 import { useAxios } from '../../hooks/axios';
+import { useLocalStorage } from '../../hooks/storage';
 import { Loading } from '../../components/loading';
 
 // Polar wheel component 
@@ -23,12 +25,17 @@ import { Slideshow } from './components/slideshow';
 import ChartSwitcherBanner from "./components/ChartSwitcherBanner";
 
 export const LiveDashboard = () => {
+  const location = useLocation();
   const [isSlideshowOpen, setSlideshowOpen] = useState(false);
 
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [departments, setDepartments] = useState([]);
+  const { role, companyId } = useLocalStorage();
+  const [employeeIdFilter, setEmployeeIdFilter] = useState('');
+  const [presetCompany, setPresetCompany] = useState('');
+  const [presetDepartment, setPresetDepartment] = useState('');
 
   // chart payload
   const [spiderChart, setSpiderChart] = useState(null);
@@ -52,6 +59,19 @@ export const LiveDashboard = () => {
     clientsRequest.execute();
   }, []);
 
+  // Parse query/localStorage presets for employee/company/department
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search || '');
+      const eid = params.get('employeeId') || localStorage.getItem('respondentEmployeeId') || '';
+      const dept = params.get('departmentId') || localStorage.getItem('respondentDepartmentId') || '';
+      const comp = params.get('companyId') || localStorage.getItem('respondentCompanyId') || '';
+      setEmployeeIdFilter(eid);
+      setPresetDepartment(dept);
+      setPresetCompany(comp);
+    } catch {}
+  }, [location.search]);
+
   useEffect(() => {
     setSelectedDepartment('');
     setDepartments([]);
@@ -59,32 +79,49 @@ export const LiveDashboard = () => {
     if (client) {
       setDepartments(client.departments || []);
       if ((client.departments || []).length > 0) {
-        setSelectedDepartment(client.departments[0].id);
+        // Prefer preset department if available
+        const deps = client.departments || [];
+        const preset = presetDepartment;
+        const found = preset ? deps.find((d) => d.id === preset) : null;
+        setSelectedDepartment((found && found.id) || deps[0].id);
       }
     }
-  }, [selectedClient, clients]);
+  }, [selectedClient, clients, presetDepartment]);
 
   useEffect(() => {
     if (selectedDepartment) {
-      assessmentsRequest.executeWithParameters({
-        url: `/assessments/departments/${selectedDepartment}`,
-      })();
+      const url = `/assessments/departments/${selectedDepartment}` + (employeeIdFilter ? `?employeeId=${employeeIdFilter}` : '');
+      assessmentsRequest.executeWithParameters({ url, method: 'get' })();
     }
-  }, [selectedDepartment]);
+  }, [selectedDepartment, employeeIdFilter]);
 
   useEffect(() => {
     if (clientsRequest.response && !clientsRequest.error) {
-      const companies = clientsRequest.response.companies || [];
+      const allCompanies = clientsRequest.response.companies || [];
+      const r = String(role || '').toLowerCase();
+      const isClient = r === 'client_super' || r === 'client_user' || r === 'client';
+      const companies = isClient
+        ? allCompanies.filter((c) => c.id === companyId)
+        : allCompanies;
       setClients(companies);
       if (companies.length > 0) {
-        setSelectedClient(companies[0].id);
-        setDepartments(companies[0].departments || []);
-        if ((companies[0].departments || []).length > 0) {
-          setSelectedDepartment(companies[0].departments[0].id);
+        // Prefer preset company if available
+        const preferredCompanyId = (presetCompany && companies.find((c) => c.id === presetCompany)?.id) || companies[0].id;
+        setSelectedClient(preferredCompanyId);
+        const deps = (companies.find((c) => c.id === preferredCompanyId)?.departments) || [];
+        setDepartments(deps);
+        if (deps.length > 0) {
+          // Prefer preset department if available
+          const preferredDeptId = (presetDepartment && deps.find((d) => d.id === presetDepartment)?.id) || deps[0].id;
+          setSelectedDepartment(preferredDeptId);
         }
+      } else {
+        setSelectedClient('');
+        setDepartments([]);
+        setSelectedDepartment('');
       }
     }
-  }, [clientsRequest.response, clientsRequest.error]);
+  }, [clientsRequest.response, clientsRequest.error, presetCompany, presetDepartment]);
 
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {

@@ -1,0 +1,140 @@
+import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { Shell } from '../../components/shell';
+import { useAxios } from '../../hooks/axios';
+import { useHistory, useLocation } from 'react-router-dom';
+import { Loading } from '../../components/loading';
+
+export const RespondentDetails = () => {
+  const { push } = useHistory();
+  const location = useLocation();
+  const [name, setName] = useState('');
+  const [role, setRole] = useState('');
+  const [email, setEmail] = useState('');
+
+  // Inputs passed from Start Assessment
+  const companyID = location.state ? location.state.companyID : null;
+  const questionnaire = location.state ? location.state.questionnaire : null;
+
+  const registerReq = useAxios({ url: '/companies/register', method: 'post' });
+
+  useEffect(() => {
+    // Guard: If required context is missing, send back to Start Assessment
+    if (!companyID || !questionnaire) return;
+  }, [companyID, questionnaire]);
+
+  const handleContinue = async () => {
+    // Basic validation
+    if (!name.trim() || !role.trim() || !email.trim()) return;
+
+    // Create a lightweight department for this direct assessment
+    const departmentName = 'Direct Assessment';
+    await registerReq.executeWithData({
+      id: companyID,
+      department: departmentName,
+      employeeSize: 1,
+      employees: [],
+      questionnaireId: questionnaire.id,
+    });
+  };
+
+  useEffect(() => {
+    if (registerReq.loading) return;
+    if (registerReq.error || !registerReq.response) return;
+
+    const { company, department, questionnaireId } = registerReq.response;
+    // Navigate to questionnaire for immediate completion
+    push(`/questionnaire/${questionnaireId}/${company}/${department}/`, {
+      employeeEmail: email,
+      employeeName: name,
+      employeeRole: role,
+      questionnaireId,
+      companyId: company,
+      departmentId: department,
+    });
+  }, [registerReq.response, registerReq.error]);
+
+  if (!companyID || !questionnaire)
+    return (
+      <Shell heading="Respondent Details">
+        <Typography>Missing context. Please start again.</Typography>
+        <Button
+          sx={{ mt: 2, textTransform: 'none' }}
+          variant="contained"
+          onClick={() => push('/assessment/questions')}
+        >
+          Back to Start Assessment
+        </Button>
+      </Shell>
+    );
+
+  if (registerReq.loading)
+    return (
+      <Box
+        sx={{
+          width: '100%',
+          height: '100vh',
+          textAlign: 'center',
+          transform: 'translateY(50%)',
+        }}
+      >
+        <Loading
+          textSx={{ fontSize: '25px' }}
+          loadingSx={{ width: '250px !important', height: '250px !important' }}
+          containerSx={{ margin: 'auto', marginTop: '-100px', textAlign: 'center' }}
+        />
+      </Box>
+    );
+
+  return (
+    <Shell heading="Respondent Details">
+      <Container sx={{ maxWidth: '800px !important' }}>
+        <Typography sx={{ mb: 3 }}>
+          Please enter the respondent’s details. We will take you straight to the questionnaire next — no link will be generated.
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            label="Full Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <TextField
+            label="Role / Job Position"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          />
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2, mt: 2 }}>
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: '#000', color: '#fff', textTransform: 'none', borderRadius: '10px' }}
+              onClick={() => push('/assessment/questions')}
+            >
+              Back
+            </Button>
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: '#000', color: '#fff', textTransform: 'none', borderRadius: '10px' }}
+              disabled={!name.trim() || !role.trim() || !email.trim()}
+              onClick={handleContinue}
+            >
+              Continue
+            </Button>
+          </Box>
+        </Box>
+      </Container>
+    </Shell>
+  );
+};
+

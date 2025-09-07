@@ -8,8 +8,9 @@ import {
   Legend,
   Title,
 } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend, Title);
+ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend, Title, ChartDataLabels);
 
 // 5 sector colors (same family as BalanceWheel)
 const SECTOR_COLORS = [
@@ -20,22 +21,36 @@ const SECTOR_COLORS = [
   'rgba(139, 92, 246, 0.75)', // Transfer
 ];
 
-const PolarSectorWheel = ({ sectorSummary, mode = 'raw', title = 'Category Averages (5 sectors)' }) => {
+const PolarSectorWheel = ({
+  sectorSummary,
+  mode = 'raw', // default to raw
+  title = 'Category Averages (5 sectors)',
+}) => {
   if (!sectorSummary?.length) {
-    return <div style={{ textAlign: 'center', color: '#64748b' }}>No sector data available.</div>;
+    return (
+      <div style={{ textAlign: 'center', color: '#64748b' }}>
+        No sector data available.
+      </div>
+    );
   }
 
-  const { labels, values } = useMemo(() => {
-    const lbls = sectorSummary.map(s => s.sector);
-    const vals = sectorSummary.map(s => mode === 'raw' ? s.pct : s.raw);
-    return { labels: lbls, values: vals };
-  }, [sectorSummary, mode]);
+  // interpret mode flags (not used; preserving existing semantics)
+
+  const { labels, pctValues, rawValues } = useMemo(() => {
+    const lbls = sectorSummary.map((s) => s.sector);
+    const p = sectorSummary.map((s) => s.pct ?? 0);
+    const r = sectorSummary.map((s) => s.raw ?? 0);
+    return { labels: lbls, pctValues: p, rawValues: r };
+  }, [sectorSummary]);
+
+  // preserve existing mode semantics
+  const values = mode === 'raw' ? pctValues : rawValues;
 
   const chartData = {
     labels,
     datasets: [
       {
-        label: mode === 'raw' ? 'Average (%)' : 'Average',
+        label: mode === 'raw' ? 'Average (%)' : 'Average (0–5)',
         data: values,
         backgroundColor: SECTOR_COLORS,
         borderColor: '#fff',
@@ -49,17 +64,36 @@ const PolarSectorWheel = ({ sectorSummary, mode = 'raw', title = 'Category Avera
     maintainAspectRatio: false,
     aspectRatio: 1,
     plugins: {
-      title: { display: true, text: title, font: { size: 16, weight: '600' } },
+      title: {
+        display: true,
+        text: title,
+        font: { size: 16, weight: '600' },
+      },
       legend: { display: true, position: 'bottom' },
       tooltip: {
+        enabled: true,
         callbacks: {
-          label: ctx => {
-            const v = ctx.parsed;
-            return mode === 'percent'
-              ? `${ctx.label}: ${v.toFixed(1)}%`
-              : `${ctx.label}: ${v.toFixed(2)}`;
+          label: (ctx) => {
+            const i = ctx.dataIndex ?? 0;
+            const sector = ctx.label || '';
+            const rawVal = rawValues[i] ?? 0;
+            return `${sector}: ${rawVal.toFixed(2)} / 5`;
           },
         },
+      },
+      datalabels: {
+        display: true,
+        formatter: (value, context) => {
+          const i = context.dataIndex ?? 0;
+          const rawVal = rawValues[i] ?? 0;
+          return rawVal.toFixed(2);
+        },
+        color: '#111827',
+        backgroundColor: 'rgba(255,255,255,0.78)',
+        borderRadius: 4,
+        padding: 4,
+        font: { weight: '600', size: 10 },
+        clip: false,
       },
     },
     scales: {
@@ -78,7 +112,9 @@ const PolarSectorWheel = ({ sectorSummary, mode = 'raw', title = 'Category Avera
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: 700, height: 480, margin: '0 auto' }}>
+    <div
+      style={{ width: '100%', maxWidth: 700, height: 480, margin: '0 auto' }}
+    >
       <PolarArea data={chartData} options={options} />
     </div>
   );

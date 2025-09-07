@@ -31,6 +31,26 @@ export const StaffItem = ({ setOpen, data, state , dispatch}) => {
             setOpen(false);
         }
     }
+
+     const prettyRole = (role) => {
+        const r = (role || '').toLowerCase();
+        switch (r) {
+            case 'administrator':
+                return 'Administrator';
+            case 'admin':
+                return 'Admin';
+            case 'pivot':
+                return 'Pivot';
+            case 'client_super':
+                return 'Client Super';
+            case 'client_user':
+            case 'client':
+                return 'Client Normal';
+            default:
+                return 'User';
+        }
+    }
+
     return (
         <Container
             sx={{
@@ -96,7 +116,7 @@ export const StaffItem = ({ setOpen, data, state , dispatch}) => {
                     color: !viewed ? Colours.blue : Colours.yellow
                 }}
             >
-                {data.position || "Admin"}
+                {prettyRole(data.role)}
             </Typography>
         </Container>
     )

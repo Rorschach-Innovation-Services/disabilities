@@ -8,8 +8,9 @@ import {
   Legend,
   Title,
 } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend, Title);
+ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend, Title, ChartDataLabels);
 
 // Backend categories 
 const SECTORS = ['Prepare', 'Integrate', 'Value-Add', 'Optimise', 'Transfer'];
@@ -39,12 +40,13 @@ const PolarBalanceWheel = ({
   const raw = spiderChart?.dataRaw || [];
   const maxScore = Number(spiderChart?.meta?.maxScore) || 5;
 
-  // pick values (percent or raw)
-  const values = (mode === 'raw' ? pct : raw).slice(0, axes.length);
+  // interpret mode flags
+  // (kept for potential future use)
 
   // Map values to canonical AXES order
-  const { labels, data, fills, borders } = useMemo(() => {
-    const numbers = [];
+  const { labels, dataPct, dataRaw, fills, borders } = useMemo(() => {
+    const pctNumbers = [];
+    const rawNumbers = [];
     const fillColors = [];
     const borderColors = [];
 
@@ -53,19 +55,24 @@ const PolarBalanceWheel = ({
       const spokeIdx = i % 3;              // which sub inside sector
 
       const incomingIndex = axes.indexOf(axis);
-      const v = incomingIndex >= 0 ? (values[incomingIndex] ?? 0) : 0;
+      const pv = incomingIndex >= 0 ? (pct[incomingIndex] ?? 0) : 0;
+      const rv = incomingIndex >= 0 ? (raw[incomingIndex] ?? 0) : 0;
 
-      numbers.push(v);
+      pctNumbers.push(pv);
+      rawNumbers.push(rv);
       fillColors.push(SECTOR_FILLS[sectorIdx][spokeIdx]);
       borderColors.push(SECTOR_BORDERS[sectorIdx]);
     });
 
-    return { labels: AXES, data: numbers, fills: fillColors, borders: borderColors };
-  }, [axes, values]);
+    return { labels: AXES, dataPct: pctNumbers, dataRaw: rawNumbers, fills: fillColors, borders: borderColors };
+  }, [axes, pct, raw]);
 
-  if (!labels.length || !data.length) {
+  if (!labels.length || (!dataPct.length && !dataRaw.length)) {
     return <div style={{ textAlign: 'center', color: '#64748b' }}>No data available.</div>;
   }
+
+  // choose dataset values for display (preserve existing mode semantics)
+  const data = mode === 'raw' ? dataPct : dataRaw;
 
   const chartData = {
     labels,
@@ -90,12 +97,25 @@ const PolarBalanceWheel = ({
       tooltip: {
         callbacks: {
           label: ctx => {
-            const value = ctx.parsed;
-            return mode === 'raw'
-              ? `${ctx.label}: ${value.toFixed(1)}%`
-              : `${ctx.label}: ${value.toFixed(2)} / ${maxScore}`;
+            const i = ctx.dataIndex ?? 0;
+            const rawVal = dataRaw[i] ?? 0;
+            return `${ctx.label}: ${rawVal.toFixed(2)} / ${maxScore}`;
           },
         },
+      },
+      datalabels: {
+        display: true,
+        formatter: (value, context) => {
+          const i = context.dataIndex ?? 0;
+          const rawVal = dataRaw[i] ?? 0;
+          return rawVal.toFixed(2);
+        },
+        color: '#111827',
+        backgroundColor: 'rgba(255,255,255,0.78)',
+        borderRadius: 4,
+        padding: 4,
+        font: { weight: '600', size: 10 },
+        clip: false,
       },
     },
     scales: {

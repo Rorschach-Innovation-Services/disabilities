@@ -9,6 +9,7 @@ export type AdministratorAttributes = {
   location: string;
   bio: string;
   companyId: string;
+  departmentId: string;
   secondaryEmail: string;
   role: string;
   deleted: boolean;

@@ -51,7 +51,7 @@ export const saveEmployee = async (request: Request, response: Response) => {
 
       return response
         .status(200)
-        .json({ message: 'Employee Saved Successfully' });
+        .json({ message: 'Employee Saved Successfully', employee: employeeId });
     }
     const employeeData = await Employee.create({
       companyId: company,

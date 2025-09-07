@@ -66,7 +66,7 @@ export const Welcome = ({ state, dispatch, handleBegin }) => {
                         place to create productive, inclusive environments 
                         for all. The goal is to foster systems that result 
                         in mutual benefits, ensuring everyone can contribute 
-                        and thrive.
+                        and flourish.
                         <br />
                         <br />
                         All responses are anonymous, and the results will be 

@@ -1,5 +1,5 @@
-import React, { Fragment } from "react";
-import { Typography, TextField, Button, Container } from "@mui/material";
+import React, { Fragment, useMemo } from "react";
+import { Typography, TextField, Button, Container, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { Save } from "@mui/icons-material";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
@@ -16,14 +16,26 @@ const styles = {
   },
 };
 
-export const RegisterContent = ({ formik, loading }) => {
+export const RegisterContent = ({ formik, loading, companies = [] }) => {
   const { push } = useHistory();
+  const role = (formik.values.role || '').toLowerCase();
+  const isClientRole = ['client_super', 'client_user'].includes(role);
+
+  // Compute selected company's departments
+  const selectedCompany = useMemo(
+    () => companies.find((c) => (c._id || c.id) === formik.values.company),
+    [companies, formik.values.company],
+  );
+  const companyDepartments = selectedCompany?.departments || [];
   const setDisabled = () => {
     if (
       formik.errors.name ||
       formik.errors.email ||
       formik.values.name === "" ||
-      formik.values.email === ""
+      formik.values.email === "" ||
+      formik.errors.password ||
+      formik.values.password === "" ||
+      (isClientRole && (!formik.values.company || !formik.values.department))
     )
       return true;
     return false;
@@ -55,8 +67,84 @@ export const RegisterContent = ({ formik, loading }) => {
           whiteSpace: "nowrap",
         }}
       >
-        Register Admin
+        Register User
       </Typography>
+      {/* Role selector */}
+      <FormControl sx={{ width: '300px', mt: '15px' }}>
+        <InputLabel id="role-label" sx={{ fontSize: '12px' }}>User Type</InputLabel>
+        <Select
+          labelId="role-label"
+          id="role"
+          label="User Type"
+          value={formik.values.role}
+          onChange={(e) => {
+            const newRole = e.target.value;
+            formik.setFieldValue('role', newRole);
+            // Clear company and department when switching roles
+            const client = ['client_super', 'client_user'].includes(String(newRole).toLowerCase());
+            if (!client) {
+              formik.setFieldValue('company', '');
+              formik.setFieldValue('department', '');
+            }
+          }}
+          size="small"
+        >
+          <MenuItem value={'administrator'}>Administrator</MenuItem>
+          <MenuItem value={'pivot'}>Pivot</MenuItem>
+          <MenuItem value={'client_super'}>Client Super</MenuItem>
+          <MenuItem value={'client_user'}>Client Normal</MenuItem>
+        </Select>
+      </FormControl>
+      {/* Company selector for client roles */}
+      {isClientRole && (
+        <FormControl sx={{ width: '300px', mt: '10px' }}>
+          <InputLabel id="company-label" sx={{ fontSize: '12px' }}>Company</InputLabel>
+          <Select
+            labelId="company-label"
+            id="company"
+            label="Company"
+            value={formik.values.company}
+            onChange={(e) => {
+              // Set company and reset department selection
+              formik.setFieldValue('company', e.target.value);
+              formik.setFieldValue('department', '');
+            }}
+            size="small"
+          >
+            {companies.map((c) => (
+              <MenuItem value={c._id || c.id} key={c._id || c.id}>
+                {c.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+      {/* Department selector for selected company (client roles) */}
+      {isClientRole && formik.values.company && (
+        <FormControl sx={{ width: '300px', mt: '10px' }}>
+          <InputLabel id="department-label" sx={{ fontSize: '12px' }}>Department</InputLabel>
+          <Select
+            labelId="department-label"
+            id="department"
+            label="Department"
+            value={formik.values.department || ''}
+            onChange={(e) => formik.setFieldValue('department', e.target.value)}
+            size="small"
+          >
+            {companyDepartments.length === 0 ? (
+              <MenuItem value="" disabled>
+                No departments found
+              </MenuItem>
+            ) : (
+              companyDepartments.map((d) => (
+                <MenuItem value={d._id || d.id} key={d._id || d.id}>
+                  {d.name}
+                </MenuItem>
+              ))
+            )}
+          </Select>
+        </FormControl>
+      )}
       <TextField
         variant="outlined"
         placeholder="Name"
@@ -72,6 +160,15 @@ export const RegisterContent = ({ formik, loading }) => {
         helperText={formik.touched.email && formik.errors.email}
         {...formik.getFieldProps("email")}
         sx={{ ...styles.inputs }}
+      />
+      <TextField
+        type="password"
+        variant="outlined"
+        placeholder="Password"
+        error={Boolean(formik.touched.password && formik.errors.password)}
+        helperText={formik.touched.password && formik.errors.password}
+        {...formik.getFieldProps("password")}
+        sx={{ ...styles.inputs, mt: '10px' }}
       />
       {loading ? (
         <LoadingButton

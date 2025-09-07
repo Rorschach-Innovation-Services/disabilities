@@ -15,8 +15,11 @@ import { LoadingButton } from '@mui/lab';
 import { isDate, getHours, getMinutes } from 'date-fns';
 import { CustomMessage } from '../../components/message';
 
-export const Questionnaire = () => {
-  const { companyId, departmentId, questionnaireId } = useParams();
+export const Questionnaire = ({ companyId: propCompanyId, departmentId: propDepartmentId, questionnaireId: propQuestionnaireId, initialEmployee }) => {
+  const routeParams = useParams();
+  const companyId = propCompanyId || routeParams.companyId;
+  const departmentId = propDepartmentId || routeParams.departmentId;
+  const questionnaireId = propQuestionnaireId || routeParams.questionnaireId;
   const [state, dispatch] = useReducer(reducer, initialState);
   const [filled, setFilled] = useState(false); // If questions have been loaded
   const [questionViews, setQuestionViews] = useState([]); // info for each question indexed
@@ -34,13 +37,27 @@ export const Questionnaire = () => {
   });
   useEffect(() => console.log('state', state), [state]);
 
+  // Prefill employee details if provided (embedded usage)
+  useEffect(() => {
+    if (!initialEmployee) return;
+    if (initialEmployee.email) {
+      dispatch({ type: 'employee', payload: { key: 'email', value: initialEmployee.email } });
+    }
+    if (initialEmployee.name) {
+      dispatch({ type: 'employee', payload: { key: 'name', value: initialEmployee.name } });
+    }
+  }, [initialEmployee]);
+
   const sendData = () => {
     saveAssessmentRequest.executeWithData({
       company: companyId,
-      employeeEmail: state.employee.email,
-      questionnaire: state.questions,
       department: departmentId,
       questionnaireId,
+      questionnaire: state.questions,
+      employeeEmail: state.employee.email || initialEmployee?.email,
+      employeeId: (() => { try { return localStorage.getItem('respondentEmployeeId') || undefined; } catch { return undefined; } })(),
+      employeeName: initialEmployee?.name,
+      workTitle: initialEmployee?.workTitle,
     });
   };
 
@@ -152,6 +169,10 @@ export const Questionnaire = () => {
       );
     }
     if (saveAssessmentRequest.error || !saveAssessmentRequest.response) return;
+    try {
+      const eid = saveAssessmentRequest.response.employeeId;
+      if (eid) localStorage.setItem('respondentEmployeeId', eid);
+    } catch {}
     setComplete(true);
   }, [saveAssessmentRequest.response, saveAssessmentRequest.error]);
 

@@ -8,8 +8,9 @@ import {
   Legend,
   Title,
 } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend, Title);
+ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend, Title, ChartDataLabels);
 
 // 3 sub-dimension colors (consistent theme)
 const SUB_COLORS = [
@@ -23,11 +24,17 @@ const PolarSubWheel = ({ subSummary, mode = 'raw', title = 'Sub-Dimension Averag
     return <div style={{ textAlign: 'center', color: '#64748b' }}>No sub-dimension data available.</div>;
   }
 
-  const { labels, values } = useMemo(() => {
-    const lbls = subSummary.map(s => s.sub);
-    const vals = subSummary.map(s => mode === 'raw' ? s.pct : s.raw);
-    return { labels: lbls, values: vals };
-  }, [subSummary, mode]);
+  // interpret mode flags (not used; preserving existing semantics)
+
+  const { labels, pctValues, rawValues } = useMemo(() => {
+    const lbls = subSummary.map((s) => s.sub);
+    const p = subSummary.map((s) => s.pct ?? 0);
+    const r = subSummary.map((s) => s.raw ?? 0);
+    return { labels: lbls, pctValues: p, rawValues: r };
+  }, [subSummary]);
+
+  // preserve existing mode semantics
+  const values = mode === 'raw' ? pctValues : rawValues;
 
   const chartData = {
     labels,
@@ -52,12 +59,25 @@ const PolarSubWheel = ({ subSummary, mode = 'raw', title = 'Sub-Dimension Averag
       tooltip: {
         callbacks: {
           label: ctx => {
-            const v = ctx.parsed;
-            return mode === 'raw'
-              ? `${ctx.label}: ${v.toFixed(1)}%`
-              : `${ctx.label}: ${v.toFixed(2)}`;
+            const i = ctx.dataIndex ?? 0;
+            const rawVal = rawValues[i] ?? 0;
+            return `${ctx.label}: ${rawVal.toFixed(2)} / 5`;
           },
         },
+      },
+      datalabels: {
+        display: true,
+        formatter: (value, context) => {
+          const i = context.dataIndex ?? 0;
+          const rawVal = rawValues[i] ?? 0;
+          return rawVal.toFixed(2);
+        },
+        color: '#111827',
+        backgroundColor: 'rgba(255,255,255,0.78)',
+        borderRadius: 4,
+        padding: 4,
+        font: { weight: '600', size: 10 },
+        clip: false,
       },
     },
     scales: {

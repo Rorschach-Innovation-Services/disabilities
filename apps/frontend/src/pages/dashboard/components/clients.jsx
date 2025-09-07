@@ -329,7 +329,7 @@ export const Clients = ({ state, dispatch, links }) => {
               marginBottom: '20px',
             }}
           >
-            Send Second Questionnaire
+            Employees
           </Typography>
           {loading && (
             <Loading
@@ -431,7 +431,7 @@ export const Clients = ({ state, dispatch, links }) => {
               marginBottom: '20px',
             }}
           >
-            Send Second Questionnaire
+            Employees
           </Typography>
           <Table
             sx={{

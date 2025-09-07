@@ -1,4 +1,4 @@
-import { Assessment, Company, Department } from '../../models/';
+import { Assessment, Company, Department, Employee } from '../../models/';
 import { Request, Response } from 'express';
 
 
@@ -72,14 +72,61 @@ export const getDepartmentAssessments = async (
       return response.status(404).json({ message: 'Department Not Found' });
     }
 
+    // Enforce client scoping: client roles must only access within their own company
+    const user: any = (request as any).user || {};
+    const role = String(user?.role || '').toLowerCase();
+    const isClientUser = role === 'client_user' || role === 'client';
+    const isClientSuper = role === 'client_super';
+    if (isClientUser || isClientSuper) {
+      const userCompanyId = String(user?.companyId || '');
+      if (!userCompanyId || userCompanyId !== department.companyId) {
+        return response
+          .status(403)
+          .json({ message: 'Forbidden - Department not within your company' });
+      }
+    }
+
     // Load all assessments for that department
     const assessmentRequest = await Assessment.query(
       { companyId: department.companyId },
       { beginsWith: departmentId, fetchAll: true },
     );
 
-    const assessments =
+    let assessments =
       assessmentRequest.items.filter((item) => item._en === 'assessment') || [];
+
+    // Optional per-employee filter (ephemeral use-case)
+    // Accepts query ?employeeId=... and restricts results to that employee
+    // Only allowed within the same company and department context
+    const eidParam = String((request.query as any).employeeId || '').trim();
+    if (eidParam) {
+      const emp = await Employee.get({ id: eidParam });
+      if (!emp) {
+        return response.status(404).json({ message: 'Employee Not Found' });
+      }
+      // Enforce that the employee belongs to this department/company
+      if (emp.companyId !== department.companyId || emp.departmentId !== department.id) {
+        return response
+          .status(403)
+          .json({ message: 'Forbidden - Employee not within this department' });
+      }
+      assessments = assessments.filter((a) => a.employeeId === eidParam);
+    } else if (isClientUser) {
+      // If normal client user and no explicit employeeId provided,
+      // restrict to only their own assessments (matched by employee email)
+      const employeesRes = await Employee.query(
+        { _en: 'employee' },
+        { beginsWith: `${department.companyId}:${department.id}` },
+      );
+      const employees = (employeesRes.items || []).filter((e: any) => e._en === 'employee');
+      const userEmail = String(user?.email || '').toLowerCase();
+      const self = employees.find((e: any) => String(e.email || '').toLowerCase() === userEmail);
+      if (!self) {
+        assessments = [];
+      } else {
+        assessments = assessments.filter((a) => a.employeeId === self.id);
+      }
+    }
 
     // Remove (no matrix/radar) Build spider data 
     const spider = await getSpiderSeries(assessments, {

@@ -198,7 +198,7 @@ export const Routes = () => {
           path="/questionnaire-add"
           component={QuestionnaireAdd}
         />
-        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super", "client_user"]}
+        <RoleRoute allowed={["client_super", "client_user"]}
           exact
           path="/assessment/questions"
           component={Assessment}
@@ -208,7 +208,7 @@ export const Routes = () => {
           path="/assessment/new-department"
           component={RegisterCompanyDepartment}
         />
-        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super", "client_user"]}
+        <RoleRoute allowed={["client_super", "client_user"]}
           exact
           path="/assessment/respondent"
           component={RespondentDetails}
