@@ -1,4 +1,4 @@
-import {
+import type {
   APIGatewayProxyEventHeaders,
   APIGatewayProxyEventQueryStringParameters,
   APIGatewayProxyEventV2WithRequestContext,
