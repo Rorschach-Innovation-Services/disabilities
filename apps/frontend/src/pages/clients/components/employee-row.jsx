@@ -129,6 +129,15 @@ export const CustomTableEmployeeRow = ({
         }}
       >
         <Typography sx={{ ...styles.tableRowText }}>
+          {employee.email || '—'}
+        </Typography>
+      </TableCell>
+      <TableCell
+        sx={{
+          padding: changePadding ? '8px' : '16px',
+        }}
+      >
+        <Typography sx={{ ...styles.tableRowText }}>
           {employee.lastAssessmentDate === 'none'
             ? 'none'
             : format(new Date(employee.lastAssessmentDate), 'dd/MM/yyyy')}

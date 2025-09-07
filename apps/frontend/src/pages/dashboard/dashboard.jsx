@@ -46,7 +46,8 @@ export const Dashboard = () => {
   console.log('Api', import.meta.env);
   const { role } = useLocalStorage();
   const r = (role || '').toLowerCase();
-  const isAdmin = r === 'administrator' || r === 'admin';
+  const isAdmin = r === 'administrator' || r === 'admin' || r === 'pivot';
+  const isClientNormal = r === 'client_user' || r === 'client';
   const canStartAssessmentCTA = r === 'client_super' || r === 'client_user';
 
   // Execute network requests to fetch data
@@ -192,25 +193,40 @@ export const Dashboard = () => {
               />
             </Container>
             {/* <StatsList state={state} /> */}
-            {!isAdmin &&
-              getClientDepartmentsForSecondQuestionnaire(state.clients)
-                .length === 0 && (
-                <Box>
-                  <Typography
-                    sx={{
-                      fontSize: '20px',
-                      textAlign: 'center',
-                      marginTop: '80px',
-                    }}
-                  >
-                    There are no companies ready for the second questionnaire
-                  </Typography>
-                </Box>
-              )}
-            {(isAdmin ||
-              getClientDepartmentsForSecondQuestionnaire(state.clients).length >
-                0) && (
-              <Clients state={state} dispatch={dispatch} links={links} />
+            {isClientNormal ? (
+              <Box sx={{ mt: '60px', textAlign: 'center' }}>
+                <Typography sx={{ fontSize: '18px', mb: '10px' }}>
+                  Your Questionnaire
+                </Typography>
+                <Typography sx={{ fontSize: '14px', mb: '14px' }}>
+                  View your assessment results and progress in the Live Dashboard.
+                </Typography>
+                <Button variant="contained" onClick={() => push('/live-dashboard')}>
+                  View My Dashboard
+                </Button>
+              </Box>
+            ) : (
+              <>
+                {!isAdmin &&
+                  getClientDepartmentsForSecondQuestionnaire(state.clients)
+                    .length === 0 && (
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontSize: '20px',
+                          textAlign: 'center',
+                          marginTop: '80px',
+                        }}
+                      >
+                        There are no companies ready for the second questionnaire
+                      </Typography>
+                    </Box>
+                  )}
+                {(isAdmin ||
+                  getClientDepartmentsForSecondQuestionnaire(state.clients).length > 0) && (
+                  <Clients state={state} dispatch={dispatch} links={links} />
+                )}
+              </>
             )}
           </Container>
           <Container

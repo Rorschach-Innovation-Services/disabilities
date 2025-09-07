@@ -18,6 +18,7 @@ import {
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { Colours } from '../../../colours';
 import { useAxios } from '../../../hooks/axios';
+import { useLocalStorage } from '../../../hooks/storage';
 import { Loading } from '../../../components/loading';
 import { useHistory } from 'react-router-dom';
 
@@ -73,6 +74,10 @@ export const getClientDepartmentsForSecondQuestionnaire = (clients) => {
 export const Clients = ({ state, dispatch, links }) => {
   const [step, setStep] = useState(1);
   const { push } = useHistory();
+  const { role } = useLocalStorage();
+  const r = String(role || '').toLowerCase();
+  const isClientSuper = r === 'client_super';
+  const isAdminOrPivot = r === 'administrator' || r === 'admin' || r === 'pivot';
   const [open, setOpen] = React.useState(false);
   const headings = ['', 'Company Name', 'Date Added', 'Departments', 'Email'];
   const departmentHeadings = [
@@ -81,6 +86,7 @@ export const Clients = ({ state, dispatch, links }) => {
     'Date Added',
     'Employees',
     'Completed Q1',
+    'See all',
   ];
   const [selectedDepartment, setSelectedDepartment] = useState(null);
   const { executeWithParameters, response, error, loading } = useAxios({
@@ -122,24 +128,16 @@ export const Clients = ({ state, dispatch, links }) => {
 
   // return only 4 clients to display at a time
   const getClients = () => {
-    if (!state.clients) return;
+    if (!state.clients) return [];
 
-    const tempClients = state.clients
-      .map((item) => {
-        const eligibleDepartments = getDepartmentsForSecondQuestionnaire(
-          item.departments
-        );
-        if (eligibleDepartments.length > 0) return item;
-      })
-      .filter((item) => typeof item !== 'undefined');
-
+    const allClients = state.clients;
     const result = [];
 
     let i = (step - 1) * CLIENTS_TO_DISPLAY;
     let count = 0;
 
-    while (count < CLIENTS_TO_DISPLAY && i < tempClients.length) {
-      result.push(tempClients[i]);
+    while (count < CLIENTS_TO_DISPLAY && i < allClients.length) {
+      result.push(allClients[i]);
       i++;
       count++;
     }
@@ -155,9 +153,7 @@ export const Clients = ({ state, dispatch, links }) => {
       return <TableBody></TableBody>;
     return (
       <TableBody>
-        {getDepartmentsForSecondQuestionnaire(
-          state.selectedClient.departments
-        ).map((row, index) => (
+        {(state.selectedClient.departments || []).map((row, index) => (
           <TableRow
             key={row.name + index}
             component={Container}
@@ -222,6 +218,26 @@ export const Clients = ({ state, dispatch, links }) => {
                   : 0}
               </Typography>
             </TableCell>
+            <TableCell
+              sx={{
+                ...styles.tableCell,
+                textAlign: 'center',
+              }}
+            >
+              <Typography
+                sx={{
+                  ...styles.tableRowText,
+                  textDecoration: 'underline',
+                  cursor: 'pointer',
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  push(`/departments/${row.id}?completed=1`);
+                }}
+              >
+                View
+              </Typography>
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -246,6 +262,19 @@ export const Clients = ({ state, dispatch, links }) => {
             }}
             onClick={() => {
               dispatch({ type: 'client', payload: row });
+              // For client super, admin and pivot users, jump straight to employees list for the first department
+              if (isClientSuper || isAdminOrPivot) {
+                const deps = row.departments || [];
+                if (deps.length > 0) {
+                  // Prefer a department with at least one completed questionnaire (Q1)
+                  const preferred =
+                    deps.find(
+                      (d) => d.completedQuestionnaires && d.completedQuestionnaires[1] > 0,
+                    ) || deps[0];
+                  push(`/departments/${preferred.id}?completed=1`);
+                  return;
+                }
+              }
               handleOpen();
             }}
           >
