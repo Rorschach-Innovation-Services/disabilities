@@ -10,10 +10,12 @@ import {
   InputLabel,
   Box,
   Button,
+  Typography,
 } from '@mui/material';
 import { useAxios } from '../../hooks/axios';
 import { useLocalStorage } from '../../hooks/storage';
 import { Loading } from '../../components/loading';
+import { Colours } from '../../colours';
 
 // Polar wheel component 
 import PolarBalanceWheel from './components/PolarBalanceWheel';
@@ -146,43 +148,86 @@ export const LiveDashboard = () => {
   return (
     <Shell heading="Live Dashboard">
       <Stack direction="row" spacing={3} sx={{ marginBottom: '50px' }}>
-        <Box sx={{ minWidth: 200 }}>
-          <FormControl fullWidth>
-            <InputLabel id="company-label">Company</InputLabel>
-            <Select
-              labelId="company-label"
-              id="company-select"
-              value={selectedClient}
-              label="Company"
-              onChange={(event) => setSelectedClient(event.target.value)}
-            >
-              {clients.map((client) => (
-                <MenuItem value={client.id} key={client.id}>
-                  {client.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
+        {(() => {
+          const r = String(role || '').toLowerCase();
+          const isClientRole = r === 'client_super' || r === 'client_user' || r === 'client';
 
-        <Box sx={{ minWidth: 200 }}>
-          <FormControl fullWidth>
-            <InputLabel id="department-label">Department</InputLabel>
-            <Select
-              labelId="department-label"
-              id="department-select"
-              value={selectedDepartment}
-              label="Department"
-              onChange={(event) => setSelectedDepartment(event.target.value)}
-            >
-              {departments.map((department) => (
-                <MenuItem value={department.id} key={department.id}>
-                  {department.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Box>
+          if (isClientRole) {
+            const companyName = getCompanyName(selectedClient, clients);
+            const departmentName = getDepartmentName(selectedDepartment, departments);
+            const commonBoxSx = {
+              minWidth: 260,
+              backgroundColor: Colours.blue,
+              borderRadius: '6px',
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+            };
+            const commonTextSx = {
+              fontWeight: 700,
+              fontSize: '18px',
+              color: '#fcf4ec',
+            };
+
+            return (
+              <>
+                <Box sx={commonBoxSx}>
+                  <Typography sx={commonTextSx}>
+                    {`Company: ${companyName}`}
+                  </Typography>
+                </Box>
+                <Box sx={commonBoxSx}>
+                  <Typography sx={commonTextSx}>
+                    {`Department: ${departmentName}`}
+                  </Typography>
+                </Box>
+              </>
+            );
+          }
+
+          // Default: show dropdowns for non-client roles
+          return (
+            <>
+              <Box sx={{ minWidth: 200 }}>
+                <FormControl fullWidth>
+                  <InputLabel id="company-label">Company</InputLabel>
+                  <Select
+                    labelId="company-label"
+                    id="company-select"
+                    value={selectedClient}
+                    label="Company"
+                    onChange={(event) => setSelectedClient(event.target.value)}
+                  >
+                    {clients.map((client) => (
+                      <MenuItem value={client.id} key={client.id}>
+                        {client.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              <Box sx={{ minWidth: 200 }}>
+                <FormControl fullWidth>
+                  <InputLabel id="department-label">Department</InputLabel>
+                  <Select
+                    labelId="department-label"
+                    id="department-select"
+                    value={selectedDepartment}
+                    label="Department"
+                    onChange={(event) => setSelectedDepartment(event.target.value)}
+                  >
+                    {departments.map((department) => (
+                      <MenuItem value={department.id} key={department.id}>
+                        {department.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </>
+          );
+        })()}
       </Stack>
 
       {loading && (
