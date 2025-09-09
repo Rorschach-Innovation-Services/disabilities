@@ -171,8 +171,16 @@ export const Questionnaire = ({ companyId: propCompanyId, departmentId: propDepa
     if (saveAssessmentRequest.error || !saveAssessmentRequest.response) return;
     try {
       const eid = saveAssessmentRequest.response.employeeId;
-      if (eid) localStorage.setItem('respondentEmployeeId', eid);
+      if (eid) localStorage.setItem('respondentEmployeeId', String(eid));
     } catch {}
+    // Persist respondent identity and completion flag for Live Dashboard scoping
+    try {
+      const emailVal = (state?.employee?.email || initialEmployee?.email || '').trim();
+      if (emailVal) localStorage.setItem('respondentEmail', emailVal);
+    } catch {}
+    try { if (companyId) localStorage.setItem('respondentCompanyId', String(companyId)); } catch {}
+    try { if (departmentId) localStorage.setItem('respondentDepartmentId', String(departmentId)); } catch {}
+    try { localStorage.setItem('respondentCompleted', '1'); } catch {}
     setComplete(true);
   }, [saveAssessmentRequest.response, saveAssessmentRequest.error]);
 

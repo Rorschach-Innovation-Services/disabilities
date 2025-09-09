@@ -69,6 +69,26 @@ const ProtectedRoute = (routeProps) => {
   );
 };
 
+// Guard for Live Dashboard: for client_user require completed respondent + questionnaire
+const LiveDashboardRoute = (routeProps) => {
+  const { name, token, role } = useLocalStorage();
+  if (!name || !token) return <Redirect to="/sign-in" />;
+  const norm = String(role || '').toLowerCase();
+  if (norm === 'client_user') {
+    // Must have started assessment (email captured) AND completed questionnaire
+    let hasEmail = false;
+    let hasCompleted = false;
+    try {
+      hasEmail = Boolean((localStorage.getItem('respondentEmail') || '').trim());
+      hasCompleted = Boolean((localStorage.getItem('respondentCompleted') || '').trim());
+    } catch {}
+    if (!hasEmail || !hasCompleted) {
+      return <Redirect to="/assessment/questions" />;
+    }
+  }
+  return <Route {...routeProps} />;
+};
+
 const RoleRoute = ({ allowed = [], ...routeProps }) => {
   const { token, role } = useLocalStorage();
   const norm = (role || '').toLowerCase();
@@ -214,7 +234,7 @@ export const Routes = () => {
         />
         <ProtectedRoute exact path={`/settings`} component={Settings} />
         <ProtectedRoute exact path="/dashboard" component={Dashboard} />
-        <ProtectedRoute
+        <LiveDashboardRoute
           exact
           path="/live-dashboard"
           component={LiveDashboard}

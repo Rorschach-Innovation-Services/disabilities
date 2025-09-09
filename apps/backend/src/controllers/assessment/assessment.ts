@@ -77,12 +77,17 @@ export const getDepartmentAssessments = async (
     const role = String(user?.role || '').toLowerCase();
     const isClientUser = role === 'client_user' || role === 'client';
     const isClientSuper = role === 'client_super';
+    const emailParamPre = String((request.query as any).email || '').trim().toLowerCase();
     if (isClientUser || isClientSuper) {
-      const userCompanyId = String(user?.companyId || '');
-      if (!userCompanyId || userCompanyId !== department.companyId) {
-        return response
-          .status(403)
-          .json({ message: 'Forbidden - Department not within your company' });
+      // If scoping by explicit respondent email, allow through and validate later against department
+      const skipCompanyCheck = Boolean(emailParamPre);
+      if (!skipCompanyCheck) {
+        const userCompanyId = String(user?.companyId || '');
+        if (!userCompanyId || userCompanyId !== department.companyId) {
+          return response
+            .status(403)
+            .json({ message: 'Forbidden - Department not within your company' });
+        }
       }
     }
 
@@ -96,24 +101,32 @@ export const getDepartmentAssessments = async (
       assessmentRequest.items.filter((item) => item._en === 'assessment') || [];
 
     // Optional per-employee filter (ephemeral use-case)
-    // Accepts query ?employeeId=... and restricts results to that employee
-    // Only allowed within the same company and department context
+    // Priority: employeeId param -> email param -> client_user token email fallback
     const eidParam = String((request.query as any).employeeId || '').trim();
+    const emailParam = emailParamPre;
     if (eidParam) {
       const emp = await Employee.get({ id: eidParam });
       if (!emp) {
         return response.status(404).json({ message: 'Employee Not Found' });
       }
-      // Enforce that the employee belongs to this department/company
       if (emp.companyId !== department.companyId || emp.departmentId !== department.id) {
-        return response
-          .status(403)
-          .json({ message: 'Forbidden - Employee not within this department' });
+        return response.status(403).json({ message: 'Forbidden - Employee not within this department' });
       }
       assessments = assessments.filter((a) => a.employeeId === eidParam);
+    } else if (emailParam) {
+      const employeesRes = await Employee.query(
+        { _en: 'employee' },
+        { beginsWith: `${department.companyId}:${department.id}` },
+      );
+      const employees = (employeesRes.items || []).filter((e: any) => e._en === 'employee');
+      const match = employees.find((e: any) => String(e.email || '').toLowerCase() === emailParam);
+      if (!match) {
+        assessments = [];
+      } else {
+        assessments = assessments.filter((a) => a.employeeId === match.id);
+      }
     } else if (isClientUser) {
-      // If normal client user and no explicit employeeId provided,
-      // restrict to only their own assessments (matched by employee email)
+      // Fallback for legacy client_user tokens where email on token is meaningful
       const employeesRes = await Employee.query(
         { _en: 'employee' },
         { beginsWith: `${department.companyId}:${department.id}` },

@@ -56,10 +56,12 @@ export const Complete = () => {
                                 const eid = localStorage.getItem('respondentEmployeeId') || '';
                                 const dept = localStorage.getItem('respondentDepartmentId') || '';
                                 const comp = localStorage.getItem('respondentCompanyId') || '';
+                                const email = localStorage.getItem('respondentEmail') || '';
                                 const qs = new URLSearchParams();
                                 if (eid) qs.set('employeeId', eid);
                                 if (dept) qs.set('departmentId', dept);
                                 if (comp) qs.set('companyId', comp);
+                                if (email) qs.set('email', email);
                                 const query = qs.toString();
                                 push(`/live-dashboard${query ? `?${query}` : ''}`);
                             } catch {

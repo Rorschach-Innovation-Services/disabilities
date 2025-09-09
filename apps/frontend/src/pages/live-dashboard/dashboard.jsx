@@ -36,6 +36,7 @@ export const LiveDashboard = () => {
   const [departments, setDepartments] = useState([]);
   const { role, companyId } = useLocalStorage();
   const [employeeIdFilter, setEmployeeIdFilter] = useState('');
+  // Note: Prefer employeeId for scoping; backend expects employeeId
   const [presetCompany, setPresetCompany] = useState('');
   const [presetDepartment, setPresetDepartment] = useState('');
 
@@ -58,8 +59,12 @@ export const LiveDashboard = () => {
   });
 
   useEffect(() => {
-    clientsRequest.execute();
-  }, []);
+    const r = String(role || '').toLowerCase();
+    // client_user and client are not allowed to call /companies (403). Skip fetching.
+    if (r !== 'client_user' && r !== 'client') {
+      clientsRequest.execute();
+    }
+  }, [role]);
 
   // Parse query/localStorage presets for employee/company/department
   useEffect(() => {
@@ -68,13 +73,23 @@ export const LiveDashboard = () => {
       const eid = params.get('employeeId') || localStorage.getItem('respondentEmployeeId') || '';
       const dept = params.get('departmentId') || localStorage.getItem('respondentDepartmentId') || '';
       const comp = params.get('companyId') || localStorage.getItem('respondentCompanyId') || '';
+      const email = params.get('email') || localStorage.getItem('respondentEmail') || '';
       setEmployeeIdFilter(eid);
+      // Keep reading email for potential future use, but URL will use employeeId
       setPresetDepartment(dept);
       setPresetCompany(comp);
+      // For client_user, we cannot load companies; set selection directly from presets
+      const r = String(role || '').toLowerCase();
+      if (r === 'client_user') {
+        if (comp) setSelectedClient(comp);
+        if (dept) setSelectedDepartment(dept);
+      }
     } catch {}
-  }, [location.search]);
+  }, [location.search, role]);
 
   useEffect(() => {
+    const r = String(role || '').toLowerCase();
+    if (r === 'client_user') return; // skip rebuilding departments from companies
     setSelectedDepartment('');
     setDepartments([]);
     const client = clients.find((c) => c.id === selectedClient);
@@ -88,14 +103,21 @@ export const LiveDashboard = () => {
         setSelectedDepartment((found && found.id) || deps[0].id);
       }
     }
-  }, [selectedClient, clients, presetDepartment]);
+  }, [selectedClient, clients, presetDepartment, role]);
 
   useEffect(() => {
-    if (selectedDepartment) {
-      const url = `/assessments/departments/${selectedDepartment}` + (employeeIdFilter ? `?employeeId=${employeeIdFilter}` : '');
-      assessmentsRequest.executeWithParameters({ url, method: 'get' })();
+    if (!selectedDepartment) return;
+    const r = String(role || '').toLowerCase();
+    const isClientUser = r === 'client_user';
+    let url = `/assessments/departments/${selectedDepartment}`;
+    if (isClientUser) {
+      if (!employeeIdFilter) return; // require employeeId for client_user
+      url += `?employeeId=${encodeURIComponent(employeeIdFilter)}`;
+    } else if (employeeIdFilter) {
+      url += `?employeeId=${encodeURIComponent(employeeIdFilter)}`;
     }
-  }, [selectedDepartment, employeeIdFilter]);
+    assessmentsRequest.executeWithParameters({ url, method: 'get' })();
+  }, [selectedDepartment, employeeIdFilter, role]);
 
   useEffect(() => {
     if (clientsRequest.response && !clientsRequest.error) {
@@ -137,16 +159,39 @@ export const LiveDashboard = () => {
 
   const getCompanyName = (selectedClient, clients) => {
     const client = clients.find((c) => c.id === selectedClient);
-    return client ? client.name : 'Unknown Company';
+    if (client) return client.name;
+    // Fallback for client_user without company list
+    if (presetCompany && selectedClient === presetCompany) return 'Your Company';
+    return 'Unknown Company';
   };
 
   const getDepartmentName = (selectedDepartment, departments) => {
     const dept = departments.find((d) => d.id === selectedDepartment);
-    return dept ? dept.name : 'Unknown Department';
+    if (dept) return dept.name;
+    // Fallback for client_user without department list
+    if (presetDepartment && selectedDepartment === presetDepartment) return 'Your Department';
+    return 'Unknown Department';
   };
 
   return (
     <Shell heading="Live Dashboard">
+      {(() => {
+        const r = String(role || '').toLowerCase();
+        if (r === 'client_user' && !employeeIdFilter) {
+          return (
+            <Box sx={{ mb: 3 }}>
+              <Typography sx={{ fontWeight: 600, mb: 1 }}>
+                Almost there
+              </Typography>
+              <Typography sx={{ mb: 2 }}>
+                Please complete the Start Assessment and questionnaire to view your dashboard.
+              </Typography>
+              <Button variant="contained" onClick={() => (window.location.href = '/assessment/questions')}>Start Assessment</Button>
+            </Box>
+          );
+        }
+        return null;
+      })()}
       <Stack direction="row" spacing={3} sx={{ marginBottom: '50px' }}>
         {(() => {
           const r = String(role || '').toLowerCase();
