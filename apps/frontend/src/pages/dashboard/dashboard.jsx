@@ -218,7 +218,7 @@ export const Dashboard = () => {
                           marginTop: '80px',
                         }}
                       >
-                        There are no companies ready for the second questionnaire
+                        Questionnaires not yet available.
                       </Typography>
                     </Box>
                   )}

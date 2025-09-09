@@ -39,6 +39,9 @@ export const LiveDashboard = () => {
   // Note: Prefer employeeId for scoping; backend expects employeeId
   const [presetCompany, setPresetCompany] = useState('');
   const [presetDepartment, setPresetDepartment] = useState('');
+  // Names resolved for client_user when companies/departments lists are unavailable
+  const [resolvedCompanyName, setResolvedCompanyName] = useState('');
+  const [resolvedDepartmentName, setResolvedDepartmentName] = useState('');
 
   // chart payload
   const [spiderChart, setSpiderChart] = useState(null);
@@ -55,6 +58,12 @@ export const LiveDashboard = () => {
  // Fetch assessments for selected department
   const assessmentsRequest = useAxios({
     url: '/assessments/departments/{departmentId}',
+    method: 'get',
+  });
+
+  // Fetch department (and company) details by id for client_user
+  const departmentInfoRequest = useAxios({
+    url: '/departments/{departmentId}',
     method: 'get',
   });
 
@@ -154,22 +163,39 @@ export const LiveDashboard = () => {
     }
   }, [assessmentsRequest.response, assessmentsRequest.error]);
 
+  // Capture resolved names from department info for client_user
+  useEffect(() => {
+    const r = String(role || '').toLowerCase();
+    if (r !== 'client_user') return;
+    // Prefer names returned by assessments endpoint when available
+    if (assessmentsRequest.response && !assessmentsRequest.error) {
+      const depName = assessmentsRequest.response.departmentName || '';
+      const compName = assessmentsRequest.response.companyName || '';
+      if (depName) setResolvedDepartmentName(depName);
+      if (compName) setResolvedCompanyName(compName);
+    }
+  }, [assessmentsRequest.response, assessmentsRequest.error, role]);
+
   const loading =
     assessmentsRequest.loading || clientsRequest.loading;
 
   const getCompanyName = (selectedClient, clients) => {
     const client = clients.find((c) => c.id === selectedClient);
     if (client) return client.name;
-    // Fallback for client_user without company list
-    if (presetCompany && selectedClient === presetCompany) return 'Your Company';
+    // Prefer resolved name for client_user
+    if (resolvedCompanyName) return resolvedCompanyName;
+    // Avoid old placeholder; show temporary loading text instead
+    if (presetCompany && selectedClient === presetCompany) return 'Loading...';
     return 'Unknown Company';
   };
 
   const getDepartmentName = (selectedDepartment, departments) => {
     const dept = departments.find((d) => d.id === selectedDepartment);
     if (dept) return dept.name;
-    // Fallback for client_user without department list
-    if (presetDepartment && selectedDepartment === presetDepartment) return 'Your Department';
+    // Prefer resolved name for client_user
+    if (resolvedDepartmentName) return resolvedDepartmentName;
+    // Avoid old placeholder; show temporary loading text instead
+    if (presetDepartment && selectedDepartment === presetDepartment) return 'Loading...';
     return 'Unknown Department';
   };
 

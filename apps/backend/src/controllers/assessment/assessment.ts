@@ -141,15 +141,25 @@ export const getDepartmentAssessments = async (
       }
     }
 
+    // Resolve company details for response context
+    const company = await Company.get({ id: department.companyId });
+    if (!company) {
+      return response.status(404).json({ message: 'Company Not Found' });
+    }
+
     // Remove (no matrix/radar) Build spider data 
     const spider = await getSpiderSeries(assessments, {
       questionnaireOrders: [3], 
       maxScore: 5,              
     });
 
-    // Return a focused payload for the front-end spider chart
+    // Return a focused payload for the front-end spider chart with context labels
     return response.status(200).json({
       assessments,
+      companyId: company.id,
+      departmentId: department.id,
+      companyName: company.name,
+      departmentName: department.name,
       spiderChart: {
         axes: spider.axes, 
         dataPct: spider.pct,
