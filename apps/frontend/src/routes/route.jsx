@@ -58,7 +58,6 @@ import { RespondentDetails } from '../pages/assessment/respondent';
 import { QuestionnaireBank } from '../pages/questionnaire-bank/banks';
 import { QuestionnaireAdd } from '../pages/questionnaire-add/add';
 import { LiveDashboard } from '../pages/live-dashboard/dashboard';
-import { ActionPlan } from '../pages/live-dashboard/components/actionplan';
 
 const ProtectedRoute = (routeProps) => {
   const { name, token } = useLocalStorage();
@@ -238,7 +237,7 @@ export const Routes = () => {
         <Route exact path="/create-password/:id" component={CreatePassword} />
         <Route exact path="/forgot-password" component={ForgotPassword} />
 
-        <ProtectedRoute exact path="/action-plan" component={ActionPlan} />
+        {/** Action Plan route temporarily disabled */}
         
         <RoleRoute allowed={["administrator", "admin", "pivot"]} exact path="/clients" component={ClientsPage} />
         <RoleRoute allowed={["administrator", "admin", "pivot", "client_super"]} exact path="/staff" component={Staff} />

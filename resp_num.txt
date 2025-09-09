@@ -1,0 +1,263 @@
+    1: import React, { useEffect, useMemo, useState } from 'react';
+    2: import { Box, Button, Container, TextField, Typography } from '@mui/material';
+    3: import { useHistory, useLocation } from 'react-router-dom';
+    4: import { Shell } from '../../components/shell';
+    5: import { useLocalStorage } from '../../hooks/storage';
+    6: import { useAxios } from '../../hooks/axios';
+    7: import { Loading } from '../../components/loading';
+    8: import { Questionnaire as EmbeddedQuestionnaire } from '../questionnaire/questionnaire';
+    9: 
+   10: // Respondent capture: Name, Email, Work Title
+   11: // On save: use logged-in user's company and department to save respondent, then open questionnaire
+   12: export const RespondentDetails = ({ companyID: propCompanyID, questionnaire: propQuestionnaire, departmentID: propDepartmentId, prefillRespondent: propPrefill, embedded }) => {
+   13:   const { push } = useHistory();
+   14:   const location = useLocation();
+   15:   const { companyId: lsCompanyId } = useLocalStorage();
+   16: 
+   17:   // Passed from Start Assessment / New Department
+   18:   // Prefer prop -> navigation state -> stored companyId (new key) -> legacy stored key
+   19:   const legacyCompanyID = typeof window !== 'undefined' ? localStorage.getItem('companyID') : '';
+   20:   const companyID = (propCompanyID ?? location.state?.companyID ?? lsCompanyId ?? legacyCompanyID) || null;
+   21:   const questionnaire = (propQuestionnaire ?? location.state?.questionnaire) || null;
+   22:   const presetDepartmentId = (propDepartmentId ?? location.state?.departmentID) || null;
+   23:   const prefill = (propPrefill ?? location.state?.prefillRespondent) || null;
+   24:   const isEmbedded = Boolean(embedded || propCompanyID || propQuestionnaire || propDepartmentId);
+   25: 
+   26:   // Form state
+   27:   const [name, setName] = useState('');
+   28:   const [email, setEmail] = useState('');
+   29:   const [workTitle, setWorkTitle] = useState('');
+   30:   const [emailTouched, setEmailTouched] = useState(false);
+   31: 
+   32:   // Simple email validation
+   33:   const isValidEmail = (value) => {
+   34:     const v = String(value || '').trim();
+   35:     // Basic RFC 5322-compatible pattern for typical cases
+   36:     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+   37:   };
+   38: 
+   39:   // Requests
+   40:   const saveEmployeeReq = useAxios({ url: '/employees/register', method: 'post' });
+   41:   // Fetch admin profile (to derive company/department IDs if not in localStorage)
+   42:   const adminId = typeof window !== 'undefined' ? localStorage.getItem('adminID') : '';
+   43:   const profileReq = useAxios({ url: `/admin/${adminId}`, method: 'get' });
+   44: 
+   45:   // Local flow state
+   46:   const [flow, setFlow] = useState('idle'); // idle | saving-employee
+   47:   const [context, setContext] = useState({ companyId: '', departmentId: '' });
+   48:   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+   49:   const [profileCompanyId, setProfileCompanyId] = useState('');
+   50:   const [profileDepartmentId, setProfileDepartmentId] = useState('');
+   51: 
+   52:   const loading = useMemo(
+   53:     () => saveEmployeeReq.loading,
+   54:     [saveEmployeeReq.loading]
+   55:   );
+   56: 
+   57:   const hasRequiredContext = Boolean(companyID && questionnaire);
+   58: 
+   59:   // Fetch profile once to derive company/department IDs if needed
+   60:   useEffect(() => {
+   61:     if (!adminId) return;
+   62:     profileReq.execute({});
+   63:   }, [adminId]);
+   64: 
+   65:   useEffect(() => {
+   66:     if (profileReq.loading || profileReq.error || !profileReq.response) return;
+   67:     const admin = profileReq.response?.admin || {};
+   68:     // Try common shapes for company & department identifiers
+   69:     const getId = (v) => (v && (v.id || v._id || v)) || '';
+   70:     const compId = admin.companyId || getId(admin.company) || '';
+   71:     const deptId = admin.departmentId || getId(admin.department) || '';
+   72:     if (compId) setProfileCompanyId(compId);
+   73:     if (deptId) setProfileDepartmentId(deptId);
+   74:   }, [profileReq.loading, profileReq.error, profileReq.response]);
+   75: 
+   76:   // Prefill if returned from questionnaire selection
+   77:   useEffect(() => {
+   78:     if (!prefill) return;
+   79:     if (prefill.name) setName(prefill.name);
+   80:     if (prefill.email) setEmail(prefill.email);
+   81:     if (prefill.workTitle) setWorkTitle(prefill.workTitle);
+   82:   }, [prefill]);
+   83: 
+   84:   const onNext = async () => {
+   85:     // Guard against invalid email or incomplete fields
+   86:     if (!name.trim() || !email.trim() || !workTitle.trim() || !isValidEmail(email)) {
+   87:       setEmailTouched(true);
+   88:       return;
+   89:     }
+   90:     // Ensure we have the required context (company + questionnaire)
+   91:     if (!hasRequiredContext) return;
+   92: 
+   93:     // Prefer the logged-in user's company and department IDs
+   94:     const storedDepartmentId =
+   95:       typeof window !== 'undefined'
+   96:         ? (localStorage.getItem('departmentId') || localStorage.getItem('departmentID'))
+   97:         : null;
+   98: 
+   99:     const finalCompanyId = companyID || profileCompanyId; // derived from props/state/localStorage/profile
+  100:     const finalDepartmentId = presetDepartmentId || storedDepartmentId || profileDepartmentId;
+  101: 
+  102:     // If both are present, save employee directly using user's department
+  103:     if (finalCompanyId && finalDepartmentId) {
+  104:       setContext({ companyId: finalCompanyId, departmentId: finalDepartmentId });
+  105:       setFlow('saving-employee');
+  106:       const existingId = (() => { try { return localStorage.getItem('respondentEmployeeId') || undefined; } catch { return undefined; } })();
+  107:       saveEmployeeReq.executeWithData({
+  108:         name,
+  109:         email,
+  110:         company: finalCompanyId,
+  111:         department: finalDepartmentId,
+  112:         workTitle,
+  113:         employeeId: existingId,
+  114:       });
+  115:       return;
+  116:     }
+  117: 
+  118:     // If department is missing, block and surface a clear message
+  119:     // (No auto-creation of departments in this flow)
+  120:     console.warn('Missing departmentId for respondent; ensure user profile has it.');
+  121:     };
+  122: 
+  123:   // No department creation path anymore
+  124: 
+  125:   // After saving employee, proceed to questionnaire
+  126:   useEffect(() => {
+  127:     if (flow !== 'saving-employee') return;
+  128:     if (saveEmployeeReq.loading) return;
+  129:     if (saveEmployeeReq.error) return;
+  130: 
+  131:     const qId = questionnaire?.id;
+  132:     const { companyId, departmentId } = context;
+  133:     if (!qId || !companyId || !departmentId) return;
+  134: 
+  135:     // Persist respondent identity for this session to drive per-employee views
+  136:     const eid = saveEmployeeReq.response?.employee;
+  137:     try { if (eid) localStorage.setItem('respondentEmployeeId', eid); } catch {}
+  138:     try { if (email) localStorage.setItem('respondentEmail', email); } catch {}
+  139:     try { if (departmentId) localStorage.setItem('respondentDepartmentId', departmentId); } catch {}
+  140:     try { if (companyId) localStorage.setItem('respondentCompanyId', companyId); } catch {}
+  141: 
+  142:     // If respondent is embedded in Start Assessment, render inline
+  143:     if (isEmbedded) {
+  144:       setShowQuestionnaire(true);
+  145:     } else {
+  146:       // Otherwise, take the user to the questionnaire route
+  147:       push(`/questionnaire/${qId}/${companyId}/${departmentId}/`);
+  148:     }
+  149:   }, [flow, saveEmployeeReq.response, saveEmployeeReq.error, saveEmployeeReq.loading]);
+  150: 
+  151:   // Always render the form — allow starting without prior context
+  152: 
+  153:   // When ready, render the questionnaire inline with combined payload on submit
+  154:   if (showQuestionnaire) {
+  155:     return (
+  156:       <EmbeddedQuestionnaire
+  157:         companyId={context.companyId || companyID}
+  158:         departmentId={context.departmentId || presetDepartmentId}
+  159:         questionnaireId={questionnaire?.id}
+  160:         initialEmployee={{ name, email, workTitle }}
+  161:       />
+  162:     );
+  163:   }
+  164: 
+  165:   // Loading screen when making requests
+  166:   if (loading) {
+  167:     return (
+  168:       <Box
+  169:         sx={{
+  170:           width: '100%',
+  171:           height: '100vh',
+  172:           textAlign: 'center',
+  173:           transform: 'translateY(50%)',
+  174:         }}
+  175:       >
+  176:         <Loading
+  177:           textSx={{ fontSize: '25px' }}
+  178:           loadingSx={{ width: '250px !important', height: '250px !important' }}
+  179:           containerSx={{ margin: 'auto', marginTop: '-100px', textAlign: 'center' }}
+  180:         />
+  181:       </Box>
+  182:     );
+  183:   }
+  184: 
+  185:   const errorMessage = saveEmployeeReq.error?.data?.message || '';
+  186: 
+  187:   // Determine if we have enough context to proceed (prevents a no-op click)
+  188:   const storedDeptIdForDisable =
+  189:     typeof window !== 'undefined'
+  190:       ? (localStorage.getItem('departmentId') || localStorage.getItem('departmentID'))
+  191:       : '';
+  192:   const canProceed = Boolean(
+  193:     name.trim() &&
+  194:     email.trim() &&
+  195:     isValidEmail(email) &&
+  196:     workTitle.trim() &&
+  197:     questionnaire &&
+  198:     (presetDepartmentId || storedDeptIdForDisable || profileDepartmentId) &&
+  199:     (companyID || profileCompanyId)
+  200:   );
+  201: 
+  202:   return (
+  203:     <Shell heading="Employee Details">
+  204:       <Container sx={{ maxWidth: '800px !important' }}>
+  205:         <Typography sx={{ mb: 3 }}>
+  206:           Please enter your details before starting the assessment.
+  207:         </Typography>
+  208: 
+  209:         {errorMessage && (
+  210:           <Typography color="error" sx={{ mb: 2 }}>
+  211:             {errorMessage}
+  212:           </Typography>
+  213:         )}
+  214: 
+  215:         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+  216:           <TextField
+  217:             label="Name"
+  218:             value={name}
+  219:             onChange={(e) => setName(e.target.value)}
+  220:           />
+  221:           <TextField
+  222:             label="Email"
+  223:             type="email"
+  224:             value={email}
+  225:             onChange={(e) => setEmail(e.target.value)}
+  226:             onBlur={() => setEmailTouched(true)}
+  227:             error={emailTouched && Boolean(email) && !isValidEmail(email)}
+  228:             helperText={
+  229:               emailTouched && Boolean(email) && !isValidEmail(email)
+  230:                 ? 'Please enter a valid email address'
+  231:                 : ' '
+  232:             }
+  233:           />
+  234:           <TextField
+  235:             label="Work Title"
+  236:             value={workTitle}
+  237:             onChange={(e) => setWorkTitle(e.target.value)}
+  238:           />
+  239: 
+  240:           <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2, mt: 2 }}>
+  241:             {!isEmbedded && (
+  242:               <Button
+  243:                 variant="contained"
+  244:                 sx={{ backgroundColor: '#000', color: '#fff', textTransform: 'none', borderRadius: '10px' }}
+  245:                 onClick={() => push('/assessment/questions')}
+  246:               >
+  247:                 Back
+  248:               </Button>
+  249:             )}
+  250:             <Button
+  251:               variant="contained"
+  252:               sx={{ backgroundColor: '#000', color: '#fff', textTransform: 'none', borderRadius: '10px' }}
+  253:               disabled={!canProceed}
+  254:               onClick={onNext}
+  255:             >
+  256:               Next
+  257:             </Button>
+  258:           </Box>
+  259:         </Box>
+  260:       </Container>
+  261:     </Shell>
+  262:   );
+  263: };

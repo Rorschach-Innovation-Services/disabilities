@@ -1,0 +1,42 @@
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            label="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <TextField
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <TextField
+            label="Work Title"
+            value={workTitle}
+            onChange={(e) => setWorkTitle(e.target.value)}
+          />
+
+          <Box sx={{ display: 'flex', justifyContent: 'end', gap: 2, mt: 2 }}>
+            {!isEmbedded && (
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: '#000', color: '#fff', textTransform: 'none', borderRadius: '10px' }}
+                onClick={() => push('/assessment/questions')}
+              >
+                Back
+              </Button>
+            )}
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: '#000', color: '#fff', textTransform: 'none', borderRadius: '10px' }}
+              disabled={!canProceed}
+              onClick={onNext}
+            >
+              Next
+            </Button>
+          </Box>
+        </Box>
+      </Container>
+    </Shell>
+  );
+};

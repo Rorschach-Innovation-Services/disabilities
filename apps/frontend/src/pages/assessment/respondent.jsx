@@ -27,6 +27,14 @@ export const RespondentDetails = ({ companyID: propCompanyID, questionnaire: pro
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [workTitle, setWorkTitle] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
+
+  // Simple email validation
+  const isValidEmail = (value) => {
+    const v = String(value || '').trim();
+    // Basic RFC 5322-compatible pattern for typical cases
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  };
 
   // Requests
   const saveEmployeeReq = useAxios({ url: '/employees/register', method: 'post' });
@@ -74,6 +82,11 @@ export const RespondentDetails = ({ companyID: propCompanyID, questionnaire: pro
   }, [prefill]);
 
   const onNext = async () => {
+    // Guard against invalid email or incomplete fields
+    if (!name.trim() || !email.trim() || !workTitle.trim() || !isValidEmail(email)) {
+      setEmailTouched(true);
+      return;
+    }
     // Ensure we have the required context (company + questionnaire)
     if (!hasRequiredContext) return;
 
@@ -179,6 +192,7 @@ export const RespondentDetails = ({ companyID: propCompanyID, questionnaire: pro
   const canProceed = Boolean(
     name.trim() &&
     email.trim() &&
+    isValidEmail(email) &&
     workTitle.trim() &&
     questionnaire &&
     (presetDepartmentId || storedDeptIdForDisable || profileDepartmentId) &&
@@ -209,6 +223,13 @@ export const RespondentDetails = ({ companyID: propCompanyID, questionnaire: pro
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => setEmailTouched(true)}
+            error={emailTouched && Boolean(email) && !isValidEmail(email)}
+            helperText={
+              emailTouched && Boolean(email) && !isValidEmail(email)
+                ? 'Please enter a valid email address'
+                : ' '
+            }
           />
           <TextField
             label="Work Title"
