@@ -21,10 +21,10 @@ const router = Router();
 
 router
   .get('/', verifyToken, checkRole, getAssessments)
-  .get('/departments/:departmentId', verifyToken, getDepartmentAssessments)
+  .get('/departments/:departmentId', verifyToken, checkRole, getDepartmentAssessments)
   .post('/get-assessment', verifyToken, checkRole, getAssessment)
   .post('/save', saveAssessment)
-  .get('/client-files', verifyToken, getClientFiles)
+  .get('/client-files', verifyToken, checkRole, getClientFiles)
   .get(
     '/client-assessments/:companyID',
     verifyToken,
@@ -33,6 +33,6 @@ router
   )
   .get('/averages', verifyToken, checkRole, getAverages)
   .delete('/', verifyToken, checkRole, deleteAssessments)
-  .post('/send-link', verifyToken, sendLink);
+  .post('/send-link', verifyToken, checkRole, sendLink);
 
 export default router;

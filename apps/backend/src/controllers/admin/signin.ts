@@ -46,7 +46,13 @@ export const signIn = async (request: Request, response: Response) => {
           .send({ message: 'Incorrect Email/Password' });
         // return sendResponse({ statusCode: 400, body: 'Incorrect Email/Password' });
       }
-      const token = generateToken({ email, role: 'admin' });
+      const role = (admin.role || 'administrator').toLowerCase();
+      const token = generateToken({
+        email: email.toLowerCase(),
+        role,
+        id: admin.id,
+        companyId: admin.companyId || '',
+      });
       admin.password = '';
       return response
         .status(200)

@@ -17,7 +17,8 @@ export const EmployeeTable = ({
         headings={[
           'Select',
           'Employee name',
-          'Date of last assessment',
+          'Email',
+          'Date completed',
           'Download PDF',
           'Delete',
         ]}

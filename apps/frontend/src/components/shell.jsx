@@ -150,7 +150,7 @@ export const Shell = ({
                                     localStorage.removeItem("adminName");
                                     localStorage.removeItem("token");
                                     localStorage.removeItem("email");
-                                    push("/");
+                                    push("/sign-in");
                                 }}
                             >
                                 Logout

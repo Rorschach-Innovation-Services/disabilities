@@ -29,7 +29,7 @@ export const Staff = () => {
     });
   }, [response]);
   return (
-    <Shell heading="Staff Members">
+    <Shell heading="Manage Users">
       {loading ? (
         <Loading
           textSx={{ fontSize: '25px' }}

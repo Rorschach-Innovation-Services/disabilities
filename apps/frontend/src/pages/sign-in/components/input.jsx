@@ -22,7 +22,7 @@ export const Input = () => {
     method: 'post',
   });
   console.log('env', import.meta.env);
-  const { writeID, writeToken, writeName, writeEmail } = useLocalStorage();
+  const { writeID, writeToken, writeName, writeEmail, writeRole, writeCompanyId, writeDepartmentId } = useLocalStorage();
   const { push } = useHistory();
 
   useEffect(() => {
@@ -34,6 +34,9 @@ export const Input = () => {
     localStorage.setItem('adminName', response.admin.name);
     localStorage.setItem('adminPhoto', response.admin.photo);
     writeToken(response.token);
+    if (response.admin?.role) writeRole(String(response.admin.role).toLowerCase());
+    if (response.admin?.companyId) writeCompanyId(response.admin.companyId);
+    if (response.admin?.departmentId) writeDepartmentId(response.admin.departmentId);
     writeEmail(response.admin.email);
     push('/dashboard');
   }, [response]);
@@ -53,13 +56,13 @@ export const Input = () => {
           marginBottom: 0,
         }}
       >
-        <Typography fontSize={10}>SLEEP SCIENCE PLATFORM</Typography>
+        <Typography fontSize={10}>Pivot PLATFORM</Typography>
         <Typography
           fontSize={26}
           sx={{
             fontWeight: 600,
             fontSize: '26px',
-            marginBottom: '70px',
+            marginBottom: '30px',
           }}
         >
           Welcome Back!

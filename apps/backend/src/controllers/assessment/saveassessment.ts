@@ -42,6 +42,7 @@ export const saveAssessment = async (request: Request, response: Response) => {
       company,
       department,
       questionnaireId,
+      employeeId: preferredEmployeeId,
     } = requestBody;
 
     /**Check if the company exists in the database */
@@ -79,11 +80,21 @@ export const saveAssessment = async (request: Request, response: Response) => {
 
     let employeeFound: null | EmployeeAttributes = null;
     let employeeExists = false;
-    for (const employee of employees) {
-      if (employee.email === employeeEmail) {
+    // Prefer the employeeId provided by the client, if valid and within scope
+    if (preferredEmployeeId) {
+      const e = await Employee.get({ id: preferredEmployeeId });
+      if (e && e.companyId === company && e.departmentId === department) {
         employeeExists = true;
-        employeeFound = employee;
-        break;
+        employeeFound = e as EmployeeAttributes;
+      }
+    }
+    if (!employeeExists) {
+      for (const employee of employees) {
+        if (employee.email === employeeEmail) {
+          employeeExists = true;
+          employeeFound = employee;
+          break;
+        }
       }
     }
 
@@ -130,6 +141,7 @@ export const saveAssessment = async (request: Request, response: Response) => {
       );
       return response.status(200).json({
         message: 'Assessment has been saved',
+        employeeId: employeeFound.id,
       });
     }
       return response.status(400).json({

@@ -16,6 +16,7 @@ import { EmployeeTable } from './components/employee-table';
 import { CustomMessage } from '../../components/message';
 import { TopSection } from './components/top-section';
 import { useParams } from 'react-router';
+import { useLocation } from 'react-router-dom';
 import { Loading } from '../../components/loading';
 import { Save } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
@@ -46,6 +47,8 @@ const styles = {
 
 export const EmployeesPage = () => {
   const { departmentId } = useParams();
+  const location = useLocation();
+  const [showOnlyCompleted, setShowOnlyCompleted] = useState(false);
   const [selected, setSelected] = useState([]);
   const [search, setSearch] = useState('');
   const [step, setStep] = useState(1);
@@ -72,16 +75,18 @@ export const EmployeesPage = () => {
   const getEmployees = () => {
     if (!response || !response.department.employees) return;
 
+    const all = response.department.employees || [];
+    const base = showOnlyCompleted
+      ? all.filter((e) => e.lastAssessmentDate && e.lastAssessmentDate !== 'none')
+      : all;
+
     const result = [];
 
     let i = (step - 1) * EMPLOYEES_TO_DISPLAY;
     let count = 0;
 
-    while (
-      count < EMPLOYEES_TO_DISPLAY &&
-      i < response.department.employees.length
-    ) {
-      result.push(response.department.employees[i]);
+    while (count < EMPLOYEES_TO_DISPLAY && i < base.length) {
+      result.push(base[i]);
       i++;
       count++;
     }
@@ -93,7 +98,11 @@ export const EmployeesPage = () => {
   useEffect(() => {
     if (!response) return;
     if (search === '') return getEmployees();
-    const result = response.department.employees.filter((client) =>
+    const all = response.department.employees || [];
+    const base = showOnlyCompleted
+      ? all.filter((e) => e.lastAssessmentDate && e.lastAssessmentDate !== 'none')
+      : all;
+    const result = base.filter((client) =>
       client.name.toLowerCase().includes(search.toLowerCase())
     );
     setEmployees(result);
@@ -101,12 +110,13 @@ export const EmployeesPage = () => {
 
   const setShowing = () => {
     if (search.length > 0) return employees.length;
-    if (
-      response &&
-      step * EMPLOYEES_TO_DISPLAY < response.department.employees.length
-    )
+    const all = response?.department?.employees || [];
+    const base = showOnlyCompleted
+      ? all.filter((e) => e.lastAssessmentDate && e.lastAssessmentDate !== 'none')
+      : all;
+    if (response && step * EMPLOYEES_TO_DISPLAY < base.length)
       return step * EMPLOYEES_TO_DISPLAY;
-    else return response.department.employees.length;
+    else return base.length;
   };
 
   const toggleSelection = (row) => {
@@ -121,6 +131,14 @@ export const EmployeesPage = () => {
   useEffect(() => {
     execute();
   }, []);
+
+  // Parse query parameter for completed filter
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search || '');
+      setShowOnlyCompleted(params.get('completed') === '1');
+    } catch {}
+  }, [location.search]);
 
   useEffect(() => {
     if (deleteRequest.response && !deleteRequest.error) {
@@ -255,6 +273,23 @@ export const EmployeesPage = () => {
         onButtonClick={() => {}}
         showDownloadButton={false}
       />
+      {showOnlyCompleted && !loading && response && (() => {
+        const all = response?.department?.employees || [];
+        const completed = all.filter(
+          (e) => e.lastAssessmentDate && e.lastAssessmentDate !== 'none'
+        );
+        if (completed.length === 0) {
+          return (
+            <Typography
+              variant="body1"
+              sx={{ fontSize: '14px', fontWeight: 500, mb: '10px' }}
+            >
+              No employees have completed the questionnaire yet.
+            </Typography>
+          );
+        }
+        return null;
+      })()}
       <Grid item xs={12}>
         <EmployeeTable
           selected={selected}
@@ -300,11 +335,17 @@ export const EmployeesPage = () => {
               }}
             >
               {response ? step : 1} of{' '}
-              {response && response.department.employees > 0
-                ? Math.ceil(
-                    response.department.employees.length / EMPLOYEES_TO_DISPLAY
-                  )
-                : 1}
+              {(() => {
+                const all = response?.department?.employees || [];
+                const base = showOnlyCompleted
+                  ? all.filter(
+                      (e) => e.lastAssessmentDate && e.lastAssessmentDate !== 'none'
+                    )
+                  : all;
+                return base.length > 0
+                  ? Math.ceil(base.length / EMPLOYEES_TO_DISPLAY)
+                  : 1;
+              })()}
             </Typography>
             <IconButton
               sx={{ ml: '3px' }}
@@ -408,7 +449,15 @@ export const EmployeesPage = () => {
                 }}
               >
                 {setShowing()} of{' '}
-                {response ? response.department.employees.length : 0}
+                {(() => {
+                  const all = response?.department?.employees || [];
+                  const base = showOnlyCompleted
+                    ? all.filter(
+                        (e) => e.lastAssessmentDate && e.lastAssessmentDate !== 'none'
+                      )
+                    : all;
+                  return base.length;
+                })()}
               </Typography>
               <Typography variant="body1" sx={{ ...styles.text, ml: '6px' }}>
                 employees

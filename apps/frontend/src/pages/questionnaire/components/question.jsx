@@ -71,24 +71,14 @@ export const Question = ({
         />
       );
       
-      // Function to get slider style based on question category
-      const getSliderStyle = (question) => {
-        switch (question.category) {
-          case 'Plan/Prepare':
-            return { color: '#0074D9' };  
-          case 'Integrate':
-            return { color: '#2ECC40' };  
-          case 'Value-Add':
-            return { color: '#FFDC00' };  
-          case 'Opportunities':
-            return { color: '#FF851B' };  
-          case 'Transfer':
-            return { color: '#B10DC9' };  
-          default:
-            return { color: '#ddd' };  
-        }
-      };
-      
+      // Function to get slider style based on numeric response (traffic light colours)
+  const getSliderStyle = (question) => {
+    const score = Number(question.response) || 0;
+    if (score <= 2) return { color: '#FF4136' };
+    if (score <= 4) return { color: '#FFDC00' }; 
+    return { color: '#2ECC40' }; 
+  };
+
     return (
       <SliderOption
         value={question.response}

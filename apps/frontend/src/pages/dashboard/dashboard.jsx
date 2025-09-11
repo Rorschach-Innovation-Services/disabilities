@@ -10,14 +10,14 @@ import { ClientInfo } from './components/client-info';
 import { useLocalStorage } from '../../hooks/storage';
 import { useAxios } from '../../hooks/axios';
 import { ChartArea } from './components/chart-area';
-import { useMediaStorage } from '../../hooks/media';
-import { getKey } from '../../utils/get-key';
+// import { useMediaStorage } from '../../hooks/media';
+// import { getKey } from '../../utils/get-key';
 import { Loading } from '../../components/loading';
 import { Shell } from '../../components/shell.jsx';
 import { Container } from '@mui/system';
 // import banner from "../../assets/images/Sleep-science-banner.png"
 // import banner from "../../assets/images/Sleep-science-banner001.jpeg"
-import banner from '../../assets/images/Sleep-science-banner-half-2.png';
+import banner from '../../assets/images/UCT_Logo.png';
 import { Colours } from '../../colours.js';
 import { StatsList } from './components/stats-list';
 import { Tasks } from './components/Tasks';
@@ -30,7 +30,7 @@ export const Dashboard = () => {
   const { push } = useHistory();
   const [name, setName] = useState('Admin');
   const [linksLoaded, setLinksLoaded] = useState(false);
-  const media = useMediaStorage();
+  // const media = useMediaStorage();
   const averagesRequest = useAxios({
     url: '/assessments/averages',
     method: 'get',
@@ -44,6 +44,11 @@ export const Dashboard = () => {
     method: 'get',
   });
   console.log('Api', import.meta.env);
+  const { role } = useLocalStorage();
+  const r = (role || '').toLowerCase();
+  const isAdmin = r === 'administrator' || r === 'admin' || r === 'pivot';
+  const isClientNormal = r === 'client_user' || r === 'client';
+  const canStartAssessmentCTA = r === 'client_super' || r === 'client_user';
 
   // Execute network requests to fetch data
   useEffect(() => {
@@ -69,20 +74,13 @@ export const Dashboard = () => {
   }, [averagesRequest.response]);
 
   useEffect(() => {
-    if (!clientRequest.response || !media.response || linksLoaded) return;
-    const getLinks = async () => {
-      const list = clientRequest.response.companies;
-      for (let i = 0; i < list.length; i++) {
-        if (!list[i].logo) setLinks((prev) => [...prev, '']);
-        else {
-          const url = await media.retrieve(getKey(list[i].logo));
-          setLinks((prev) => [...prev, url]);
-        }
-      }
-    };
-    getLinks();
+    if (!clientRequest.response || linksLoaded) return;
+    const list = clientRequest.response.companies;
+    for (let i = 0; i < list.length; i++) {
+      setLinks((prev) => [...prev, list[i].logo || '']);
+    }
     setLinksLoaded(true);
-  }, [media.response, clientRequest.response]);
+  }, [clientRequest.response, linksLoaded]);
 
   useEffect(() => {
     if (tasksRequest.error || !tasksRequest.response) return;
@@ -170,16 +168,18 @@ export const Dashboard = () => {
                 >
                   Lets get our day started with some sleep assessments?
                 </Typography>
-                <Button
-                  variant="contained"
-                  sx={{
-                    fontSize: '12px',
-                    backgroundColor: `${Colours.yellow} !important`,
-                  }}
-                  onClick={() => push('/assessment/new-department')}
-                >
-                  Let's get started
-                </Button>
+                {canStartAssessmentCTA && (
+                  <Button
+                    variant="contained"
+                    sx={{
+                      fontSize: '12px',
+                      backgroundColor: `${Colours.yellow} !important`,
+                    }}
+                    onClick={() => push('/assessment/new-department')}
+                  >
+                    Let's get started
+                  </Button>
+                )}
               </Container>
               <img
                 src={banner}
@@ -193,22 +193,41 @@ export const Dashboard = () => {
               />
             </Container>
             {/* <StatsList state={state} /> */}
-            {getClientDepartmentsForSecondQuestionnaire(state.clients)
-              .length === 0 && (
-              <Box>
-                <Typography
-                  sx={{
-                    fontSize: '20px',
-                    textAlign: 'center',
-                    marginTop: '80px',
-                  }}
-                >
-                  There are no companies ready for the second questionnaire
+            {isClientNormal ? (
+              <Box sx={{ mt: '60px', textAlign: 'center' }}>
+                <Typography sx={{ fontSize: '18px', mb: '10px' }}>
+                  Your Questionnaire
                 </Typography>
+                <Typography sx={{ fontSize: '14px', mb: '14px' }}>
+                  View your assessment results and progress in the Live Dashboard.
+                </Typography>
+                <Button variant="contained" onClick={() => push('/live-dashboard')}>
+                  View My Dashboard
+                </Button>
               </Box>
+            ) : (
+              <>
+                {!isAdmin &&
+                  getClientDepartmentsForSecondQuestionnaire(state.clients)
+                    .length === 0 && (
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontSize: '20px',
+                          textAlign: 'center',
+                          marginTop: '80px',
+                        }}
+                      >
+                        Questionnaires not yet available.
+                      </Typography>
+                    </Box>
+                  )}
+                {(isAdmin ||
+                  getClientDepartmentsForSecondQuestionnaire(state.clients).length > 0) && (
+                  <Clients state={state} dispatch={dispatch} links={links} />
+                )}
+              </>
             )}
-            {getClientDepartmentsForSecondQuestionnaire(state.clients).length >
-              0 && <Clients state={state} dispatch={dispatch} links={links} />}
           </Container>
           <Container
             sx={{

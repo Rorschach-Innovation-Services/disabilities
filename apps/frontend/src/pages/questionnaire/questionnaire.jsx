@@ -15,8 +15,11 @@ import { LoadingButton } from '@mui/lab';
 import { isDate, getHours, getMinutes } from 'date-fns';
 import { CustomMessage } from '../../components/message';
 
-export const Questionnaire = () => {
-  const { companyId, departmentId, questionnaireId } = useParams();
+export const Questionnaire = ({ companyId: propCompanyId, departmentId: propDepartmentId, questionnaireId: propQuestionnaireId, initialEmployee }) => {
+  const routeParams = useParams();
+  const companyId = propCompanyId || routeParams.companyId;
+  const departmentId = propDepartmentId || routeParams.departmentId;
+  const questionnaireId = propQuestionnaireId || routeParams.questionnaireId;
   const [state, dispatch] = useReducer(reducer, initialState);
   const [filled, setFilled] = useState(false); // If questions have been loaded
   const [questionViews, setQuestionViews] = useState([]); // info for each question indexed
@@ -34,13 +37,27 @@ export const Questionnaire = () => {
   });
   useEffect(() => console.log('state', state), [state]);
 
+  // Prefill employee details if provided (embedded usage)
+  useEffect(() => {
+    if (!initialEmployee) return;
+    if (initialEmployee.email) {
+      dispatch({ type: 'employee', payload: { key: 'email', value: initialEmployee.email } });
+    }
+    if (initialEmployee.name) {
+      dispatch({ type: 'employee', payload: { key: 'name', value: initialEmployee.name } });
+    }
+  }, [initialEmployee]);
+
   const sendData = () => {
     saveAssessmentRequest.executeWithData({
       company: companyId,
-      employeeEmail: state.employee.email,
-      questionnaire: state.questions,
       department: departmentId,
       questionnaireId,
+      questionnaire: state.questions,
+      employeeEmail: state.employee.email || initialEmployee?.email,
+      employeeId: (() => { try { return localStorage.getItem('respondentEmployeeId') || undefined; } catch { return undefined; } })(),
+      employeeName: initialEmployee?.name,
+      workTitle: initialEmployee?.workTitle,
     });
   };
 
@@ -84,63 +101,39 @@ export const Questionnaire = () => {
     })();
   }, []);
 
-  useEffect(() => {
-    if (response && !filled) {
-      const questions = response.questionnaire.questions;
-  
-      if (questions && questions.length > 0) {
-        // Grab the first question
-        const firstQuestion = questions.slice(0, 1);
+ useEffect(() => {
+  if (response && !filled) {
+    const questions = response.questionnaire.questions;
 
-        // Grab the remaining questions
-        const remainingQuestions = questions.slice(1);
-  
-        // Custom sort order for specific labels
-        const labelPriority = {
-          "Current Status": 1,
-          "Important to Us": 2,
-        };
-  
-        // Sorting the remaining questions
-        const sortedQuestions = remainingQuestions.sort((a, b) => {
-          const labelA = a.label;
-          const labelB = b.label;
-  
-          const priorityA = labelPriority[labelA] || 3; // Default priority
-          const priorityB = labelPriority[labelB] || 3;
-  
-          return priorityA - priorityB || labelA.localeCompare(labelB); // Alphabetical if same priority
-        });
-  
-        // Combine first question with sorted remaining questions
-        const finalQuestions = [...firstQuestion, ...sortedQuestions];
-  
-        // Displaying the final ordered questions to the state
-        finalQuestions.forEach((question) => {
-          dispatch({
-            type: 'add question',
-            payload: { ...question, response: '' },
-          });
-        });
-  
-        // Save question properties for later rendering
-        setQuestionViews(finalQuestions.map(question => ({
-          id: question.id,
-          helperText: question.helperText,
-          title: question.question,
-          label: question.label,
-          category: question.category,
-        })));
-  
-        // Set question count in state
+    if (questions && questions.length > 0) {
+      // Use questions directly without reordering
+      questions.forEach((question) => {
         dispatch({
-          type: 'question count',
-          payload: finalQuestions.length,
+          type: 'add question',
+          payload: { ...question, response: '' },
         });
-      }
-      setFilled(true);
+      });
+
+      // Save question properties for later rendering
+      setQuestionViews(questions.map(question => ({
+        id: question.id,
+        helperText: question.helperText,
+        title: question.question,
+        label: question.label,
+        category: question.category,
+      })));
+
+      // Set question count in state
+      dispatch({
+        type: 'question count',
+        payload: questions.length,
+      });
     }
-  }, [response, error, state]);
+
+    setFilled(true);
+  }
+}, [response, error, state]);
+
   
 
   const handleNext = () => {
@@ -176,6 +169,18 @@ export const Questionnaire = () => {
       );
     }
     if (saveAssessmentRequest.error || !saveAssessmentRequest.response) return;
+    try {
+      const eid = saveAssessmentRequest.response.employeeId;
+      if (eid) localStorage.setItem('respondentEmployeeId', String(eid));
+    } catch {}
+    // Persist respondent identity and completion flag for Live Dashboard scoping
+    try {
+      const emailVal = (state?.employee?.email || initialEmployee?.email || '').trim();
+      if (emailVal) localStorage.setItem('respondentEmail', emailVal);
+    } catch {}
+    try { if (companyId) localStorage.setItem('respondentCompanyId', String(companyId)); } catch {}
+    try { if (departmentId) localStorage.setItem('respondentDepartmentId', String(departmentId)); } catch {}
+    try { localStorage.setItem('respondentCompleted', '1'); } catch {}
     setComplete(true);
   }, [saveAssessmentRequest.response, saveAssessmentRequest.error]);
 
@@ -236,7 +241,6 @@ export const Questionnaire = () => {
             borderRadius: '50%', // This makes the image round
             }}
             />
-
           <Box
             sx={{
               margin: '0 auto',

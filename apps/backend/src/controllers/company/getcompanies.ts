@@ -10,8 +10,16 @@ export const getCompanies = async (request: Request, response: Response) => {
       { _en: 'company' },
       { index: 'gsIndex' },
     );
+    const user = (request as any).user as any;
+    const role = String(user?.role || '').toLowerCase();
+    const viewerCompanyId = String(user?.companyId || '');
+
     const companies = companiesResponse.items;
-    const existingCompanies = companies.filter((company) => !company.deleted);
+    let existingCompanies = companies.filter((company) => !company.deleted);
+    // Client Super: limit to their own company only
+    if (role === 'client_super') {
+      existingCompanies = existingCompanies.filter((c) => String(c.id) === viewerCompanyId);
+    }
     const returnCompanies = Promise.all(
       existingCompanies.map(async (company) => {
         const departmentsResponse = await Department.query(

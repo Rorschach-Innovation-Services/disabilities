@@ -6,6 +6,9 @@ export const useLocalStorage = () => {
   const TOKEN = "token";
   const EMAIL = "email";
   const ID = "id";
+  const ROLE = "role";
+  const COMPANY_ID = "companyId";
+  const DEPARTMENT_ID = "departmentId";
 
   const readItem = (key) => () => {
     const storedValue = localStorage.getItem(key);
@@ -17,6 +20,9 @@ export const useLocalStorage = () => {
   const [token, setToken] = useState(readItem(TOKEN)());
   const [email, setEmail] = useState(readItem(EMAIL)());
   const [id, setID] = useState(readItem(ID)());
+  const [role, setRole] = useState(readItem(ROLE)());
+  const [companyId, setCompanyId] = useState(readItem(COMPANY_ID)());
+  const [departmentId, setDepartmentId] = useState(readItem(DEPARTMENT_ID)());
 
   const writeItem = (key, setItem) => (newValue) => {
     localStorage.setItem(key, newValue);
@@ -32,6 +38,9 @@ export const useLocalStorage = () => {
     clearItem(ID)();
     clearItem(TOKEN)();
     clearItem(EMAIL)();
+    clearItem(ROLE)();
+    clearItem(COMPANY_ID)();
+    clearItem(DEPARTMENT_ID)();
     clearItem("adminID")();
     clearItem("adminPhoto")();
     clearItem("adminName")();
@@ -39,6 +48,9 @@ export const useLocalStorage = () => {
     setEmail("");
     setID("");
     setToken("");
+    setRole("");
+    setCompanyId("");
+    setDepartmentId("");
   };
 
   return {
@@ -46,10 +58,16 @@ export const useLocalStorage = () => {
     token,
     email,
     id,
+    role,
+    companyId,
+    departmentId,
     writeEmail: writeItem(EMAIL, setEmail),
     writeID: writeItem(ID, setID),
     writeName: writeItem(NAME, setName),
     writeToken: writeItem(TOKEN, setToken),
+    writeRole: writeItem(ROLE, setRole),
+    writeCompanyId: writeItem(COMPANY_ID, setCompanyId),
+    writeDepartmentId: writeItem(DEPARTMENT_ID, setDepartmentId),
     clearName: clearItem(NAME),
     clearToken: clearItem(NAME),
     clearEmail: clearItem(EMAIL),

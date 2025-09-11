@@ -60,14 +60,13 @@ export const Welcome = ({ state, dispatch, handleBegin }) => {
                     <Typography>
                         <br />
                         <br />
-                        This questionnaire is divided into three parts, 
-                        aimed at supporting your efforts toward disability
+                        This questionnaire is aimed at supporting your efforts toward disability
                         inclusion and ensuring that your organization or 
                         department has effective policies and practices in 
                         place to create productive, inclusive environments 
                         for all. The goal is to foster systems that result 
                         in mutual benefits, ensuring everyone can contribute 
-                        and thrive.
+                        and flourish.
                         <br />
                         <br />
                         All responses are anonymous, and the results will be 

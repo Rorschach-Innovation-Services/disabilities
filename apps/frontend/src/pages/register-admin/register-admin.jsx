@@ -1,4 +1,4 @@
-import React, { useEffect, Fragment } from "react";
+import React, { useEffect, Fragment, useState, useRef } from "react";
 import { Typography, Box, Paper, Button, Container } from "@mui/material";
 import BackgroundImage from "../../assets/images/Abstract.jpg";
 import Logo from "../../assets/logos/Sleep Science Logo NT RGB.png";
@@ -14,21 +14,71 @@ export const RegisterAdmin = () => {
     url: "/admin/register",
     method: "post",
   });
+  const companiesReq = useAxios({ url: "/companies", method: "get" });
+  const [companies, setCompanies] = useState([]);
+  const withPassword = useRef(false);
   const formik = useFormik({
     initialValues: {
       name: "",
       email: "",
+      role: "administrator",
+      company: "",
+      department: "",
+      password: "",
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Required"),
       email: Yup.string()
         .required("Required")
         .email("Enter a valid email address"),
+      password: Yup.string().min(8, 'At least 8 characters').required('Required'),
+      // Require company selection for client roles
+      company: Yup.string().when("role", (role, schema) => {
+        const r = (role || "").toString().toLowerCase();
+        return ["client_super", "client_user"].includes(r)
+          ? schema.required("Company is required for client users")
+          : schema;
+      }),
+      // Require department selection for client roles
+      department: Yup.string().when("role", (role, schema) => {
+        const r = (role || "").toString().toLowerCase();
+        return ["client_super", "client_user"].includes(r)
+          ? schema.required("Department is required for client users")
+          : schema;
+      }),
     }),
     onSubmit: (values) => {
-      executeWithData({ ...values });
+      const payload = {
+        name: values.name,
+        email: values.email,
+        role: values.role,
+        password: values.password,
+        company: ["client_super", "client_user"].includes(
+          (values.role || "").toLowerCase()
+        )
+          ? values.company
+          : undefined,
+        // Department is optional on backend for now; include when client role
+        department: ["client_super", "client_user"].includes(
+          (values.role || "").toLowerCase()
+        )
+          ? values.department
+          : undefined,
+      };
+      withPassword.current = !!values.password;
+      executeWithData(payload);
     },
   });
+
+  useEffect(() => {
+    companiesReq.execute({});
+  }, []);
+
+  useEffect(() => {
+    if (companiesReq.response && !companiesReq.error) {
+      setCompanies(companiesReq.response.companies || []);
+    }
+  }, [companiesReq.response, companiesReq.error]);
 
   const render = () => {
     if (error) {
@@ -82,10 +132,18 @@ export const RegisterAdmin = () => {
     if (response)
       return (
         <Typography sx={{ color: "green" }}>
-          Success! An email will be sent shortly to create a password.
+          {withPassword.current
+            ? 'Success! User created.'
+            : 'Success! An email will be sent shortly to create a password.'}
         </Typography>
       );
-    return <RegisterContent formik={formik} loading={loading} />;
+    return (
+      <RegisterContent
+        formik={formik}
+        loading={loading}
+        companies={companies}
+      />
+    );
   };
 
   useEffect(() => {
@@ -124,7 +182,7 @@ export const RegisterAdmin = () => {
         sx={{
           borderRadius: "31px",
           width: "400px",
-          height: "350px",
+          height: "auto",
           marginTop: "15vh",
           display: "flex",
           justifyContent: "center",

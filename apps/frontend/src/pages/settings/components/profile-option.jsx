@@ -162,6 +162,7 @@ export const ProfileOption = ({ dispatch, state }) => {
                     >
                         <InputLabel sx={{fontSize: "12px"}}>Role</InputLabel>
                     <TextField
+                        disabled
                         onChange={(event) => dispatch({
                             type: "set-role",
                             payload: event.target.value

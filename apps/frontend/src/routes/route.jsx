@@ -48,14 +48,16 @@ import {
 } from '../pages/articles/index';
 import { ClientDetails } from '../pages/company/client-details';
 import { EmployeeDetails } from '../pages/company/employee-details';
+import { CompanyUsers } from '../pages/company/company-users';
 import { ForgotPassword } from '../pages/forgot-password/forgot-password';
 import { Staff } from '../pages/staff/staff';
+import { StaffEdit } from '../pages/staff/staff-edit';
 import { Settings } from '../pages/settings/settings';
 import { RegisterCompanyDepartment } from '../pages/register-client/register.client';
+import { RespondentDetails } from '../pages/assessment/respondent';
 import { QuestionnaireBank } from '../pages/questionnaire-bank/banks';
 import { QuestionnaireAdd } from '../pages/questionnaire-add/add';
 import { LiveDashboard } from '../pages/live-dashboard/dashboard';
-import { ActionPlan } from '../pages/live-dashboard/components/actionplan';
 
 const ProtectedRoute = (routeProps) => {
   const { name, token } = useLocalStorage();
@@ -65,6 +67,37 @@ const ProtectedRoute = (routeProps) => {
   ) : (
     <Route {...routeProps} />
   );
+};
+
+// Guard for Live Dashboard: for client_user require completed respondent + questionnaire
+const LiveDashboardRoute = (routeProps) => {
+  const { name, token, role } = useLocalStorage();
+  if (!name || !token) return <Redirect to="/sign-in" />;
+  const norm = String(role || '').toLowerCase();
+  if (norm === 'client_user') {
+    // Must have started assessment (email captured) AND completed questionnaire
+    let hasEmail = false;
+    let hasCompleted = false;
+    try {
+      hasEmail = Boolean((localStorage.getItem('respondentEmail') || '').trim());
+      hasCompleted = Boolean((localStorage.getItem('respondentCompleted') || '').trim());
+    } catch {}
+    if (!hasEmail || !hasCompleted) {
+      return <Redirect to="/assessment/questions" />;
+    }
+  }
+  return <Route {...routeProps} />;
+};
+
+const RoleRoute = ({ allowed = [], ...routeProps }) => {
+  const { token, role } = useLocalStorage();
+  const norm = (role || '').toLowerCase();
+  const allowedNorm = allowed.map((r) => String(r).toLowerCase());
+  if (!token) return <Redirect to="/sign-in" />;
+  if (allowedNorm.length > 0 && !allowedNorm.includes(norm)) {
+    return <Redirect to="/dashboard" />;
+  }
+  return <Route {...routeProps} />;
 };
 
 const ScrollToTop = withRouter(({ history }) => {
@@ -174,29 +207,34 @@ export const Routes = () => {
           path="/questionnaire/:questionnaireId/:companyId/:departmentId/"
           component={Questionnaire}
         />
-        <ProtectedRoute
+        <RoleRoute allowed={["administrator", "admin", "pivot"]}
           exact
           path="/questionnaire-bank"
           component={QuestionnaireBank}
         />
-        <ProtectedRoute
+        <RoleRoute allowed={["administrator", "admin", "pivot"]}
           exact
           path="/questionnaire-add"
           component={QuestionnaireAdd}
         />
-        <ProtectedRoute
+        <RoleRoute allowed={["client_super", "client_user"]}
           exact
           path="/assessment/questions"
           component={Assessment}
         />
-        <ProtectedRoute
+        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super", "client_user"]}
           exact
           path="/assessment/new-department"
           component={RegisterCompanyDepartment}
         />
+        <RoleRoute allowed={["client_super", "client_user"]}
+          exact
+          path="/assessment/respondent"
+          component={RespondentDetails}
+        />
         <ProtectedRoute exact path={`/settings`} component={Settings} />
         <ProtectedRoute exact path="/dashboard" component={Dashboard} />
-        <ProtectedRoute
+        <LiveDashboardRoute
           exact
           path="/live-dashboard"
           component={LiveDashboard}
@@ -211,7 +249,7 @@ export const Routes = () => {
           path="/departments/:departmentId"
           component={EmployeesPage}
         />
-        <ProtectedRoute
+        <RoleRoute allowed={["administrator", "admin", "pivot"]}
           exact
           path="/clients/:companyID"
           component={SingleClientPage}
@@ -219,16 +257,24 @@ export const Routes = () => {
         <Route exact path="/create-password/:id" component={CreatePassword} />
         <Route exact path="/forgot-password" component={ForgotPassword} />
 
-        <ProtectedRoute exact path="/action-plan" component={ActionPlan} />
+        {/** Action Plan route temporarily disabled */}
         
-        <ProtectedRoute exact path="/clients" component={ClientsPage} />
-        <ProtectedRoute exact path="/staff" component={Staff} />
-        <ProtectedRoute
+        <RoleRoute allowed={["administrator", "admin", "pivot"]} exact path="/clients" component={ClientsPage} />
+        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super"]} exact path="/staff" component={Staff} />
+        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super"]} exact path="/staff/:id/edit" component={StaffEdit} />
+        <RoleRoute
           exact
           path="/register-admin"
           component={RegisterAdmin}
+          allowed={["administrator", "admin", "pivot", "client_super"]}
         />
-        <ProtectedRoute exact path="/generate-link" component={GenerateLink} />
+        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super", "client_user"]} exact path="/generate-link" component={GenerateLink} />
+        <RoleRoute
+          exact
+          allowed={["administrator", "admin", "pivot", "client_super"]}
+          path="/company/:companyID/users"
+          component={CompanyUsers}
+        />
         <ProtectedRoute
           exact
           path={`/clients/:company/details`}

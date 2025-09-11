@@ -1,16 +1,23 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { Typography, Box } from '@mui/material';
 import { assessmentInitialState, assessmentReducer } from './reducer';
 import { Shell } from '../../components/shell';
 import { Loading } from '../../components/loading';
 import { useAxios } from '../../hooks/axios';
 import { QuestionnaireDetails } from './components/questionnaire-details';
+import { RespondentDetails } from './respondent';
 
 export const Assessment = () => {
   const [state, dispatch] = useReducer(
     assessmentReducer,
     assessmentInitialState
   );
+  const [embeddedFlow, setEmbeddedFlow] = useState({
+    showRespondent: false,
+    companyID: null,
+    questionnaire: null,
+    prefillRespondent: null,
+  });
   const { execute, response, error, loading } = useAxios({
     url: '/questionnaires',
     method: 'get',
@@ -54,11 +61,28 @@ export const Assessment = () => {
 
   return (
     <Shell heading="Start Assessment">
-      {/* || state.questionnaires.length === 0 */}
-      {error || !response ? (
+      {embeddedFlow.showRespondent ? (
+        <RespondentDetails
+          companyID={embeddedFlow.companyID}
+          questionnaire={embeddedFlow.questionnaire}
+          prefillRespondent={embeddedFlow.prefillRespondent}
+          embedded
+        />
+      ) : error || !response ? (
         <Typography>No Questionnaires Found. Try again later!</Typography>
       ) : (
-        <QuestionnaireDetails state={state} dispatch={dispatch} />
+        <QuestionnaireDetails
+          state={state}
+          dispatch={dispatch}
+          onContinue={({ companyID, questionnaire, prefillRespondent }) =>
+            setEmbeddedFlow({
+              showRespondent: true,
+              companyID,
+              questionnaire,
+              prefillRespondent,
+            })
+          }
+        />
       )}
     </Shell>
   );

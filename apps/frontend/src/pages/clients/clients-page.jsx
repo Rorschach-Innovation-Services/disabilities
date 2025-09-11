@@ -13,8 +13,8 @@ import { useAxios } from '../../hooks/axios';
 import { ClientsTable } from './components/clients-table';
 import { Bottom } from './components/bottom';
 import { TopSection } from './components/top-section';
-import { useMediaStorage } from '../../hooks/media';
-import { getKey } from '../../utils/get-key';
+// import { useMediaStorage } from '../../hooks/media';
+// import { getKey } from '../../utils/get-key';
 import { CustomMessage } from '../../components/message';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { Loading } from '../../components/loading';
@@ -52,7 +52,7 @@ export const ClientsPage = () => {
   const [linksLoaded, setLinksLoaded] = useState(false);
   const [step, setStep] = useState(1);
   const [clients, setClients] = useState([]);
-  const media = useMediaStorage();
+  // const media = useMediaStorage();
   const { push } = useHistory();
   const useIconsOnly = useMediaQuery('(max-width:800px)');
   const { execute, response, error, loading } = useAxios({
@@ -84,21 +84,17 @@ export const ClientsPage = () => {
   }, []);
   // return only 4 clients to display at a time
   useEffect(() => {
-    if (!response || !media.response || linksLoaded) return;
+    if (!response || linksLoaded) return;
     const getLinks = async () => {
       const list = response.companies;
       for (let i = 0; i < list.length; i++) {
-        if (!list[i].logo) setLinks((prev) => [...prev, '']);
-        else {
-          const url = await media.retrieve(getKey(list[i].logo));
-          if (media.response) setLinks((prev) => [...prev, url]);
-        }
+        setLinks((prev) => [...prev, list[i].logo || '']);
       }
       getClients();
     };
     getLinks();
     setLinksLoaded(true);
-  }, [media.response, response]);
+  }, [response, linksLoaded]);
 
   useEffect(() => {
     if (!response) return;
@@ -217,7 +213,7 @@ export const ClientsPage = () => {
         setSearch={setSearch}
         buttonText="Create New Client"
         buttonIcon
-        onButtonClick={() => push('/assessment/questions')}
+        onButtonClick={() => push('/assessment/new-department')}
       />
       <Grid item xs={12}>
         <ClientsTable

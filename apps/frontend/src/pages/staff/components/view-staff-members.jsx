@@ -15,16 +15,17 @@ import { useHistory } from "react-router-dom";
 export const ViewStaffMembers = ({ open, setOpen, dispatch, state }) => {
     const clientsReq = useAxios({
         url: state.viewedStaffMember
-            ? `/admin/${state.viewedStaffMember._id}/clients`
+            ? `/admin/${state.viewedStaffMember.id}/clients`
             : "",
         method: "get",
     });
     const { push } = useHistory();
+    const deleteReq = useAxios({ url: "", method: "delete" });
     useEffect(() => {
         console.log(state, "state");
         clientsReq.execute({
             url: state.viewedStaffMember
-                ? `/admin/${state.viewedStaffMember._id}/clients`
+                ? `/admin/${state.viewedStaffMember.id}/clients`
                 : "",
         });
     }, [state.viewedStaffMember]);
@@ -37,6 +38,39 @@ export const ViewStaffMembers = ({ open, setOpen, dispatch, state }) => {
         });
         console.log(state);
     }, [clientsReq.response, clientsReq.error]);
+
+    const prettyRole = (role) => {
+        const r = (role || '').toLowerCase();
+        switch (r) {
+            case 'administrator':
+                return 'Administrator';
+            case 'admin':
+                return 'Admin';
+            case 'pivot':
+                return 'Pivot';
+            case 'client_super':
+                return 'Client Super';
+            case 'client_user':
+            case 'client':
+                return 'Client Normal';
+            default:
+                return 'User';
+        }
+    }
+
+    const onDelete = async () => {
+        if (!state.viewedStaffMember || !state.viewedStaffMember.id) return;
+        const confirmDelete = window.confirm(`Delete ${state.viewedStaffMember.name || 'this user'}? This action cannot be undone.`);
+        if (!confirmDelete) return;
+        await deleteReq.createRequest({
+            url: `/admin/delete-account/${state.viewedStaffMember.id}`,
+            method: 'delete'
+        })();
+        if (!deleteReq.error) {
+            dispatch({ type: 'remove-staff-member', payload: state.viewedStaffMember.id });
+            setOpen(false);
+        }
+    };
     return (
         <>
             {!open ? (
@@ -114,7 +148,47 @@ export const ViewStaffMembers = ({ open, setOpen, dispatch, state }) => {
                         >
                             Profile
                         </Typography>
+                        <Typography
+                            sx={{
+                                fontSize: '12px',
+                                color: Colours.darkGrey
+                            }}
+                        >
+                            Role: {prettyRole(state.viewedStaffMember.role)}
+                        </Typography>
                     </Container>
+                    <Button
+                        startIcon={<DeleteIcon />}
+                        color="error"
+                        variant="contained"
+                        sx={{
+                            textTransform: 'none',
+                            width: '140px',
+                            fontSize: '12px'
+                        }}
+                        onClick={onDelete}
+                    >
+                        Delete User
+                    </Button>
+                    <Button
+                        sx={{
+                            backgroundColor: Colours.blue,
+                            ":hover": {
+                                backgroundColor: Colours.blue,
+                            },
+                            placeSelf: "end",
+                            textTransform: "none",
+                            color: "#fff",
+                            width: "120px",
+                            fontSize: "12px",
+                        }}
+                        onClick={() => {
+                            const uid = state.viewedStaffMember?.id || state.viewedStaffMember?._id;
+                            if (uid) push(`/staff/${uid}/edit`);
+                        }}
+                    >
+                        Edit
+                    </Button>
                     <Button
                         sx={{
                             backgroundColor: Colours.yellow,

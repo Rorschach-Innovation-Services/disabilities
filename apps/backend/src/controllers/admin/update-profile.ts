@@ -23,14 +23,43 @@ export const updateProfile = async (request: Request, response: Response) => {
       return response.status(400).json({ message: 'Admin Not Found!' });
       // return { message: 'Admin Not Found!' };
     }
+    // Enforce role/company constraints for non-admin actors
+    const actor = (request as any).user as any;
+    const actorRole = String(actor?.role || '').toLowerCase();
+    const actorCompanyId = String(actor?.companyId || '');
+
+    let nextRole = role;
+    let nextCompany = company;
+
+    const isAdminActor = actorRole === 'administrator' || actorRole === 'admin';
+    if (!isAdminActor) {
+      if (actorRole === 'pivot') {
+        // Pivot can only set client roles
+        if (nextRole && !['client_super', 'client_user', 'client'].includes(String(nextRole).toLowerCase())) {
+          return response.status(403).json({ message: 'Forbidden - Pivot may only assign client roles' });
+        }
+      } else if (actorRole === 'client_super') {
+        // Client Super may only assign client_user and within own company
+        if (nextRole && String(nextRole).toLowerCase() !== 'client_user') {
+          return response.status(403).json({ message: 'Forbidden - Client Super may only assign Client Normal role' });
+        }
+        // Lock company to actor's company
+        if (!actorCompanyId) {
+          return response.status(400).json({ message: 'Missing actor company' });
+        }
+        nextCompany = actorCompanyId;
+      } else {
+        return response.status(403).json({ message: 'Forbidden - Insufficient access' });
+      }
+    }
     const updatedAdmin = await Administrator.update(
       { id },
       {
         email,
         name,
         location,
-        companyId: company,
-        role,
+        companyId: nextCompany,
+        role: nextRole,
         bio,
       },
     );

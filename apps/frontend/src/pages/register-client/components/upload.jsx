@@ -28,6 +28,7 @@ export const Upload = ({
       executeDispatch({
         data: event.target.result,
         filename: file && file.name ? file.name : "",
+        contentType: file && file.type ? file.type : undefined,
       });
       setUploaded(true);
       enqueueSnackbar(`${file.name} saved a ${name} file.`, {
