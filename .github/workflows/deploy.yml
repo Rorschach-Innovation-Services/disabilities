@@ -26,10 +26,17 @@ jobs:
         working-directory: apps/frontend
         run: yarn install --non-interactive
 
+      - name: Verify package.json and yarn.lock
+        working-directory: apps/frontend
+        run: ls -la && cat package.json | head -20
 
       - name: Build project
         working-directory: apps/frontend
         run: yarn build
+
+      - name: Verify dist output
+        working-directory: apps/frontend
+        run: ls -la dist || echo "⚠️ dist not found"
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
