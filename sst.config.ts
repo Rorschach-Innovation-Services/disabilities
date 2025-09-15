@@ -1,13 +1,6 @@
 /// <reference path="./.sst/platform/config.d.ts" />
 
-import { adminRoutes } from './stacks/routes/admin';
-import { assessmentRoutes } from './stacks/routes/assessment';
-import { companyRoutes } from './stacks/routes/company';
-import { departmentRoutes } from './stacks/routes/department';
-import { employeeRoutes } from './stacks/routes/employee';
-import { questionRoutes } from './stacks/routes/questions';
-import { taskRoutes } from './stacks/routes/tasks';
-import { questionnaireRoutes } from './stacks/routes/questionnaire';
+
 
 export default $config({
   app(input) {
@@ -19,12 +12,21 @@ export default $config({
       providers: {
         aws: {
           region: 'us-east-1',
-          profile: 'inclusivity-admin',
+          profile: 'default',
         },
       },
     };
   },
   async run() {
+
+const { adminRoutes } = await import("./stacks/routes/admin");
+const { assessmentRoutes } = await import("./stacks/routes/assessment");
+const  { companyRoutes } = await import("./stacks/routes/company");
+const  { departmentRoutes } = await import("./stacks/routes/department");
+const  { employeeRoutes } = await import("./stacks/routes/employee");
+const  { questionRoutes } = await import("./stacks/routes/questions");
+const  { taskRoutes } = await import("./stacks/routes/tasks");
+const  { questionnaireRoutes } = await import("./stacks/routes/questionnaire");
     // const email = new sst.aws.Email('FootballnurseEmail', {
     //   sender: 'info@footballnurse.com',
     // });

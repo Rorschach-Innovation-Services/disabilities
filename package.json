@@ -9,7 +9,8 @@
     "dev": "turbo run dev --no-cache --parallel --continue",
     "format": "prettier --ignore-path .gitignore --write \"**/*.{js,jsx,ts,tsx,md}\"",
     "lint": "turbo run lint",
-    "release": "turbo run build && changeset publish"
+    "release": "turbo run build && changeset publish",
+    "build:sst": "sst deploy"
   },
   "devDependencies": {
     "@changesets/cli": "2.22.0",
@@ -18,6 +19,6 @@
     "turbo": "1.2.12"
   },
   "dependencies": {
-    "sst": "ion"
+    "sst": "^3.17.13"
   }
 }
