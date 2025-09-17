@@ -158,7 +158,7 @@ export const Dashboard = () => {
                     fontWeight: '500',
                   }}
                 >
-                  Welcome , {name}
+                  Welcome to the Pivot App
                 </Typography>
                 <Typography
                   sx={{
@@ -166,7 +166,7 @@ export const Dashboard = () => {
                     color: 'white',
                   }}
                 >
-                  What you share today shapes what others experience tomorrow.
+                  "What you share today shapes what others experience tomorrow."
                 </Typography>
                 {canStartAssessmentCTA && (
                   <Button

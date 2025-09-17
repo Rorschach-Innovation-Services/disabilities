@@ -65,7 +65,7 @@ export const Input = () => {
             marginBottom: '30px',
           }}
         >
-          Welcome Back!
+          Sign in to the platform
         </Typography>
         <Typography
           sx={{
