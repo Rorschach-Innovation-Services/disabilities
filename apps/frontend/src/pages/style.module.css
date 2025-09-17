@@ -223,7 +223,7 @@ grid {
     display: flex;
     flex-direction: row;
     align-items: center;
-    background: url("../assets/images/hero-lg.jpg") no-repeat center
+    background: url("../assets/images/wallpaper_unsplash.jpg") no-repeat center
         center/cover;
 }
 
@@ -238,6 +238,19 @@ grid {
 .hero-heading {
     font-weight: 500;
     font-size: 30px;
+}
+
+.hero-subheading {
+    font-size: 20px;
+    font-weight: 400;
+    margin-top: 15px;
+}
+
+.hero-logo {
+    max-width: 220px;
+    width: 100%;
+    margin: 0 auto 20px;
+    display: block;
 }
 
 .hero-text {
@@ -805,3 +818,4 @@ ul {
     transition: ease-in-out;
     opacity: 1;
 }
+

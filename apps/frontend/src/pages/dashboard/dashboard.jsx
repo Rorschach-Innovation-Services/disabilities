@@ -158,7 +158,7 @@ export const Dashboard = () => {
                     fontWeight: '500',
                   }}
                 >
-                  Welcome back, {name}
+                  Welcome , {name}
                 </Typography>
                 <Typography
                   sx={{
@@ -166,7 +166,7 @@ export const Dashboard = () => {
                     color: 'white',
                   }}
                 >
-                  Lets get our day started with some sleep assessments?
+                  What you share today shapes what others experience tomorrow.
                 </Typography>
                 {canStartAssessmentCTA && (
                   <Button
