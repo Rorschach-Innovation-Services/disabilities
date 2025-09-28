@@ -1,14 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Button, Container, TextField, Typography } from '@mui/material';
 import { useHistory, useLocation } from 'react-router-dom';
 import { Shell } from '../../components/shell';
 import { useLocalStorage } from '../../hooks/storage';
 import { useAxios } from '../../hooks/axios';
-import { Loading } from '../../components/loading';
 import { Questionnaire as EmbeddedQuestionnaire } from '../questionnaire/questionnaire';
 
 // Respondent capture: Name, Email, Work Title
-// On save: use logged-in user's company and department to save respondent, then open questionnaire
+// On continue: reuse logged-in user's company/department context and pass details to the questionnaire
 export const RespondentDetails = ({ companyID: propCompanyID, questionnaire: propQuestionnaire, departmentID: propDepartmentId, prefillRespondent: propPrefill, embedded }) => {
   const { push } = useHistory();
   const location = useLocation();
@@ -37,22 +36,14 @@ export const RespondentDetails = ({ companyID: propCompanyID, questionnaire: pro
   };
 
   // Requests
-  const saveEmployeeReq = useAxios({ url: '/employees/register', method: 'post' });
   // Fetch admin profile (to derive company/department IDs if not in localStorage)
   const adminId = typeof window !== 'undefined' ? localStorage.getItem('adminID') : '';
   const profileReq = useAxios({ url: `/admin/${adminId}`, method: 'get' });
-
-  // Local flow state
-  const [flow, setFlow] = useState('idle'); // idle | saving-employee
   const [context, setContext] = useState({ companyId: '', departmentId: '' });
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
+  const [initialEmployeePayload, setInitialEmployeePayload] = useState(null);
   const [profileCompanyId, setProfileCompanyId] = useState('');
   const [profileDepartmentId, setProfileDepartmentId] = useState('');
-
-  const loading = useMemo(
-    () => saveEmployeeReq.loading,
-    [saveEmployeeReq.loading]
-  );
 
   const hasRequiredContext = Boolean(companyID && questionnaire);
 
@@ -100,53 +91,39 @@ export const RespondentDetails = ({ companyID: propCompanyID, questionnaire: pro
     const finalDepartmentId = presetDepartmentId || storedDepartmentId || profileDepartmentId;
 
     // If both are present, save employee directly using user's department
-    if (finalCompanyId && finalDepartmentId) {
-      setContext({ companyId: finalCompanyId, departmentId: finalDepartmentId });
-      setFlow('saving-employee');
-      const existingId = (() => { try { return localStorage.getItem('respondentEmployeeId') || undefined; } catch { return undefined; } })();
-      saveEmployeeReq.executeWithData({
-        name,
-        email,
-        company: finalCompanyId,
-        department: finalDepartmentId,
-        workTitle,
-        employeeId: existingId,
-      });
+    if (!finalCompanyId || !finalDepartmentId) {
+      console.warn('Missing departmentId for respondent; ensure user profile has it.');
       return;
     }
 
-    // If department is missing, block and surface a clear message
-    // (No auto-creation of departments in this flow)
-    console.warn('Missing departmentId for respondent; ensure user profile has it.');
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedWorkTitle = workTitle.trim();
+    const employeePayload = {
+      name: trimmedName,
+      email: trimmedEmail,
+      workTitle: trimmedWorkTitle,
     };
 
-  // No department creation path anymore
+    setContext({ companyId: finalCompanyId, departmentId: finalDepartmentId });
+    setInitialEmployeePayload(employeePayload);
 
-  // After saving employee, proceed to questionnaire
-  useEffect(() => {
-    if (flow !== 'saving-employee') return;
-    if (saveEmployeeReq.loading) return;
-    if (saveEmployeeReq.error) return;
-
-    const qId = questionnaire?.id;
-    const { companyId, departmentId } = context;
-    if (!qId || !companyId || !departmentId) return;
-
-    // Persist respondent identity for this session to drive per-employee views
-    const eid = saveEmployeeReq.response?.employee;
-    try { if (eid) localStorage.setItem('respondentEmployeeId', eid); } catch {}
-    try { if (email) localStorage.setItem('respondentEmail', email); } catch {}
-    try { if (departmentId) localStorage.setItem('respondentDepartmentId', departmentId); } catch {}
-    try { if (companyId) localStorage.setItem('respondentCompanyId', companyId); } catch {}
-
-    // If respondent is embedded in Start Assessment, render inline
     if (isEmbedded) {
       setShowQuestionnaire(true);
-    } else {
-      // Otherwise, take the user to the questionnaire route
-      push(`/questionnaire/${qId}/${companyId}/${departmentId}/`);
+      return;
     }
-  }, [flow, saveEmployeeReq.response, saveEmployeeReq.error, saveEmployeeReq.loading]);
+
+    if (!questionnaire?.id) return;
+
+    push(
+      `/questionnaire/${questionnaire.id}/${finalCompanyId}/${finalDepartmentId}/`,
+      {
+        initialEmployee: employeePayload,
+      },
+    );
+  };
+
+  // No department creation path anymore
 
   // Always render the form — allow starting without prior context
 
@@ -157,32 +134,10 @@ export const RespondentDetails = ({ companyID: propCompanyID, questionnaire: pro
         companyId={context.companyId || companyID}
         departmentId={context.departmentId || presetDepartmentId}
         questionnaireId={questionnaire?.id}
-        initialEmployee={{ name, email, workTitle }}
+        initialEmployee={initialEmployeePayload || { name, email, workTitle }}
       />
     );
   }
-
-  // Loading screen when making requests
-  if (loading) {
-    return (
-      <Box
-        sx={{
-          width: '100%',
-          height: '100vh',
-          textAlign: 'center',
-          transform: 'translateY(50%)',
-        }}
-      >
-        <Loading
-          textSx={{ fontSize: '25px' }}
-          loadingSx={{ width: '250px !important', height: '250px !important' }}
-          containerSx={{ margin: 'auto', marginTop: '-100px', textAlign: 'center' }}
-        />
-      </Box>
-    );
-  }
-
-  const errorMessage = saveEmployeeReq.error?.data?.message || '';
 
   // Determine if we have enough context to proceed (prevents a no-op click)
   const storedDeptIdForDisable =
@@ -205,12 +160,6 @@ export const RespondentDetails = ({ companyID: propCompanyID, questionnaire: pro
         <Typography sx={{ mb: 3 }}>
           Please enter your details before starting the assessment.
         </Typography>
-
-        {errorMessage && (
-          <Typography color="error" sx={{ mb: 2 }}>
-            {errorMessage}
-          </Typography>
-        )}
 
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField

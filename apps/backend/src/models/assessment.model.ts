@@ -14,6 +14,9 @@ export type AssessmentAttributes = {
   questionnaireId: string;
   departmentId: string;
   employeeId: string;
+  employeeEmail: string;
+  employeeName?: string;
+  employeeWorkTitle?: string;
   created: number;
   modified: number;
   deleted: boolean;

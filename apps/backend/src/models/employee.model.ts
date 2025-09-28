@@ -4,6 +4,7 @@ export type EmployeeAttributes = {
   id: string;
   name: string;
   email: string;
+  workTitle?: string;
   companyId: string;
   departmentId: string;
   deleted: boolean;

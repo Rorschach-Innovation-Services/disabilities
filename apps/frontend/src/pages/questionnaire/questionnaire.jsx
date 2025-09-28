@@ -1,6 +1,6 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import { Box, Button, useMediaQuery } from '@mui/material';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { Welcome } from './components/welcome';
 import Logo from '../../assets/logos/Pivot-Logo-6.png';
 import { initialState, reducer, options } from './reducer';
@@ -17,6 +17,9 @@ import { CustomMessage } from '../../components/message';
 
 export const Questionnaire = ({ companyId: propCompanyId, departmentId: propDepartmentId, questionnaireId: propQuestionnaireId, initialEmployee }) => {
   const routeParams = useParams();
+  const location = useLocation();
+  const locationInitialEmployee = location?.state?.initialEmployee;
+  const resolvedInitialEmployee = initialEmployee || locationInitialEmployee;
   const companyId = propCompanyId || routeParams.companyId;
   const departmentId = propDepartmentId || routeParams.departmentId;
   const questionnaireId = propQuestionnaireId || routeParams.questionnaireId;
@@ -39,25 +42,29 @@ export const Questionnaire = ({ companyId: propCompanyId, departmentId: propDepa
 
   // Prefill employee details if provided (embedded usage)
   useEffect(() => {
-    if (!initialEmployee) return;
-    if (initialEmployee.email) {
-      dispatch({ type: 'employee', payload: { key: 'email', value: initialEmployee.email } });
+    if (!resolvedInitialEmployee) return;
+    if (resolvedInitialEmployee?.email) {
+      dispatch({ type: 'employee', payload: { key: 'email', value: resolvedInitialEmployee?.email } });
     }
-    if (initialEmployee.name) {
-      dispatch({ type: 'employee', payload: { key: 'name', value: initialEmployee.name } });
+    if (resolvedInitialEmployee?.name) {
+      dispatch({ type: 'employee', payload: { key: 'name', value: resolvedInitialEmployee?.name } });
     }
-  }, [initialEmployee]);
+  }, [resolvedInitialEmployee]);
 
   const sendData = () => {
+    const emailForSubmission = (state.employee.email || resolvedInitialEmployee?.email || '').trim();
+    const nameForSubmission = (state.employee.name || resolvedInitialEmployee?.name || '').trim();
+    const workTitleForSubmission = (resolvedInitialEmployee?.workTitle || '').trim();
+
     saveAssessmentRequest.executeWithData({
       company: companyId,
       department: departmentId,
       questionnaireId,
       questionnaire: state.questions,
-      employeeEmail: state.employee.email || initialEmployee?.email,
+      employeeEmail: emailForSubmission,
       employeeId: (() => { try { return localStorage.getItem('respondentEmployeeId') || undefined; } catch { return undefined; } })(),
-      employeeName: initialEmployee?.name,
-      workTitle: initialEmployee?.workTitle,
+      employeeName: nameForSubmission || undefined,
+      workTitle: workTitleForSubmission || undefined,
     });
   };
 
@@ -175,7 +182,7 @@ export const Questionnaire = ({ companyId: propCompanyId, departmentId: propDepa
     } catch {}
     // Persist respondent identity and completion flag for Live Dashboard scoping
     try {
-      const emailVal = (state?.employee?.email || initialEmployee?.email || '').trim();
+      const emailVal = (state?.employee?.email || resolvedInitialEmployee?.email || '').trim();
       if (emailVal) localStorage.setItem('respondentEmail', emailVal);
     } catch {}
     try { if (companyId) localStorage.setItem('respondentCompanyId', String(companyId)); } catch {}

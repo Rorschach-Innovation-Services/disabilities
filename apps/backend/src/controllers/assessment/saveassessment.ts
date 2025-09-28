@@ -38,12 +38,18 @@ export const saveAssessment = async (request: Request, response: Response) => {
     //   return { statusCode: 400, message: 'Request Body is required!' };
     const {
       employeeEmail,
+      employeeName,
+      workTitle,
       questionnaire,
       company,
       department,
       questionnaireId,
       employeeId: preferredEmployeeId,
     } = requestBody;
+
+    if (!employeeEmail) {
+      return response.status(400).json({ message: 'Employee email is required' });
+    }
 
     /**Check if the company exists in the database */
     const companyDocument = await Company.get({ id: company });
@@ -77,6 +83,11 @@ export const saveAssessment = async (request: Request, response: Response) => {
       { beginsWith: `${company}:${department}` },
     );
     const employees = employeesResponse.items || [];
+
+    const trimmedEmployeeName =
+      typeof employeeName === 'string' ? employeeName.trim() : '';
+    const trimmedWorkTitle =
+      typeof workTitle === 'string' ? workTitle.trim() : '';
 
     let employeeFound: null | EmployeeAttributes = null;
     let employeeExists = false;
@@ -120,8 +131,12 @@ export const saveAssessment = async (request: Request, response: Response) => {
 
     if (employeeFound !== null) {
       /**Create and save the assessment */
-      const assessment = await Assessment.create({
+      await Assessment.create({
         employeeId: employeeFound.id,
+        employeeEmail,
+        employeeName: trimmedEmployeeName || employeeFound.name,
+        employeeWorkTitle:
+          trimmedWorkTitle || employeeFound.workTitle || undefined,
         questionnaire,
         companyId: company,
         departmentId: department,
