@@ -59,9 +59,9 @@ import { QuestionnaireBank } from '../pages/questionnaire-bank/banks';
 import { QuestionnaireAdd } from '../pages/questionnaire-add/add';
 import { LiveDashboard } from '../pages/live-dashboard/dashboard';
 
+// Default protected route (no role filtering)
 const ProtectedRoute = (routeProps) => {
   const { name, token } = useLocalStorage();
-
   return !name || !token ? (
     <Redirect to="/sign-in" />
   ) : (
@@ -69,13 +69,12 @@ const ProtectedRoute = (routeProps) => {
   );
 };
 
-// Guard for Live Dashboard: for client_user require completed respondent + questionnaire
+// Guard for Live Dashboard: client_user must have started + completed
 const LiveDashboardRoute = (routeProps) => {
   const { name, token, role } = useLocalStorage();
   if (!name || !token) return <Redirect to="/sign-in" />;
   const norm = String(role || '').toLowerCase();
   if (norm === 'client_user') {
-    // Must have started assessment (email captured) AND completed questionnaire
     let hasEmail = false;
     let hasCompleted = false;
     try {
@@ -89,14 +88,23 @@ const LiveDashboardRoute = (routeProps) => {
   return <Route {...routeProps} />;
 };
 
+// Role-aware route: supports allowed roles + special redirect logic
 const RoleRoute = ({ allowed = [], ...routeProps }) => {
   const { token, role } = useLocalStorage();
   const norm = (role || '').toLowerCase();
   const allowedNorm = allowed.map((r) => String(r).toLowerCase());
+
   if (!token) return <Redirect to="/sign-in" />;
+
   if (allowedNorm.length > 0 && !allowedNorm.includes(norm)) {
+    // Special case: client_user goes to Start Assessment
+    if (norm === 'client_user') {
+      return <Redirect to="/assessment/questions" />;
+    }
+    // Everyone else follows normal redirect
     return <Redirect to="/dashboard" />;
   }
+
   return <Route {...routeProps} />;
 };
 
@@ -114,7 +122,7 @@ const ScrollToTop = withRouter(({ history }) => {
 });
 
 export const Routes = () => {
-  console.log('ROutes is being rendered');
+  console.log('Routes is being rendered');
   return (
     <BrowserRouter>
       <CssBaseline />
@@ -127,72 +135,20 @@ export const Routes = () => {
           path="/articles/workplace-performance"
           component={WorkplacePerformanceComponent}
         />
-        <Route
-          exact
-          path="/articles/autonomic-nervous"
-          component={AutonomicNervous}
-        />
-        <Route
-          exact
-          path="/articles/computer-gamers"
-          component={ComputerGamers}
-        />
-        <Route
-          exact
-          path="/articles/circadian-rhythms"
-          component={CircadianRhythmsComponent}
-        />
-        <Route
-          exact
-          path="/articles/african-origins"
-          component={AfricanOrigins}
-        />
-        <Route
-          exact
-          path="/articles/apnoea-wearable-device"
-          component={ApnoeaWearableDevice}
-        />
-        <Route
-          exact
-          path="/articles/concussion-history-outcomes"
-          component={ConcussionHistoryOutcomes}
-        />
-        <Route
-          exact
-          path="/articles/exercise-intervention"
-          component={ExerciseIntervention}
-        />
-        <Route
-          exact
-          path="/articles/gut-microbiota-and-cardiometabolic"
-          component={GutMicrobiotaAndCardiometabolic}
-        />
+        <Route exact path="/articles/autonomic-nervous" component={AutonomicNervous} />
+        <Route exact path="/articles/computer-gamers" component={ComputerGamers} />
+        <Route exact path="/articles/circadian-rhythms" component={CircadianRhythmsComponent} />
+        <Route exact path="/articles/african-origins" component={AfricanOrigins} />
+        <Route exact path="/articles/apnoea-wearable-device" component={ApnoeaWearableDevice} />
+        <Route exact path="/articles/concussion-history-outcomes" component={ConcussionHistoryOutcomes} />
+        <Route exact path="/articles/exercise-intervention" component={ExerciseIntervention} />
+        <Route exact path="/articles/gut-microbiota-and-cardiometabolic" component={GutMicrobiotaAndCardiometabolic} />
         <Route exact path="/articles/low-income" component={LowIncome} />
-        <Route
-          exact
-          path="/articles/obstructive-apnoea"
-          component={ObstructiveApnoea}
-        />
-        <Route
-          exact
-          path="/articles/low-socio-economic"
-          component={LowSocioEconomic}
-        />
-        <Route
-          exact
-          path="/articles/rural-sleep-patterns"
-          component={RuralSleepPatterns}
-        />
-        <Route
-          exact
-          path="/articles/sedentary-behaviour-african-woman"
-          component={SedentaryBehaviourAfricanWoman}
-        />
-        <Route
-          exact
-          path="/articles/sleep-deprivation"
-          component={SleepDeprivation}
-        />
+        <Route exact path="/articles/obstructive-apnoea" component={ObstructiveApnoea} />
+        <Route exact path="/articles/low-socio-economic" component={LowSocioEconomic} />
+        <Route exact path="/articles/rural-sleep-patterns" component={RuralSleepPatterns} />
+        <Route exact path="/articles/sedentary-behaviour-african-woman" component={SedentaryBehaviourAfricanWoman} />
+        <Route exact path="/articles/sleep-deprivation" component={SleepDeprivation} />
         <Route exact path="/articles/travel-jetlag" component={TravelJetlag} />
         <Route exact path="/services" component={Services} />
         <Route exact path="/about-us" component={AboutUs} />
@@ -207,84 +163,40 @@ export const Routes = () => {
           path="/questionnaire/:questionnaireId/:companyId/:departmentId/"
           component={Questionnaire}
         />
-        <RoleRoute allowed={["administrator", "admin", "pivot"]}
+
+        {/* Role-restricted routes */}
+        <RoleRoute allowed={["administrator", "admin", "pivot"]} exact path="/questionnaire-bank" component={QuestionnaireBank} />
+        <RoleRoute allowed={["administrator", "admin", "pivot"]} exact path="/questionnaire-add" component={QuestionnaireAdd} />
+        <RoleRoute allowed={["client_super", "client_user"]} exact path="/assessment/questions" component={Assessment} />
+        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super", "client_user"]} exact path="/assessment/new-department" component={RegisterCompanyDepartment} />
+        <RoleRoute allowed={["client_super", "client_user"]} exact path="/assessment/respondent" component={RespondentDetails} />
+
+        <ProtectedRoute exact path="/settings" component={Settings} />
+
+        {/* Dashboard now role-gated: client_user excluded */}
+        <RoleRoute
+          allowed={["administrator", "admin", "pivot", "client_super"]}
           exact
-          path="/questionnaire-bank"
-          component={QuestionnaireBank}
+          path="/dashboard"
+          component={Dashboard}
         />
-        <RoleRoute allowed={["administrator", "admin", "pivot"]}
-          exact
-          path="/questionnaire-add"
-          component={QuestionnaireAdd}
-        />
-        <RoleRoute allowed={["client_super", "client_user"]}
-          exact
-          path="/assessment/questions"
-          component={Assessment}
-        />
-        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super", "client_user"]}
-          exact
-          path="/assessment/new-department"
-          component={RegisterCompanyDepartment}
-        />
-        <RoleRoute allowed={["client_super", "client_user"]}
-          exact
-          path="/assessment/respondent"
-          component={RespondentDetails}
-        />
-        <ProtectedRoute exact path={`/settings`} component={Settings} />
-        <ProtectedRoute exact path="/dashboard" component={Dashboard} />
-        <LiveDashboardRoute
-          exact
-          path="/live-dashboard"
-          component={LiveDashboard}
-        />
-        <ProtectedRoute
-          exact
-          path="/employee/:employeeId"
-          component={EmployeeView}
-        />
-        <ProtectedRoute
-          exact
-          path="/departments/:departmentId"
-          component={EmployeesPage}
-        />
-        <RoleRoute allowed={["administrator", "admin", "pivot"]}
-          exact
-          path="/clients/:companyID"
-          component={SingleClientPage}
-        />
+
+        <LiveDashboardRoute exact path="/live-dashboard" component={LiveDashboard} />
+        <ProtectedRoute exact path="/employee/:employeeId" component={EmployeeView} />
+        <ProtectedRoute exact path="/departments/:departmentId" component={EmployeesPage} />
+        <RoleRoute allowed={["administrator", "admin", "pivot"]} exact path="/clients/:companyID" component={SingleClientPage} />
         <Route exact path="/create-password/:id" component={CreatePassword} />
         <Route exact path="/forgot-password" component={ForgotPassword} />
 
-        {/** Action Plan route temporarily disabled */}
-        
         <RoleRoute allowed={["administrator", "admin", "pivot"]} exact path="/clients" component={ClientsPage} />
         <RoleRoute allowed={["administrator", "admin", "pivot", "client_super"]} exact path="/staff" component={Staff} />
         <RoleRoute allowed={["administrator", "admin", "pivot", "client_super"]} exact path="/staff/:id/edit" component={StaffEdit} />
-        <RoleRoute
-          exact
-          path="/register-admin"
-          component={RegisterAdmin}
-          allowed={["administrator", "admin", "pivot", "client_super"]}
-        />
+        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super"]} exact path="/register-admin" component={RegisterAdmin} />
         <RoleRoute allowed={["administrator", "admin", "pivot", "client_super", "client_user"]} exact path="/generate-link" component={GenerateLink} />
-        <RoleRoute
-          exact
-          allowed={["administrator", "admin", "pivot", "client_super"]}
-          path="/company/:companyID/users"
-          component={CompanyUsers}
-        />
-        <ProtectedRoute
-          exact
-          path={`/clients/:company/details`}
-          component={ClientDetails}
-        />
-        <ProtectedRoute
-          exact
-          path={`/clients/:company/:employee/details`}
-          component={EmployeeDetails}
-        />
+        <RoleRoute allowed={["administrator", "admin", "pivot", "client_super"]} exact path="/company/:companyID/users" component={CompanyUsers} />
+
+        <ProtectedRoute exact path="/clients/:company/details" component={ClientDetails} />
+        <ProtectedRoute exact path="/clients/:company/:employee/details" component={EmployeeDetails} />
 
         <Route>
           <h1>Page not found!</h1>

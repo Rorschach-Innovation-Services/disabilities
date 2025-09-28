@@ -12,7 +12,6 @@ import { useHistory } from 'react-router-dom';
 import { Colours } from '../colours';
 import { useLocalStorage } from '../hooks/storage';
 
-
 const items = [
   {
     text: 'Start New Assessment',
@@ -69,6 +68,7 @@ const SideBarListItem = ({
 }) => {
   const useIconsOnly = useMediaQuery('(max-width:800px)');
   const history = useHistory();
+
   return (
     <Container
       key={text}
@@ -117,21 +117,25 @@ const SideBarListItem = ({
   );
 };
 
-// Used for navigation for authenticated sleep scientist
+// Sidebar navigation
 export const SideBar = () => {
-  const { push, location } = useHistory();
+  const { location } = useHistory();
   const { role } = useLocalStorage();
   const pathnameList = location.pathname.split('/');
   const [selected, setSelected] = useState(
     pathnameList[pathnameList.length - 1]
   );
 
-  // Determine if the current session has a respondent who filled the form
+  // Check if client_user has valid respondent + completed questionnaire
   const hasRespondentContext = (() => {
     try {
       const eid = localStorage.getItem('respondentEmployeeId');
       const email = localStorage.getItem('respondentEmail');
-      return Boolean((eid && eid.trim()) || (email && email.trim()));
+      const completed = localStorage.getItem('respondentCompleted');
+      return Boolean(
+        ((eid && eid.trim()) || (email && email.trim())) &&
+        (completed && completed.trim())
+      );
     } catch {
       return false;
     }
@@ -142,7 +146,6 @@ export const SideBar = () => {
     const key = item.key.toLowerCase();
     const lastRouteName = pathnameList[route.split('/').length - 1];
 
-    // Highlight Clients when on New Department flow
     const currentPath = location.pathname.toLowerCase();
     if (currentPath.startsWith('/assessment/new-department')) {
       return key === 'clients';
@@ -152,22 +155,27 @@ export const SideBar = () => {
     return false;
   };
 
-  // Filter by role but keep original order/layout
+  // Role logic
   const r = (role || '').toLowerCase();
-  // Only client roles can start assessments
   const canStartAssessment = r === 'client_super' || r === 'client_user';
   const canSeeQuestionnaireBank = r === 'administrator' || r === 'admin' || r === 'pivot';
   const canSeeClients = r === 'administrator' || r === 'admin' || r === 'pivot';
   const canSeeStaff = r === 'administrator' || r === 'admin' || r === 'pivot' || r === 'client_super';
+  const canSeeDashboard = r === 'administrator' || r === 'admin' || r === 'pivot';
+
+  // Build visible items list
   const visibleItems = items.filter((item) => {
     switch (item.key) {
+      case 'dashboard':
+        return canSeeDashboard;
       case 'questions':
         return canStartAssessment;
       case 'live-dashboard': {
-        // Hide Live Dashboard for normal client roles until form is filled
-        const isClientNormal = r === 'client_user' || r === 'client';
-        if (isClientNormal) return hasRespondentContext;
-        return true;
+        // client_user only sees if form filled + questionnaire completed
+        if (r === 'client_user' || r === 'client') {
+          return hasRespondentContext;
+        }
+        return true; // other roles always see
       }
       case 'questionnaire-bank':
         return canSeeQuestionnaireBank;
@@ -176,7 +184,7 @@ export const SideBar = () => {
       case 'staff':
         return canSeeStaff;
       default:
-        return true; // dashboard, live-dashboard, settings
+        return true; // settings, etc.
     }
   });
 
@@ -191,22 +199,17 @@ export const SideBar = () => {
         height: 'max-content',
       }}
     >
-      <Container
-        sx={{
-          textAlign: 'center',
-         margin: '0',
-        }}
-      >
+      <Container sx={{ textAlign: 'center', margin: '0' }}>
         <img
-         style={{
-           cursor: 'pointer',
-           borderRadius: '50%', 
-           width: '140px', 
-           height: '140px', 
-           objectFit: 'cover', 
-         }}
-         src={Logo}
-         alt="Pivot Logo"
+          style={{
+            cursor: 'pointer',
+            borderRadius: '50%',
+            width: '140px',
+            height: '140px',
+            objectFit: 'cover',
+          }}
+          src={Logo}
+          alt="Pivot Logo"
         />
       </Container>
 
@@ -215,13 +218,6 @@ export const SideBar = () => {
           key={item.text}
           icon={item.icon}
           text={item.text}
-          /*           selected={selected.includes(
-            `${
-              item.route.toLowerCase().split('/')[
-                item.route.toLowerCase().split('/').length - 1
-              ]
-            }`
-          )} */
           selected={isSelected(item)}
           select={() => setSelected(`${item.route.toLowerCase()}`)}
           route={item.route}
