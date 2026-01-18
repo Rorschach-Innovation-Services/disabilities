@@ -143,9 +143,80 @@ export const LiveDashboard = () => {
   }, [clientsRequest.response, clientsRequest.error, presetCompany, presetDepartment, role, companyId]);
 
   // 🔹 Save spider chart
+  // Frontend-only correction: Theresa identified an incorrect allocation of sub-dimensions
+  // (Space / Person / Culture) to variables. We fix the per-sector triple ordering here
+  // so that charts and summaries reflect the corrected mapping before storing in state.
+  const applySpiderCorrections = (spider) => {
+    if (!spider) return null;
+
+    const incomingRaw = spider.dataRaw || spider.raw || [];
+    const incomingPct = spider.dataPct || spider.pct || [];
+    const axesLen = 15;
+
+    // Only apply correction when we have full 15-axis data
+    if (!Array.isArray(incomingRaw) || incomingRaw.length !== axesLen) return spider;
+
+    const SECTORS = ['Prepare', 'Integrate', 'Value-Add', 'Optimise', 'Transfer'];
+    const SUBS = ['Space', 'Person', 'Culture'];
+    const AXES = SECTORS.flatMap((s) => SUBS.map((sub) => `${s} - ${sub}`));
+
+    // Per-sector index permutation derived from Theresa's mapping
+    // Prepare: [0,2,1], Integrate: [2,0,1], Value-Add: [2,0,1], Optimise: [0,2,1], Transfer: [2,0,1]
+    const sectorPerms = [ [0,2,1], [2,0,1], [2,0,1], [0,2,1], [2,0,1] ];
+
+    const correctedRaw = Array(axesLen).fill(0);
+    const correctedPct = Array(axesLen).fill(0);
+
+    SECTORS.forEach((_, sIdx) => {
+      const base = sIdx * 3;
+      const perm = sectorPerms[sIdx];
+
+      for (let i = 0; i < 3; i++) {
+        const fromIndex = base + perm[i];
+        const toIndex = base + i;
+        correctedRaw[toIndex] = Number(incomingRaw[fromIndex] || 0);
+        correctedPct[toIndex] = Number(incomingPct[fromIndex] || 0);
+      }
+    });
+
+    // Recompute sectorSummary from corrected raw values
+    const maxScore = Number(spider.meta?.maxScore) || 5;
+    const sectorSummary = SECTORS.map((sector, sIdx) => {
+      const base = sIdx * 3;
+      const values = [correctedRaw[base], correctedRaw[base+1], correctedRaw[base+2]];
+      const rawAvg = values.reduce((a,b)=>a+Number(b||0),0) / 3;
+      const raw = parseFloat(rawAvg.toFixed(2));
+      const pct = parseFloat(((raw / maxScore) * 100).toFixed(1));
+      const count = 0; // original endpoint provides counts; keep 0 here to avoid accidental overwrite
+      return { sector, raw, pct, count };
+    });
+
+    // Recompute subSummary (Space, Person, Culture)
+    const subSummary = SUBS.map((sub, subIdx) => {
+      const indices = [0,1,2,3,4].map(s => s*3 + subIdx);
+      const vals = indices.map(i => correctedRaw[i] || 0);
+      const rawAvg = vals.reduce((a,b)=>a+Number(b||0),0) / vals.length;
+      const raw = parseFloat(rawAvg.toFixed(2));
+      const pct = parseFloat(((raw / maxScore) * 100).toFixed(1));
+      const count = 0;
+      return { sub, raw, pct, count };
+    });
+
+    return {
+      ...spider,
+      axes: AXES,
+      dataRaw: correctedRaw,
+      dataPct: correctedPct,
+      sectorSummary,
+      subSummary,
+      meta: { ...spider.meta, frontendCorrected: true },
+    };
+  };
+
   useEffect(() => {
     if (assessmentsRequest.response && !assessmentsRequest.error) {
-      setSpiderChart(assessmentsRequest.response.spiderChart || null);
+      const rawSpider = assessmentsRequest.response.spiderChart || null;
+      setSpiderChart(applySpiderCorrections(rawSpider));
       if (isClientUser(role)) {
         setResolvedCompanyName(assessmentsRequest.response.companyName || '');
         setResolvedDepartmentName(assessmentsRequest.response.departmentName || '');
