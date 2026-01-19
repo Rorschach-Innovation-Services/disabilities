@@ -16,8 +16,31 @@ ChartJS.register(RadialLinearScale, ArcElement, Tooltip, Legend, Title, ChartDat
 const SECTORS = ['Prepare', 'Integrate', 'Value-Add', 'Optimise', 'Transfer'];
 const SUBS = ['Space', 'Person', 'Culture'];
 
-// 15 canonical axis labels (stable order, matches backend payload)
-const AXES = SECTORS.flatMap(s => SUBS.map(sub => `${s} - ${sub}`));
+// Fallback axis labels (questionnaire order) — runtime will prefer spiderChart.axes when present
+const AXES_FALLBACK = [
+  'Prepare - Space 1',
+  'Prepare - Culture 2',
+  'Prepare - Person 3',
+
+  'Integrate - Person 4',
+  'Integrate - Culture 5',
+  'Integrate - Space 6',
+
+  'Value-Add - Person 7',
+  'Value-Add - Culture 8',
+  'Value-Add - Space 9',
+
+  'Optimise - Space 10',
+  'Optimise - Culture 11',
+  'Optimise - Person 12',
+
+  'Transfer - Person 13',
+  'Transfer - Culture 14',
+  'Transfer - Space 15',
+];
+
+// Use the incoming spider chart axes if available; otherwise fall back to the canonical questionnaire order
+const getLabelsFromSpider = (spider) => spider?.axes || AXES_FALLBACK;
 
 // Colors for each sector (5 sectors × 3 tones for their subs)
 const SECTOR_FILLS = [
@@ -50,22 +73,25 @@ const PolarBalanceWheel = ({
     const fillColors = [];
     const borderColors = [];
 
-    AXES.forEach((axis, i) => {
-      const sectorIdx = Math.floor(i / 3); // which sector
+    const labelsFromSpider = getLabelsFromSpider(spiderChart);
+    const pctArray = spiderChart?.dataPct || spiderChart?.pct || pct || [];
+    const rawArray = spiderChart?.dataRaw || spiderChart?.raw || raw || [];
+
+    labelsFromSpider.forEach((axis, i) => {
+      const sectorIdx = Math.floor(i / 3); // which sector (assumes questionnaire groups by 3)
       const spokeIdx = i % 3;              // which sub inside sector
 
-      const incomingIndex = axes.indexOf(axis);
-      const pv = incomingIndex >= 0 ? (pct[incomingIndex] ?? 0) : 0;
-      const rv = incomingIndex >= 0 ? (raw[incomingIndex] ?? 0) : 0;
+      const pv = pctArray[i] ?? 0;
+      const rv = rawArray[i] ?? 0;
 
       pctNumbers.push(pv);
       rawNumbers.push(rv);
-      fillColors.push(SECTOR_FILLS[sectorIdx][spokeIdx]);
-      borderColors.push(SECTOR_BORDERS[sectorIdx]);
+      fillColors.push(SECTOR_FILLS[sectorIdx] ? SECTOR_FILLS[sectorIdx][spokeIdx] : 'rgba(200,200,200,0.4)');
+      borderColors.push(SECTOR_BORDERS[sectorIdx] ?? '#ddd');
     });
 
-    return { labels: AXES, dataPct: pctNumbers, dataRaw: rawNumbers, fills: fillColors, borders: borderColors };
-  }, [axes, pct, raw]);
+    return { labels: labelsFromSpider, dataPct: pctNumbers, dataRaw: rawNumbers, fills: fillColors, borders: borderColors };
+  }, [spiderChart, pct, raw]);
 
   if (!labels.length || (!dataPct.length && !dataRaw.length)) {
     return <div style={{ textAlign: 'center', color: '#64748b' }}>No data available.</div>;

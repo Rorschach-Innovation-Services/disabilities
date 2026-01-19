@@ -53,6 +53,31 @@ export const LiveDashboard = () => {
   // API hooks
   const clientsRequest = useAxios({ url: '/companies', method: 'get' });
   const assessmentsRequest = useAxios({ url: '/assessments/departments/{departmentId}', method: 'get' });
+  // Attempt to fetch questionnaires so we can display the wheel exactly in questionnaire order
+  const questionnairesRequest = useAxios({ url: '/questionnaires', method: 'get' });
+  const [questionnaireAxes, setQuestionnaireAxes] = useState(null);
+
+  // Populate questionnaire axes (when available) so we can use the authoritative order
+  useEffect(() => {
+    questionnairesRequest.execute();
+  }, []);
+
+  useEffect(() => {
+    if (questionnairesRequest.response && !questionnairesRequest.error) {
+      try {
+        const qList = questionnairesRequest.response.questionnaires || [];
+        // Prefer the Pivot questionnaire: order 3 or name 'Pivot'
+        const q = qList.find((qq) => qq.order === 3) || qList.find((qq) => String(qq.name || '').toLowerCase() === 'pivot') || qList[0];
+        if (q && Array.isArray(q.questions)) {
+          const axes = q.questions.map((ques, idx) => `${ques.category} - ${ques.label} ${idx + 1}`);
+          setQuestionnaireAxes(axes);
+        }
+      } catch (e) {
+        // ignore; will fallback to hard-coded axis set
+      }
+    }
+  }, [questionnairesRequest.response, questionnairesRequest.error]);
+
 
   // 🔹 Fetch companies (only admin/pivot/super)
   useEffect(() => {
@@ -143,59 +168,75 @@ export const LiveDashboard = () => {
   }, [clientsRequest.response, clientsRequest.error, presetCompany, presetDepartment, role, companyId]);
 
   // 🔹 Save spider chart
-  // Frontend-only correction: Theresa identified an incorrect allocation of sub-dimensions
-  // (Space / Person / Culture) to variables. We fix the per-sector triple ordering here
-  // so that charts and summaries reflect the corrected mapping before storing in state.
+  // Frontend-only correction: Theresa provided the questionnaire order and numbers.
+  // We map incoming spider data to the questionnaire order (including question numbers)
+  // and recompute sector/sub summaries so charts reflect the real questionnaire layout.
   const applySpiderCorrections = (spider) => {
     if (!spider) return null;
 
+    const incomingAxes = Array.isArray(spider.axes) ? spider.axes : [];
     const incomingRaw = spider.dataRaw || spider.raw || [];
     const incomingPct = spider.dataPct || spider.pct || [];
     const axesLen = 15;
 
-    // Only apply correction when we have full 15-axis data
+    // Only apply correction when we have full 15-axis data; otherwise return as-is
     if (!Array.isArray(incomingRaw) || incomingRaw.length !== axesLen) return spider;
 
-    const SECTORS = ['Prepare', 'Integrate', 'Value-Add', 'Optimise', 'Transfer'];
-    const SUBS = ['Space', 'Person', 'Culture'];
-    const AXES = SECTORS.flatMap((s) => SUBS.map((sub) => `${s} - ${sub}`));
+    // Use questionnaire-derived axes if available, otherwise fall back to the expected canonical array
+    const DEFAULT_AXES = [
+      'Prepare - Space 1', 'Prepare - Culture 2', 'Prepare - Person 3',
+      'Integrate - Person 4', 'Integrate - Culture 5', 'Integrate - Space 6',
+      'Value-Add - Person 7', 'Value-Add - Culture 8', 'Value-Add - Space 9',
+      'Optimise - Space 10', 'Optimise - Culture 11', 'Optimise - Person 12',
+      'Transfer - Person 13', 'Transfer - Culture 14', 'Transfer - Space 15',
+    ];
 
-    // Per-sector index permutation derived from Theresa's mapping
-    // Prepare: [0,2,1], Integrate: [2,0,1], Value-Add: [2,0,1], Optimise: [0,2,1], Transfer: [2,0,1]
-    const sectorPerms = [ [0,2,1], [2,0,1], [2,0,1], [0,2,1], [2,0,1] ];
+    const desiredAxes = Array.isArray(questionnaireAxes) && questionnaireAxes.length === axesLen ? questionnaireAxes : DEFAULT_AXES;
 
     const correctedRaw = Array(axesLen).fill(0);
     const correctedPct = Array(axesLen).fill(0);
 
-    SECTORS.forEach((_, sIdx) => {
-      const base = sIdx * 3;
-      const perm = sectorPerms[sIdx];
+    // Helper to extract sector and sub without numbers for matching
+    const parseAxis = (axisLabel) => {
+      if (!axisLabel) return { sector: '', sub: '' };
+      const parts = axisLabel.split(' - ');
+      const sector = (parts[0] || '').trim();
+      const sub = ((parts[1] || '').trim().split(/\s+/)[0] || '').trim();
+      return { sector, sub };
+    };
 
-      for (let i = 0; i < 3; i++) {
-        const fromIndex = base + perm[i];
-        const toIndex = base + i;
-        correctedRaw[toIndex] = Number(incomingRaw[fromIndex] || 0);
-        correctedPct[toIndex] = Number(incomingPct[fromIndex] || 0);
-      }
+    // Build corrected arrays by finding matching incoming axis entries by sector/sub
+    desiredAxes.forEach((desired, i) => {
+      const { sector: wantSector, sub: wantSub } = parseAxis(desired);
+      const incomingIndex = incomingAxes.findIndex((a) => {
+        const { sector, sub } = parseAxis(a);
+        return sector.toLowerCase() === wantSector.toLowerCase() && sub.toLowerCase() === wantSub.toLowerCase();
+      });
+
+      correctedRaw[i] = incomingIndex >= 0 ? Number(incomingRaw[incomingIndex] || 0) : 0;
+      correctedPct[i] = incomingIndex >= 0 ? Number(incomingPct[incomingIndex] || 0) : 0;
     });
 
     // Recompute sectorSummary from corrected raw values
     const maxScore = Number(spider.meta?.maxScore) || 5;
+    const SECTORS = ['Prepare', 'Integrate', 'Value-Add', 'Optimise', 'Transfer'];
+
     const sectorSummary = SECTORS.map((sector, sIdx) => {
       const base = sIdx * 3;
-      const values = [correctedRaw[base], correctedRaw[base+1], correctedRaw[base+2]];
-      const rawAvg = values.reduce((a,b)=>a+Number(b||0),0) / 3;
+      const values = [correctedRaw[base], correctedRaw[base + 1], correctedRaw[base + 2]];
+      const rawAvg = values.reduce((a, b) => a + Number(b || 0), 0) / 3;
       const raw = parseFloat(rawAvg.toFixed(2));
       const pct = parseFloat(((raw / maxScore) * 100).toFixed(1));
-      const count = 0; // original endpoint provides counts; keep 0 here to avoid accidental overwrite
+      const count = 0; // counts are not available reliably here
       return { sector, raw, pct, count };
     });
 
     // Recompute subSummary (Space, Person, Culture)
+    const SUBS = ['Space', 'Person', 'Culture'];
     const subSummary = SUBS.map((sub, subIdx) => {
-      const indices = [0,1,2,3,4].map(s => s*3 + subIdx);
-      const vals = indices.map(i => correctedRaw[i] || 0);
-      const rawAvg = vals.reduce((a,b)=>a+Number(b||0),0) / vals.length;
+      const indices = [0, 1, 2, 3, 4].map((s) => s * 3 + subIdx);
+      const vals = indices.map((i) => correctedRaw[i] || 0);
+      const rawAvg = vals.reduce((a, b) => a + Number(b || 0), 0) / vals.length;
       const raw = parseFloat(rawAvg.toFixed(2));
       const pct = parseFloat(((raw / maxScore) * 100).toFixed(1));
       const count = 0;
@@ -204,7 +245,7 @@ export const LiveDashboard = () => {
 
     return {
       ...spider,
-      axes: AXES,
+      axes: desiredAxes,
       dataRaw: correctedRaw,
       dataPct: correctedPct,
       sectorSummary,
